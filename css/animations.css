@@ -1,0 +1,65 @@
+/* === Szoba glow === */
+@keyframes roomGlow {
+  from { box-shadow: 0 0 15px color-mix(in srgb, var(--room-color, #f6ad55) 20%, transparent); }
+  to   { box-shadow: 0 0 25px color-mix(in srgb, var(--room-color, #f6ad55) 40%, transparent); }
+}
+
+/* === Szoba feloldás (blueprint → színes) === */
+@keyframes roomUnlock {
+  0% {
+    border-style: dashed;
+    border-color: var(--bp-line);
+    background: var(--bp-locked);
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+    border-style: solid;
+  }
+  100% {
+    border-style: solid;
+    border-color: var(--room-color, #f6ad55);
+    background: rgba(255, 255, 255, 0.05);
+    transform: scale(1);
+  }
+}
+
+.room--just-unlocked {
+  animation: roomUnlock 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* === Konfetti === */
+@keyframes confettiFall {
+  0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+.confetti-piece {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  top: -10px;
+  z-index: 1000;
+  animation: confettiFall var(--fall-duration, 3s) linear forwards;
+  animation-delay: var(--fall-delay, 0s);
+}
+
+/* === Fade-in === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+/* === Pulse === */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.pulse {
+  animation: pulse 2s ease-in-out infinite;
+}

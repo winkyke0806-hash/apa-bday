@@ -1,0 +1,360 @@
+/* === CSS Custom Properties === */
+:root {
+  --bp-bg: #0a1628;
+  --bp-grid: rgba(255, 255, 255, 0.03);
+  --bp-line: rgba(255, 255, 255, 0.15);
+  --bp-line-strong: rgba(255, 255, 255, 0.25);
+  --bp-text: rgba(255, 255, 255, 0.4);
+  --bp-text-dim: rgba(255, 255, 255, 0.15);
+  --bp-accent: #f6ad55;
+  --bp-success: #68d391;
+  --bp-locked: rgba(255, 255, 255, 0.05);
+  --font-blueprint: 'Courier New', Courier, monospace;
+  --font-display: Georgia, 'Times New Roman', serif;
+}
+
+/* === Reset === */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-blueprint);
+  background: var(--bp-bg);
+  color: white;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    linear-gradient(var(--bp-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bp-grid) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* === Views === */
+.view { display: none; }
+.view.active { display: block; }
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--bp-bg);
+  background-image:
+    linear-gradient(var(--bp-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bp-grid) 1px, transparent 1px);
+  background-size: 20px 20px;
+  overflow-y: auto;
+  padding: 24px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.overlay.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* === Header === */
+.house-header {
+  text-align: center;
+  padding: 40px 20px 20px;
+}
+
+.house-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  color: var(--bp-accent);
+  text-shadow: 0 0 30px rgba(246, 173, 85, 0.3);
+  letter-spacing: 2px;
+}
+
+.house-subtitle {
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  color: var(--bp-text);
+  margin-top: 8px;
+  letter-spacing: 1px;
+}
+
+/* === Progress Bar === */
+.progress-bar-container {
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 0 20px;
+  position: relative;
+}
+
+.progress-bar-container::before {
+  content: '';
+  display: block;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+}
+
+.progress-bar {
+  position: absolute;
+  top: 0;
+  left: 20px;
+  height: 6px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--bp-accent), #ed8936);
+  border-radius: 20px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-text {
+  display: block;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--bp-text);
+  margin-top: 8px;
+}
+
+/* === Room Grid === */
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  max-width: 700px;
+  margin: 30px auto;
+  padding: 24px;
+  border: 1px dashed var(--bp-line-strong);
+  position: relative;
+}
+
+.room-grid::before {
+  content: 'ALAPRAJZ — M 1:50';
+  position: absolute;
+  top: -20px;
+  left: 0;
+  font-size: 0.65rem;
+  color: var(--bp-text-dim);
+  letter-spacing: 2px;
+}
+
+/* === Room Tiles === */
+.room {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  position: relative;
+}
+
+.room--locked {
+  border: 1px dashed var(--bp-line);
+  background: var(--bp-locked);
+}
+
+.room--locked:hover {
+  border-color: var(--bp-line-strong);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.room--locked .room__icon {
+  font-size: 1.5rem;
+  opacity: 0.3;
+}
+
+.room--locked .room__name--hidden {
+  font-size: 0.65rem;
+  color: var(--bp-text);
+  margin-top: 4px;
+}
+
+.room--locked .room__dimensions {
+  font-size: 0.55rem;
+  color: var(--bp-text-dim);
+  margin-top: 2px;
+}
+
+/* Unlocked room */
+.room--unlocked {
+  border: 2px solid var(--room-color, #f6ad55);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  box-shadow: 0 0 20px color-mix(in srgb, var(--room-color, #f6ad55) 30%, transparent);
+  animation: roomGlow 3s ease-in-out infinite alternate;
+}
+
+.room--unlocked:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--room-color, #f6ad55) 50%, transparent);
+}
+
+.room--unlocked .room__icon {
+  font-size: 1.8rem;
+}
+
+.room--unlocked .room__name {
+  font-size: 0.7rem;
+  color: var(--room-color, #f6ad55);
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.room--unlocked .room__status {
+  font-size: 0.6rem;
+  color: var(--bp-success);
+  margin-top: 2px;
+}
+
+/* Secret room */
+.room--secret {
+  grid-column: 2 / 4;
+}
+
+.room--secret.room--locked {
+  border: 2px dashed rgba(214, 158, 46, 0.3);
+}
+
+.room--secret .room__status--locked {
+  font-size: 0.55rem;
+  color: var(--bp-text);
+  margin-top: 4px;
+}
+
+/* === Back Button === */
+.back-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 200;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* === Minigame & Content Containers === */
+#minigame-container,
+#content-container {
+  width: 100%;
+  max-width: 700px;
+  margin: 40px auto 0;
+}
+
+/* === Közös minijáték stílusok === */
+.minigame-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--bp-accent);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.minigame-instructions {
+  font-size: 0.85rem;
+  color: var(--bp-text);
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.minigame-btn {
+  display: inline-block;
+  padding: 10px 24px;
+  background: linear-gradient(135deg, var(--bp-accent), #ed8936);
+  color: var(--bp-bg);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-blueprint);
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.minigame-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(246, 173, 85, 0.4);
+}
+
+.minigame-btn--secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.minigame-btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.minigame-success {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.minigame-success h2 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--bp-success);
+  margin-bottom: 12px;
+}
+
+/* === Közös tartalom stílusok === */
+.content-title {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.content-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.content-gallery img {
+  width: 100%;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.content-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+/* === Reszponzív === */
+@media (max-width: 768px) {
+  .room-grid {
+    grid-template-columns: repeat(3, 1fr);
+    padding: 16px;
+    margin: 20px 12px;
+  }
+  .room--secret { grid-column: 1 / -1; }
+}
+
+@media (max-width: 480px) {
+  .room-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .house-header { padding: 24px 16px 12px; }
+  .room { padding: 10px 6px; }
+  .room--unlocked .room__icon { font-size: 1.4rem; }
+}

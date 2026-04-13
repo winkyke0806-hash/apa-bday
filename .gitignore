@@ -1,0 +1,6 @@
+.env
+.env.local
+.superpowers/
+.DS_Store
+Thumbs.db
+node_modules/
