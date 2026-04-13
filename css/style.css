@@ -1,56 +1,57 @@
-/* === CSS Custom Properties === */
+/* ══════════════════════════════════════════════
+   BLUEPRINT BIRTHDAY HOUSE — Master Stylesheet
+   ══════════════════════════════════════════════ */
+
 :root {
-  --bp-bg: #0a1628;
-  --bp-bg-light: #0e1f3d;
-  --bp-grid: rgba(65, 135, 255, 0.04);
-  --bp-grid-strong: rgba(65, 135, 255, 0.08);
-  --bp-line: rgba(120, 180, 255, 0.18);
-  --bp-line-strong: rgba(120, 180, 255, 0.3);
-  --bp-text: rgba(180, 210, 255, 0.45);
-  --bp-text-dim: rgba(120, 160, 220, 0.2);
+  /* Blueprint palette */
+  --bp-bg: #071526;
+  --bp-bg-mid: #0b1d35;
+  --bp-grid-fine: rgba(65, 140, 255, 0.035);
+  --bp-grid-major: rgba(65, 140, 255, 0.07);
+  --bp-line: rgba(100, 170, 255, 0.2);
+  --bp-line-strong: rgba(100, 170, 255, 0.35);
+  --bp-text: rgba(160, 200, 255, 0.5);
+  --bp-text-dim: rgba(100, 150, 220, 0.25);
   --bp-accent: #f6ad55;
+  --bp-accent-glow: rgba(246, 173, 85, 0.15);
   --bp-success: #68d391;
-  --bp-locked: rgba(65, 135, 255, 0.03);
-  --bp-wall: rgba(120, 180, 255, 0.22);
-  --bp-wall-thick: 3px;
-  --font-blueprint: 'Courier New', Courier, monospace;
-  --font-display: Georgia, 'Times New Roman', serif;
+  --bp-wall: rgba(100, 170, 255, 0.25);
+
+  /* Fonts */
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  --font-display: 'Playfair Display', Georgia, serif;
 }
 
-/* === Reset === */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* ─── Reset ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* === Body — layered blueprint grid === */
+/* ─── Body: Layered blueprint paper ─── */
 body {
-  font-family: var(--font-blueprint);
+  font-family: var(--font-mono);
   background: var(--bp-bg);
   color: white;
   min-height: 100vh;
   overflow-x: hidden;
-  /* Fine grid (5mm) + coarse grid (major lines every 5th) */
   background-image:
-    linear-gradient(var(--bp-grid-strong) 1px, transparent 1px),
-    linear-gradient(90deg, var(--bp-grid-strong) 1px, transparent 1px),
-    linear-gradient(var(--bp-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--bp-grid) 1px, transparent 1px);
+    linear-gradient(var(--bp-grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bp-grid-major) 1px, transparent 1px),
+    linear-gradient(var(--bp-grid-fine) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bp-grid-fine) 1px, transparent 1px);
   background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  background-position: -1px -1px;
 }
 
-/* Subtle radial vignette */
+/* Vignette + subtle noise texture */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(5, 10, 25, 0.5) 100%);
+  background: radial-gradient(ellipse at 50% 40%, transparent 30%, rgba(3, 8, 20, 0.6) 100%);
   pointer-events: none;
   z-index: 0;
 }
 
-/* === Views === */
+/* ─── Views ─── */
 .view { display: none; position: relative; z-index: 1; }
 .view.active { display: block; }
 
@@ -60,16 +61,16 @@ body::before {
   z-index: 100;
   background: var(--bp-bg);
   background-image:
-    linear-gradient(var(--bp-grid-strong) 1px, transparent 1px),
-    linear-gradient(90deg, var(--bp-grid-strong) 1px, transparent 1px),
-    linear-gradient(var(--bp-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--bp-grid) 1px, transparent 1px);
+    linear-gradient(var(--bp-grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bp-grid-major) 1px, transparent 1px),
+    linear-gradient(var(--bp-grid-fine) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bp-grid-fine) 1px, transparent 1px);
   background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
   overflow-y: auto;
   padding: 24px;
   opacity: 0;
-  transform: scale(1.05);
-  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(1.08);
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
 }
 
@@ -82,7 +83,10 @@ body::before {
   pointer-events: all;
 }
 
-/* === Loading screen === */
+/* ══════════════════════════════
+   LOADING SCREEN
+   ══════════════════════════════ */
+
 .loading-screen {
   position: fixed;
   inset: 0;
@@ -92,458 +96,569 @@ body::before {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.8s ease;
+  gap: 16px;
+  transition: opacity 1s ease, filter 0.8s ease;
 }
 
 .loading-screen.hide {
   opacity: 0;
+  filter: blur(10px);
   pointer-events: none;
 }
 
-.loading-pencil {
-  font-size: 2rem;
-  animation: pencilDraw 1.5s ease-in-out infinite;
+.loading-svg {
+  opacity: 0.8;
+}
+
+.loading-room {
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: drawRect 1.5s ease forwards;
 }
 
 .loading-text {
-  font-family: var(--font-blueprint);
+  font-family: var(--font-mono);
+  font-weight: 300;
+  font-size: 0.8rem;
   color: var(--bp-text);
-  font-size: 0.85rem;
-  margin-top: 16px;
-  letter-spacing: 3px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
 }
 
-/* === Header === */
+.loading-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.loading-dots span {
+  color: var(--bp-accent);
+  font-size: 1.5rem;
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+/* ══════════════════════════════
+   HEADER
+   ══════════════════════════════ */
+
 .house-header {
   text-align: center;
-  padding: 40px 20px 20px;
+  padding: 48px 20px 16px;
   opacity: 0;
-  animation: fadeInDown 0.8s ease 0.3s forwards;
+  animation: fadeInDown 1s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+}
+
+.header-line {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--bp-accent), transparent);
+  margin: 12px auto;
+  opacity: 0.4;
 }
 
 .house-title {
   font-family: var(--font-display);
-  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 700;
+  font-size: clamp(2rem, 6vw, 3.2rem);
   color: var(--bp-accent);
   text-shadow:
-    0 0 30px rgba(246, 173, 85, 0.3),
-    0 0 60px rgba(246, 173, 85, 0.1);
-  letter-spacing: 2px;
+    0 0 40px rgba(246, 173, 85, 0.25),
+    0 0 80px rgba(246, 173, 85, 0.08);
+  letter-spacing: 1px;
+  line-height: 1.2;
 }
 
 .house-subtitle {
-  font-size: clamp(0.8rem, 2vw, 1rem);
+  font-family: var(--font-mono);
+  font-weight: 300;
+  font-size: clamp(0.7rem, 2vw, 0.85rem);
   color: var(--bp-text);
-  margin-top: 8px;
-  letter-spacing: 1px;
+  margin-top: 4px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
-/* === Progress Bar === */
-.progress-bar-container {
+/* ══════════════════════════════
+   PROGRESS BAR
+   ══════════════════════════════ */
+
+.progress-section {
   max-width: 500px;
-  margin: 20px auto;
-  padding: 0 20px;
-  position: relative;
+  margin: 12px auto 8px;
+  padding: 0 24px;
   opacity: 0;
-  animation: fadeIn 0.6s ease 0.5s forwards;
+  animation: fadeIn 0.6s ease 0.6s forwards;
 }
 
-.progress-bar-container::before {
-  content: '';
-  display: block;
-  height: 6px;
-  background: rgba(120, 180, 255, 0.08);
-  border-radius: 20px;
-}
-
-.progress-bar {
-  position: absolute;
-  top: 0;
-  left: 20px;
-  height: 6px;
-  width: 0%;
-  background: linear-gradient(90deg, var(--bp-accent), #ed8936);
-  border-radius: 20px;
-  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+.progress-bar-track {
+  height: 4px;
+  background: rgba(100, 170, 255, 0.06);
+  border-radius: 4px;
+  position: relative;
   overflow: hidden;
 }
 
-/* Shimmer on progress bar */
-.progress-bar::after {
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--bp-accent), #f97316, #ef4444);
+  border-radius: 4px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+/* Animated shimmer on progress */
+.progress-bar-fill::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  animation: shimmer 2s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%);
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+.progress-bar-glow {
+  position: absolute;
+  top: -6px;
+  left: 0;
+  height: 16px;
+  width: 0%;
+  background: linear-gradient(90deg, transparent, var(--bp-accent-glow), transparent);
+  border-radius: 8px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: blur(6px);
 }
 
 .progress-text {
   display: block;
   text-align: center;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
+  font-weight: 300;
   color: var(--bp-text);
   margin-top: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
-/* === Room Grid (Blueprint frame) === */
+/* ══════════════════════════════
+   BLUEPRINT FRAME
+   ══════════════════════════════ */
+
+.blueprint-frame {
+  max-width: 740px;
+  margin: 20px auto 80px;
+  padding: 0 16px;
+  position: relative;
+  opacity: 0;
+  animation: blueprintDraw 1.5s cubic-bezier(0.4, 0, 0.2, 1) 0.8s forwards;
+}
+
+/* Title block (bottom-right, architectural style) */
+.title-block {
+  position: absolute;
+  bottom: -65px;
+  left: 0;
+  display: flex;
+  gap: 0;
+  border: 1px solid rgba(100, 170, 255, 0.12);
+  font-size: 0.5rem;
+  opacity: 0.5;
+}
+
+.title-block__row {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 10px;
+  border-right: 1px solid rgba(100, 170, 255, 0.08);
+}
+
+.title-block__row:last-child { border-right: none; }
+
+.title-block__label {
+  color: var(--bp-text-dim);
+  font-size: 0.4rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.title-block__value {
+  color: var(--bp-text);
+  margin-top: 2px;
+  letter-spacing: 1px;
+}
+
+/* Compass */
+.compass-rose {
+  position: absolute;
+  bottom: -60px;
+  right: 0;
+  opacity: 0.6;
+}
+
+/* Stamp */
+.stamp {
+  position: absolute;
+  top: -12px;
+  right: 16px;
+  transform: rotate(-6deg);
+  pointer-events: none;
+}
+
+.stamp__inner {
+  border: 2.5px solid rgba(246, 173, 85, 0.2);
+  border-radius: 6px;
+  padding: 4px 14px;
+  font-size: 0.5rem;
+  font-weight: 500;
+  color: rgba(246, 173, 85, 0.25);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+/* ══════════════════════════════
+   ROOM GRID
+   ══════════════════════════════ */
+
 .room-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0;
-  max-width: 700px;
-  margin: 30px auto;
-  padding: 0;
-  border: var(--bp-wall-thick) solid var(--bp-line-strong);
+  border: 2.5px solid var(--bp-line-strong);
   position: relative;
-  opacity: 0;
-  animation: blueprintDraw 1.2s ease 0.7s forwards;
+  background: rgba(7, 21, 38, 0.5);
 }
 
-/* Title block top-left */
-.room-grid::before {
-  content: 'ALAPRAJZ — M 1:50';
-  position: absolute;
-  top: -22px;
-  left: 0;
-  font-size: 0.6rem;
-  color: var(--bp-text-dim);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-}
+/* ══════════════════════════════
+   ROOM TILES
+   ══════════════════════════════ */
 
-/* Revision stamp top-right */
-.room-grid::after {
-  content: 'MEGLEPETÉS TERV — REV.1';
-  position: absolute;
-  top: -22px;
-  right: 0;
-  font-size: 0.6rem;
-  color: var(--bp-text-dim);
-  letter-spacing: 2px;
-}
-
-/* === Compass Rose === */
-.compass {
-  position: absolute;
-  bottom: -50px;
-  right: 0;
-  width: 40px;
-  height: 40px;
-  opacity: 0.2;
-}
-
-.compass::before {
-  content: 'É';
-  position: absolute;
-  top: 0; left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.55rem;
-  color: var(--bp-text);
-  font-weight: bold;
-}
-
-.compass::after {
-  content: '+';
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 1rem;
-  color: var(--bp-line);
-}
-
-/* === Room Tiles === */
 .room {
   aspect-ratio: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 12px 8px;
+  padding: 14px 8px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  /* Walls between rooms */
-  border-right: 1px solid var(--bp-wall);
-  border-bottom: 1px solid var(--bp-wall);
+  border-right: 1.5px solid var(--bp-wall);
+  border-bottom: 1.5px solid var(--bp-wall);
+  transition: background 0.5s ease;
+  /* Staggered entrance */
+  opacity: 0;
+  animation: roomAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* Remove outer right borders */
 .room:nth-child(4n) { border-right: none; }
-/* Last row no bottom border (handled by grid border) */
 
-/* Door markers on some rooms */
+/* ─── Locked Room ─── */
+.room--locked {
+  background: transparent;
+}
+
+/* Crosshatch pattern for locked rooms */
+.room--locked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 8px,
+      rgba(100, 170, 255, 0.015) 8px,
+      rgba(100, 170, 255, 0.015) 9px
+    );
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+/* Door gap */
 .room--locked::before {
   content: '';
   position: absolute;
   bottom: -2px;
   left: 50%;
   transform: translateX(-50%);
-  width: 18px;
-  height: 4px;
+  width: 20px;
+  height: 3px;
   background: var(--bp-bg);
-  border-left: 1px solid var(--bp-line);
-  border-right: 1px solid var(--bp-line);
   z-index: 2;
 }
 
-/* Alternate door position for variety */
-.room--locked:nth-child(even)::before {
+.room--locked:nth-child(odd)::before {
   bottom: auto;
   right: -2px;
   left: auto;
   top: 50%;
   transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
+  width: 3px;
+  height: 20px;
 }
 
-/* Locked room: blueprint style */
-.room--locked {
-  background: var(--bp-locked);
-}
-
+/* Hover: room lights up subtly */
 .room--locked:hover {
-  background: rgba(65, 135, 255, 0.06);
+  background: rgba(100, 170, 255, 0.04);
+}
+
+.room--locked:hover::after {
+  opacity: 0;
 }
 
 .room--locked:hover .room__icon {
-  animation: lockShake 0.5s ease;
-  opacity: 0.5;
+  animation: lockShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  opacity: 0.6;
 }
 
 .room--locked .room__icon {
-  font-size: 1.5rem;
-  opacity: 0.25;
-  transition: opacity 0.3s;
+  font-size: 1.4rem;
+  opacity: 0.2;
+  transition: opacity 0.4s;
+  filter: grayscale(1);
 }
 
 .room--locked .room__name--hidden {
-  font-size: 0.6rem;
-  color: var(--bp-text);
-  margin-top: 4px;
-  letter-spacing: 1px;
+  font-size: 0.55rem;
+  font-weight: 300;
+  color: var(--bp-text-dim);
+  margin-top: 6px;
+  letter-spacing: 2px;
 }
 
 .room--locked .room__dimensions {
-  font-size: 0.5rem;
+  font-size: 0.45rem;
   color: var(--bp-text-dim);
-  margin-top: 2px;
-  /* Blueprint dimension style with arrows */
-  position: relative;
+  margin-top: 3px;
+  opacity: 0.6;
 }
 
-.room--locked .room__dimensions::before,
-.room--locked .room__dimensions::after {
-  content: '◂';
-  font-size: 0.4rem;
-  color: var(--bp-text-dim);
-  vertical-align: middle;
-}
-
-.room--locked .room__dimensions::after {
-  content: '▸';
-}
-
-/* Unlocked room — alive and glowing */
+/* ─── Unlocked Room ─── */
 .room--unlocked {
-  border-color: color-mix(in srgb, var(--room-color, #f6ad55) 40%, transparent);
-  background:
-    radial-gradient(ellipse at center, color-mix(in srgb, var(--room-color, #f6ad55) 8%, transparent), transparent 70%);
-  border-radius: 2px;
-  box-shadow:
-    0 0 20px color-mix(in srgb, var(--room-color, #f6ad55) 20%, transparent),
-    inset 0 0 30px color-mix(in srgb, var(--room-color, #f6ad55) 5%, transparent);
-  animation: roomGlow 3s ease-in-out infinite alternate;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--room-color, #f6ad55) 10%, transparent),
+    transparent 80%
+  );
+  border-color: color-mix(in srgb, var(--room-color, #f6ad55) 30%, transparent);
+  animation: roomGlow 4s ease-in-out infinite alternate;
 }
+
+.room--unlocked::after { display: none; }
+.room--unlocked::before { display: none; }
 
 .room--unlocked:hover {
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--room-color, #f6ad55) 18%, transparent),
+    transparent 80%
+  );
   transform: scale(1.04);
-  box-shadow:
-    0 0 35px color-mix(in srgb, var(--room-color, #f6ad55) 40%, transparent),
-    inset 0 0 40px color-mix(in srgb, var(--room-color, #f6ad55) 8%, transparent);
-}
-
-.room--unlocked::before {
-  display: none; /* No door marker on unlocked rooms */
 }
 
 .room--unlocked .room__icon {
   font-size: 1.8rem;
-  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--room-color, #f6ad55) 60%, transparent));
+  filter:
+    drop-shadow(0 0 10px color-mix(in srgb, var(--room-color, #f6ad55) 50%, transparent))
+    drop-shadow(0 0 20px color-mix(in srgb, var(--room-color, #f6ad55) 25%, transparent));
+  animation: iconFloat 3s ease-in-out infinite;
 }
 
 .room--unlocked .room__name {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
+  font-weight: 500;
   color: var(--room-color, #f6ad55);
-  font-weight: bold;
-  margin-top: 4px;
-  text-shadow: 0 0 10px color-mix(in srgb, var(--room-color, #f6ad55) 30%, transparent);
+  margin-top: 5px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--room-color, #f6ad55) 30%, transparent);
 }
 
 .room--unlocked .room__status {
-  font-size: 0.55rem;
+  font-size: 0.5rem;
+  font-weight: 300;
   color: var(--bp-success);
-  margin-top: 2px;
+  margin-top: 3px;
+  letter-spacing: 1px;
 }
 
-/* Secret room: A Széf */
+/* ─── Secret Room: A Széf ─── */
 .room--secret {
   grid-column: 2 / 4;
   border-bottom: none;
 }
 
 .room--secret.room--locked {
-  border: 2px dashed rgba(214, 158, 46, 0.25);
+  border: 2px dashed rgba(214, 158, 46, 0.2);
   background:
     repeating-linear-gradient(
-      45deg,
+      -45deg,
       transparent,
-      transparent 10px,
-      rgba(214, 158, 46, 0.02) 10px,
-      rgba(214, 158, 46, 0.02) 20px
+      transparent 12px,
+      rgba(214, 158, 46, 0.02) 12px,
+      rgba(214, 158, 46, 0.02) 13px
     );
 }
 
-.room--secret.room--locked::before {
-  display: none;
-}
+.room--secret.room--locked::before { display: none; }
+.room--secret.room--locked::after { display: none; }
 
 .room--secret .room__status--locked {
-  font-size: 0.55rem;
-  color: var(--bp-text);
-  margin-top: 4px;
-  letter-spacing: 1px;
+  font-size: 0.5rem;
+  font-weight: 300;
+  color: var(--bp-text-dim);
+  margin-top: 6px;
+  letter-spacing: 2px;
 }
 
-/* Room entrance animation stagger */
-.room { opacity: 0; animation: roomAppear 0.4s ease forwards; }
-.room:nth-child(1)  { animation-delay: 0.8s; }
-.room:nth-child(2)  { animation-delay: 0.9s; }
-.room:nth-child(3)  { animation-delay: 1.0s; }
-.room:nth-child(4)  { animation-delay: 1.1s; }
-.room:nth-child(5)  { animation-delay: 1.2s; }
-.room:nth-child(6)  { animation-delay: 1.3s; }
-.room:nth-child(7)  { animation-delay: 1.4s; }
-.room:nth-child(8)  { animation-delay: 1.5s; }
-.room:nth-child(9)  { animation-delay: 1.6s; }
-.room:nth-child(10) { animation-delay: 1.7s; }
-.room:nth-child(11) { animation-delay: 1.8s; }
-.room:nth-child(12) { animation-delay: 2.0s; }
+/* ─── Room entrance stagger ─── */
+.room:nth-child(1)  { animation-delay: 1.0s; }
+.room:nth-child(2)  { animation-delay: 1.1s; }
+.room:nth-child(3)  { animation-delay: 1.2s; }
+.room:nth-child(4)  { animation-delay: 1.3s; }
+.room:nth-child(5)  { animation-delay: 1.4s; }
+.room:nth-child(6)  { animation-delay: 1.5s; }
+.room:nth-child(7)  { animation-delay: 1.6s; }
+.room:nth-child(8)  { animation-delay: 1.7s; }
+.room:nth-child(9)  { animation-delay: 1.8s; }
+.room:nth-child(10) { animation-delay: 1.9s; }
+.room:nth-child(11) { animation-delay: 2.0s; }
+.room:nth-child(12) { animation-delay: 2.3s; }
 
-/* === Back Button === */
+/* ══════════════════════════════
+   BACK BUTTON
+   ══════════════════════════════ */
+
 .back-btn {
   position: fixed;
-  top: 16px;
-  right: 16px;
+  top: 20px;
+  right: 20px;
   z-index: 200;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: white;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  font-size: 1.2rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s;
-  backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(12px);
 }
 
 .back-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: scale(1.1);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: scale(1.1) rotate(90deg);
+  color: white;
 }
 
-/* === Minigame & Content Containers === */
+/* ══════════════════════════════
+   MINIGAME & CONTENT
+   ══════════════════════════════ */
+
 #minigame-container,
 #content-container {
   width: 100%;
   max-width: 700px;
-  margin: 40px auto 0;
+  margin: 48px auto 0;
 }
 
-/* === Közös minijáték stílusok === */
 .minigame-title {
   font-family: var(--font-display);
-  font-size: 1.6rem;
+  font-weight: 700;
+  font-size: 1.8rem;
   color: var(--bp-accent);
   text-align: center;
   margin-bottom: 8px;
-  text-shadow: 0 0 20px rgba(246, 173, 85, 0.2);
+  text-shadow: 0 0 30px rgba(246, 173, 85, 0.2);
 }
 
 .minigame-instructions {
-  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 300;
   color: var(--bp-text);
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  letter-spacing: 0.5px;
 }
 
 .minigame-btn {
-  display: inline-block;
-  padding: 10px 24px;
-  background: linear-gradient(135deg, var(--bp-accent), #ed8936);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, var(--bp-accent), #f97316);
   color: var(--bp-bg);
   border: none;
-  border-radius: 8px;
-  font-family: var(--font-blueprint);
-  font-size: 0.9rem;
-  font-weight: bold;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
 
-.minigame-btn::after {
+/* Shine sweep on hover */
+.minigame-btn::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transform: translateX(-100%);
-  transition: transform 0.4s;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transition: left 0.5s ease;
 }
 
-.minigame-btn:hover::after {
-  transform: translateX(100%);
-}
+.minigame-btn:hover::before { left: 100%; }
 
 .minigame-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(246, 173, 85, 0.5);
+  transform: translateY(-3px);
+  box-shadow:
+    0 6px 20px rgba(246, 173, 85, 0.4),
+    0 2px 8px rgba(246, 173, 85, 0.2);
+}
+
+.minigame-btn:active {
+  transform: translateY(-1px);
 }
 
 .minigame-btn--secondary {
-  background: rgba(255, 255, 255, 0.06);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .minigame-btn--secondary:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.05);
 }
 
 .minigame-success {
   text-align: center;
-  padding: 40px 20px;
+  padding: 48px 20px;
 }
 
 .minigame-success h2 {
   font-family: var(--font-display);
+  font-weight: 700;
   font-size: 2rem;
   color: var(--bp-success);
   margin-bottom: 12px;
-  text-shadow: 0 0 20px rgba(104, 211, 145, 0.3);
+  text-shadow: 0 0 30px rgba(104, 211, 145, 0.3);
 }
 
-/* === Közös tartalom stílusok === */
+/* ─── Content styles ─── */
 .content-title {
   font-family: var(--font-display);
+  font-weight: 700;
   font-size: 1.8rem;
   text-align: center;
   margin-bottom: 24px;
@@ -557,48 +672,51 @@ body::before {
 
 .content-gallery img {
   width: 100%;
-  border-radius: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s;
 }
 
 .content-gallery img:hover {
-  transform: scale(1.03);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  transform: scale(1.04);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
 .content-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
   padding: 20px;
-  margin-bottom: 16px;
-  transition: border-color 0.3s, background 0.3s;
+  margin-bottom: 14px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
 }
 
 .content-card:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
 }
 
-/* === Reszponzív === */
+/* ══════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════ */
+
 @media (max-width: 768px) {
-  .room-grid {
-    grid-template-columns: repeat(3, 1fr);
-    margin: 20px 12px;
-  }
+  .room-grid { grid-template-columns: repeat(3, 1fr); }
   .room--secret { grid-column: 1 / -1; }
-  .room:nth-child(4n) { border-right: 1px solid var(--bp-wall); }
+  .room:nth-child(4n) { border-right: 1.5px solid var(--bp-wall); }
   .room:nth-child(3n) { border-right: none; }
+  .blueprint-frame { margin: 20px 12px 80px; }
+  .title-block { display: none; }
 }
 
 @media (max-width: 480px) {
-  .room-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .house-header { padding: 24px 16px 12px; }
+  .room-grid { grid-template-columns: repeat(2, 1fr); }
   .room { padding: 10px 6px; }
   .room--unlocked .room__icon { font-size: 1.4rem; }
-  .room:nth-child(3n) { border-right: 1px solid var(--bp-wall); }
+  .room:nth-child(3n) { border-right: 1.5px solid var(--bp-wall); }
   .room:nth-child(2n) { border-right: none; }
+  .house-header { padding: 28px 16px 12px; }
+  .compass-rose { display: none; }
 }

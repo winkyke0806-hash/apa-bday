@@ -20,6 +20,7 @@ const TOTAL_REGULAR = REGULAR_ROOMS.length;
 
 const grid = document.getElementById('room-grid');
 const progressBar = document.getElementById('progress-bar');
+const progressGlow = document.getElementById('progress-glow');
 const progressText = document.getElementById('progress-text');
 const minigameOverlay = document.getElementById('minigame-overlay');
 const minigameContainer = document.getElementById('minigame-container');
@@ -31,6 +32,7 @@ function updateProgressBar() {
   const count = getUnlockedCount();
   const pct = Math.round((count / TOTAL_REGULAR) * 100);
   progressBar.style.width = pct + '%';
+  progressGlow.style.width = pct + '%';
   progressText.textContent = `${count} / ${TOTAL_REGULAR} szoba felfedezve`;
 }
 
@@ -96,6 +98,29 @@ function randomDimension() {
   return `${w}m × ${h}m`;
 }
 
+// Particle burst when a room is unlocked
+function spawnUnlockParticles(roomEl, color) {
+  const rect = roomEl.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  for (let i = 0; i < 16; i++) {
+    const angle = (Math.PI * 2 * i) / 16;
+    const dist = 30 + Math.random() * 40;
+    const p = document.createElement('div');
+    p.className = 'unlock-particle';
+    p.style.left = cx + 'px';
+    p.style.top = cy + 'px';
+    p.style.background = color;
+    p.style.position = 'fixed';
+    p.style.zIndex = '999';
+    p.style.setProperty('--px', Math.cos(angle) * dist + 'px');
+    p.style.setProperty('--py', Math.sin(angle) * dist + 'px');
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 900);
+  }
+}
+
 async function onRoomClick(room) {
   const unlocked = isRoomUnlocked(room.id);
 
@@ -114,6 +139,15 @@ async function onRoomClick(room) {
         unlockRoom(room.id);
         showView('house');
         renderRooms();
+
+        // Find the newly unlocked room element and animate it
+        requestAnimationFrame(() => {
+          const roomEl = grid.querySelector(`[data-room-id="${room.id}"]`);
+          if (roomEl) {
+            roomEl.classList.add('room--just-unlocked');
+            spawnUnlockParticles(roomEl, room.color);
+          }
+        });
       });
       showView('minigame');
     }
@@ -131,28 +165,15 @@ function showView(view) {
 document.getElementById('back-to-house').addEventListener('click', () => showView('house'));
 document.getElementById('back-from-content').addEventListener('click', () => showView('house'));
 
-// Blueprint extras: compass + stamp
-function addBlueprintExtras() {
-  const compass = document.createElement('div');
-  compass.className = 'compass';
-  grid.appendChild(compass);
-
-  const stamp = document.createElement('div');
-  stamp.className = 'stamp';
-  stamp.textContent = '✦ JÓVÁHAGYVA — SZÜLINAPI MEGLEPETÉS ✦';
-  grid.appendChild(stamp);
-}
-
 // Loading sequence
 const loadingScreen = document.getElementById('loading-screen');
 
 function startLoadingSequence() {
   setTimeout(() => {
     loadingScreen.classList.add('hide');
-    setTimeout(() => loadingScreen.style.display = 'none', 800);
-  }, 1500);
+    setTimeout(() => loadingScreen.style.display = 'none', 1000);
+  }, 2000);
 }
 
 renderRooms();
-addBlueprintExtras();
 startLoadingSequence();

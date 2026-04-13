@@ -41,18 +41,35 @@ export function renderContent(container, room) {
 }
 
 function launchBigConfetti() {
-  const colors = ['#f6ad55', '#68d391', '#fc8181', '#63b3ed', '#b794f4', '#f687b3', '#ecc94b', '#4fd1c5'];
-  for (let i = 0; i < 80; i++) {
-    const piece = document.createElement('div');
-    piece.className = 'confetti-piece';
-    piece.style.left = Math.random() * 100 + '%';
-    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-    piece.style.width = (6 + Math.random() * 10) + 'px';
-    piece.style.height = (6 + Math.random() * 10) + 'px';
-    piece.style.setProperty('--fall-duration', (3 + Math.random() * 4) + 's');
-    piece.style.setProperty('--fall-delay', Math.random() * 2 + 's');
-    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-    document.body.appendChild(piece);
-    setTimeout(() => piece.remove(), 8000);
+  const colors = ['#f6ad55', '#68d391', '#fc8181', '#63b3ed', '#b794f4', '#f687b3', '#ecc94b', '#4fd1c5', '#fff'];
+  const shapes = ['confetti-piece--circle', 'confetti-piece--rect', 'confetti-piece--star', 'confetti-piece--heart'];
+
+  // 3 waves of confetti
+  for (let wave = 0; wave < 3; wave++) {
+    setTimeout(() => {
+      for (let i = 0; i < 40; i++) {
+        const piece = document.createElement('div');
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        const size = 6 + Math.random() * 14;
+        const rot = Math.floor(Math.random() * 720);
+
+        piece.className = `confetti-piece ${shape}`;
+        piece.style.left = (5 + Math.random() * 90) + '%';
+        piece.style.width = size + 'px';
+        piece.style.height = size + 'px';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.setProperty('--fall-duration', (3 + Math.random() * 4) + 's');
+        piece.style.setProperty('--fall-delay', Math.random() * 0.8 + 's');
+        piece.style.setProperty('--sway', (20 + Math.random() * 50) + 'px');
+        piece.style.setProperty('--rot1', rot * 0.25 + 'deg');
+        piece.style.setProperty('--rot2', rot * 0.5 + 'deg');
+        piece.style.setProperty('--rot3', rot * 0.75 + 'deg');
+        piece.style.setProperty('--rot4', rot * 0.9 + 'deg');
+        piece.style.setProperty('--rot5', rot + 'deg');
+
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 9000);
+      }
+    }, wave * 800);
   }
 }

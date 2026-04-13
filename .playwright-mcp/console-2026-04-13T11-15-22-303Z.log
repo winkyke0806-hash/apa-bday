@@ -1,0 +1,4 @@
+[      65ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:3002/js/app.js:0
+[    2427ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3002/css/style.css:0
+[    2427ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3002/css/animations.css:0
+[    4781ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3002/favicon.ico:0

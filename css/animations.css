@@ -1,160 +1,206 @@
-/* ============================================
+/* ══════════════════════════════════════════════
    ANIMATIONS — Blueprint Birthday House
-   ============================================ */
+   ══════════════════════════════════════════════ */
 
-/* === Loading: Pencil draw === */
-@keyframes pencilDraw {
-  0%   { transform: translateX(-20px) rotate(-10deg); opacity: 0.5; }
-  50%  { transform: translateX(20px) rotate(10deg); opacity: 1; }
-  100% { transform: translateX(-20px) rotate(-10deg); opacity: 0.5; }
+/* ─── Loading: SVG rooms draw in ─── */
+@keyframes drawRect {
+  to { stroke-dashoffset: 0; }
 }
 
-/* === Page entrance === */
+@keyframes dotPulse {
+  0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-6px); }
+}
+
+/* ─── Page entrance ─── */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-30px); }
+  from { opacity: 0; transform: translateY(-25px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.fade-in {
-  animation: fadeIn 0.5s ease forwards;
-}
+.fade-in { animation: fadeIn 0.5s ease forwards; }
 
-/* === Blueprint grid drawing in === */
+/* ─── Blueprint frame drawing ─── */
 @keyframes blueprintDraw {
   0% {
     opacity: 0;
-    clip-path: inset(0 100% 100% 0);
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
   }
-  40% {
+  50% {
     opacity: 1;
-    clip-path: inset(0 0 100% 0);
+    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
   }
   100% {
     opacity: 1;
-    clip-path: inset(0 0 0 0);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
   }
 }
 
-/* === Room appear (staggered) === */
+/* ─── Room appear (bouncy stagger) ─── */
 @keyframes roomAppear {
   0% {
     opacity: 0;
-    transform: scale(0.8);
+    transform: scale(0.6);
+    filter: blur(4px);
   }
-  60% {
+  70% {
     opacity: 1;
-    transform: scale(1.05);
+    transform: scale(1.06);
+    filter: blur(0);
   }
   100% {
     opacity: 1;
     transform: scale(1);
+    filter: blur(0);
   }
 }
 
-/* === Room glow (breathing) for unlocked rooms === */
+/* ─── Room glow (unlocked breathing) ─── */
 @keyframes roomGlow {
   from {
     box-shadow:
-      0 0 15px color-mix(in srgb, var(--room-color, #f6ad55) 15%, transparent),
-      inset 0 0 20px color-mix(in srgb, var(--room-color, #f6ad55) 3%, transparent);
+      0 0 12px color-mix(in srgb, var(--room-color, #f6ad55) 12%, transparent),
+      inset 0 0 15px color-mix(in srgb, var(--room-color, #f6ad55) 3%, transparent);
   }
   to {
     box-shadow:
-      0 0 30px color-mix(in srgb, var(--room-color, #f6ad55) 30%, transparent),
-      inset 0 0 40px color-mix(in srgb, var(--room-color, #f6ad55) 6%, transparent);
+      0 0 28px color-mix(in srgb, var(--room-color, #f6ad55) 25%, transparent),
+      inset 0 0 35px color-mix(in srgb, var(--room-color, #f6ad55) 6%, transparent);
   }
 }
 
-/* === Lock shake on hover === */
-@keyframes lockShake {
-  0%, 100% { transform: translateX(0) rotate(0); }
-  15% { transform: translateX(-3px) rotate(-5deg); }
-  30% { transform: translateX(3px) rotate(5deg); }
-  45% { transform: translateX(-2px) rotate(-3deg); }
-  60% { transform: translateX(2px) rotate(3deg); }
-  75% { transform: translateX(-1px) rotate(-1deg); }
-  90% { transform: translateX(1px) rotate(1deg); }
+/* ─── Icon float (unlocked rooms) ─── */
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
 }
 
-/* === Multi-stage room unlock === */
-@keyframes roomUnlockStage1 {
+/* ─── Lock shake on hover ─── */
+@keyframes lockShake {
+  0%, 100% { transform: rotate(0); }
+  10% { transform: rotate(-8deg); }
+  20% { transform: rotate(8deg); }
+  30% { transform: rotate(-6deg); }
+  40% { transform: rotate(6deg); }
+  50% { transform: rotate(-3deg); }
+  60% { transform: rotate(3deg); }
+  70% { transform: rotate(-1deg); }
+}
+
+/* ─── Multi-stage room unlock ─── */
+@keyframes roomUnlockBurst {
   0% {
+    filter: brightness(1) saturate(0);
+    transform: scale(1);
     border-color: var(--bp-wall);
-    background: var(--bp-locked);
-    filter: brightness(1);
+    background: transparent;
+  }
+  15% {
+    filter: brightness(2.5) saturate(0.5);
+    transform: scale(1.15);
   }
   30% {
-    filter: brightness(1.8);
-    border-color: white;
+    filter: brightness(1.8) saturate(1);
+    transform: scale(1.05);
   }
   50% {
-    transform: scale(1.12);
-    filter: brightness(1.4);
-  }
-  70% {
+    filter: brightness(1.3);
+    transform: scale(1.08);
     border-color: var(--room-color, #f6ad55);
+  }
+  75% {
     filter: brightness(1.1);
+    transform: scale(1.02);
   }
   100% {
-    transform: scale(1);
-    border-color: color-mix(in srgb, var(--room-color, #f6ad55) 40%, transparent);
-    background: radial-gradient(ellipse at center, color-mix(in srgb, var(--room-color, #f6ad55) 8%, transparent), transparent 70%);
     filter: brightness(1);
+    transform: scale(1);
+    border-color: color-mix(in srgb, var(--room-color, #f6ad55) 30%, transparent);
+    background: radial-gradient(ellipse at center, color-mix(in srgb, var(--room-color, #f6ad55) 10%, transparent), transparent 80%);
   }
 }
 
 .room--just-unlocked {
-  animation: roomUnlockStage1 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: roomUnlockBurst 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  z-index: 10;
 }
 
-/* Flash of light on unlock */
-.room--just-unlocked::after {
-  content: '';
+/* Light ring expanding outward on unlock */
+.room--just-unlocked .room__unlock-ring {
   position: absolute;
-  inset: -10px;
-  background: radial-gradient(circle, rgba(255,255,255,0.3), transparent 70%);
-  animation: unlockFlash 0.6s ease-out forwards;
+  inset: 0;
+  border: 2px solid var(--room-color, #f6ad55);
+  border-radius: 4px;
+  animation: unlockRing 0.8s ease-out forwards;
   pointer-events: none;
-  border-radius: 8px;
 }
 
-@keyframes unlockFlash {
-  0% { opacity: 1; transform: scale(0.5); }
-  100% { opacity: 0; transform: scale(2); }
+@keyframes unlockRing {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
 }
 
-/* === Progress bar shimmer === */
+/* Particle burst on unlock */
+@keyframes unlockParticle {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--px, 30px), var(--py, -30px)) scale(0);
+  }
+}
+
+.unlock-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: unlockParticle 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* ─── Progress bar shimmer ─── */
 @keyframes shimmer {
-  0% { transform: translateX(-200%); }
-  50% { transform: translateX(200%); }
+  0%   { transform: translateX(-200%); }
+  50%  { transform: translateX(200%); }
   100% { transform: translateX(200%); }
 }
 
-/* === Confetti — physics-based === */
+/* ─── Confetti (physics-based with sway) ─── */
 @keyframes confettiFall {
   0% {
-    transform: translateY(-100vh) rotate(0deg) scale(1);
+    transform: translateY(-10vh) rotate(0deg) translateX(0);
     opacity: 1;
   }
-  25% {
-    transform: translateY(25vh) rotate(180deg) translateX(var(--sway, 20px)) scale(1);
-    opacity: 1;
+  20% {
+    transform: translateY(20vh) rotate(var(--rot1, 180deg)) translateX(var(--sway, 25px));
   }
-  50% {
-    transform: translateY(50vh) rotate(360deg) translateX(calc(var(--sway, 20px) * -1)) scale(0.9);
-    opacity: 0.9;
+  40% {
+    transform: translateY(40vh) rotate(var(--rot2, 360deg)) translateX(calc(var(--sway, 25px) * -0.7));
   }
-  75% {
-    transform: translateY(75vh) rotate(540deg) translateX(var(--sway, 20px)) scale(0.7);
-    opacity: 0.6;
+  60% {
+    transform: translateY(60vh) rotate(var(--rot3, 540deg)) translateX(calc(var(--sway, 25px) * 0.5));
+    opacity: 0.8;
+  }
+  80% {
+    transform: translateY(80vh) rotate(var(--rot4, 650deg)) translateX(calc(var(--sway, 25px) * -0.3));
+    opacity: 0.4;
   }
   100% {
-    transform: translateY(105vh) rotate(720deg) translateX(0) scale(0.5);
+    transform: translateY(105vh) rotate(var(--rot5, 720deg)) translateX(0);
     opacity: 0;
   }
 }
@@ -163,66 +209,21 @@
   position: fixed;
   top: -20px;
   z-index: 1000;
-  animation: confettiFall var(--fall-duration, 3s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation: confettiFall var(--fall-duration, 3.5s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   animation-delay: var(--fall-delay, 0s);
   pointer-events: none;
+  will-change: transform, opacity;
 }
 
-/* Confetti shape variations */
-.confetti-piece--circle {
-  border-radius: 50%;
-}
+.confetti-piece--circle { border-radius: 50%; }
+.confetti-piece--rect   { border-radius: 2px; }
+.confetti-piece--star   { clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+.confetti-piece--heart  { clip-path: polygon(50% 85%, 5% 40%, 15% 10%, 50% 30%, 85% 10%, 95% 40%); }
 
-.confetti-piece--rect {
-  border-radius: 2px;
-}
-
-.confetti-piece--star {
-  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-}
-
-/* === Pulse (hint button) === */
+/* ─── Pulse (hint button) ─── */
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(246, 173, 85, 0.3); }
+  50%      { transform: scale(1.04); box-shadow: 0 0 0 8px rgba(246, 173, 85, 0); }
 }
 
-.pulse {
-  animation: pulse 2s ease-in-out infinite;
-}
-
-/* === Background grid pulse (subtle) === */
-@keyframes gridPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-/* === Overlay zoom-in entrance === */
-@keyframes overlayZoomIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* === Stamp watermark === */
-.stamp {
-  position: absolute;
-  bottom: -60px;
-  left: 50%;
-  transform: translateX(-50%) rotate(-8deg);
-  border: 3px solid rgba(246, 173, 85, 0.12);
-  border-radius: 8px;
-  padding: 6px 18px;
-  font-size: 0.55rem;
-  color: rgba(246, 173, 85, 0.15);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  font-weight: bold;
-  pointer-events: none;
-  white-space: nowrap;
-}
+.pulse { animation: pulse 2s ease-in-out infinite; }
