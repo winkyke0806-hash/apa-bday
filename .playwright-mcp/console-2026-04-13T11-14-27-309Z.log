@@ -1,2 +1,0 @@
-[    2474ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3001/js/progress.js:0
-[    2757ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3001/favicon.ico:0

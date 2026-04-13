@@ -1,6 +1,7 @@
 .env
 .env.local
 .superpowers/
+.playwright-mcp/
 .DS_Store
 Thumbs.db
 node_modules/
