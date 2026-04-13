@@ -126,25 +126,15 @@
   }
 }
 
-/* Unlocked room breathing glow — slower, more dramatic */
+/* Unlocked room breathing — brightness + scale pulse */
 @keyframes roomGlow {
-  0% {
-    box-shadow:
-      0 0 10px color-mix(in srgb, var(--room-color, #f6ad55) 10%, transparent),
-      0 0 30px color-mix(in srgb, var(--room-color, #f6ad55) 5%, transparent),
-      inset 0 0 15px color-mix(in srgb, var(--room-color, #f6ad55) 3%, transparent);
+  0%, 100% {
+    filter: brightness(1);
+    transform: scale(1);
   }
   50% {
-    box-shadow:
-      0 0 20px color-mix(in srgb, var(--room-color, #f6ad55) 20%, transparent),
-      0 0 50px color-mix(in srgb, var(--room-color, #f6ad55) 8%, transparent),
-      inset 0 0 30px color-mix(in srgb, var(--room-color, #f6ad55) 5%, transparent);
-  }
-  100% {
-    box-shadow:
-      0 0 10px color-mix(in srgb, var(--room-color, #f6ad55) 10%, transparent),
-      0 0 30px color-mix(in srgb, var(--room-color, #f6ad55) 5%, transparent),
-      inset 0 0 15px color-mix(in srgb, var(--room-color, #f6ad55) 3%, transparent);
+    filter: brightness(1.15);
+    transform: scale(1.01);
   }
 }
 
@@ -221,8 +211,9 @@
   100% {
     filter: brightness(1) saturate(1);
     transform: scale(1);
-    border-color: color-mix(in srgb, var(--room-color, #f6ad55) 30%, transparent);
-    background: radial-gradient(ellipse at center, color-mix(in srgb, var(--room-color, #f6ad55) 10%, transparent), transparent 80%);
+    /* Final border/background set by JS inline styles after animation */
+    border-color: var(--room-color, #f6ad55);
+    opacity: 1;
   }
 }
 

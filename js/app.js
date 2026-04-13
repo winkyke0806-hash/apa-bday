@@ -46,10 +46,14 @@ function renderRooms() {
     el.dataset.roomId = room.id;
 
     if (unlocked) {
-      el.style.setProperty('--room-color', room.color);
+      const c = room.color;
+      el.style.setProperty('--room-color', c);
+      el.style.borderColor = c + '88';
+      el.style.background = `radial-gradient(ellipse at center, ${c}22 0%, ${c}08 50%, transparent 80%)`;
+      el.style.boxShadow = `0 0 15px ${c}33, 0 0 40px ${c}15, inset 0 0 25px ${c}0a`;
       el.innerHTML = `
-        <div class="room__icon">${room.icon}</div>
-        <div class="room__name">${room.name}</div>
+        <div class="room__icon" style="filter:drop-shadow(0 0 8px ${c}88) drop-shadow(0 0 16px ${c}44);">${room.icon}</div>
+        <div class="room__name" style="color:${c}; text-shadow:0 0 10px ${c}55;">${room.name}</div>
         <div class="room__status">✓ Felfedezve</div>
       `;
     } else {
@@ -73,11 +77,15 @@ function renderRooms() {
   szefEl.dataset.roomId = szef.id;
 
   if (szefUnlocked) {
-    szefEl.style.setProperty('--room-color', szef.color);
+    const sc = szef.color;
+    szefEl.style.setProperty('--room-color', sc);
+    szefEl.style.borderColor = sc + '88';
+    szefEl.style.background = `radial-gradient(ellipse at center, ${sc}25, ${sc}08 60%, transparent)`;
+    szefEl.style.boxShadow = `0 0 20px ${sc}44, 0 0 50px ${sc}22, inset 0 0 30px ${sc}11`;
     szefEl.innerHTML = `
-      <div class="room__icon">${szef.icon}</div>
-      <div class="room__name">${szef.name}</div>
-      <div class="room__status">🔓 Megnyílt!</div>
+      <div class="room__icon" style="font-size:2.2rem; filter:drop-shadow(0 0 12px ${sc}aa) drop-shadow(0 0 24px ${sc}55); animation:iconFloat 3s ease-in-out infinite;">🔓</div>
+      <div class="room__name" style="color:${sc}; font-family:var(--font-display); font-weight:700; font-size:0.8rem; text-shadow:0 0 12px ${sc}66;">${szef.name}</div>
+      <div class="room__status" style="color:#68d391;">✨ Megnyílt! ✨</div>
     `;
     szefEl.addEventListener('click', () => onRoomClick(szef));
   } else {

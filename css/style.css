@@ -442,50 +442,45 @@ body::before {
 
 /* ─── Unlocked Room ─── */
 .room--unlocked {
-  background: radial-gradient(
-    ellipse at center,
-    color-mix(in srgb, var(--room-color, #f6ad55) 10%, transparent),
-    transparent 80%
-  );
-  border-color: color-mix(in srgb, var(--room-color, #f6ad55) 30%, transparent);
-  animation: roomGlow 4s ease-in-out infinite alternate;
+  /* Background and border set via inline style from JS for per-room color */
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 4px;
+  animation: roomGlow 5s ease-in-out infinite;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s;
 }
 
 .room--unlocked::after { display: none; }
 .room--unlocked::before { display: none; }
 
 .room--unlocked:hover {
-  background: radial-gradient(
-    ellipse at center,
-    color-mix(in srgb, var(--room-color, #f6ad55) 18%, transparent),
-    transparent 80%
-  );
-  transform: scale(1.04);
+  transform: scale(1.06) translateY(-2px);
+  filter: brightness(1.15);
+  z-index: 5;
 }
 
 .room--unlocked .room__icon {
-  font-size: 1.8rem;
-  filter:
-    drop-shadow(0 0 10px color-mix(in srgb, var(--room-color, #f6ad55) 50%, transparent))
-    drop-shadow(0 0 20px color-mix(in srgb, var(--room-color, #f6ad55) 25%, transparent));
-  animation: iconFloat 3s ease-in-out infinite;
+  font-size: 2rem;
+  animation: iconFloat 4s ease-in-out infinite;
+  /* drop-shadow set via inline style from JS */
 }
 
 .room--unlocked .room__name {
-  font-size: 0.6rem;
-  font-weight: 500;
-  color: var(--room-color, #f6ad55);
-  margin-top: 5px;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-top: 6px;
   letter-spacing: 0.5px;
-  text-shadow: 0 0 12px color-mix(in srgb, var(--room-color, #f6ad55) 30%, transparent);
+  /* color set via inline style from JS */
 }
 
 .room--unlocked .room__status {
   font-size: 0.5rem;
   font-weight: 300;
   color: var(--bp-success);
-  margin-top: 3px;
+  margin-top: 4px;
   letter-spacing: 1px;
+  opacity: 0.8;
 }
 
 /* ─── Secret Room: A Széf ─── */
