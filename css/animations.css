@@ -1,124 +1,225 @@
-/* ══════════════════════════════════════════════
-   ANIMATIONS — Blueprint Birthday House
-   ══════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   ANIMATIONS — Blueprint Birthday House — PRO EDITION
+   ══════════════════════════════════════════════════════════ */
 
-/* ─── Loading: SVG rooms draw in ─── */
+/* ═══════════════════════════
+   1. LOADING SCREEN
+   ═══════════════════════════ */
+
 @keyframes drawRect {
-  to { stroke-dashoffset: 0; }
+  0%   { stroke-dashoffset: 200; opacity: 0; }
+  20%  { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 1; }
 }
 
 @keyframes dotPulse {
-  0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
-  40% { opacity: 1; transform: translateY(-6px); }
+  0%, 80%, 100% { opacity: 0.15; transform: translateY(0) scale(1); }
+  40% { opacity: 1; transform: translateY(-8px) scale(1.3); }
 }
 
-/* ─── Page entrance ─── */
+/* Loading SVG line sweep */
+@keyframes loadingSweep {
+  0%   { stroke-dashoffset: 400; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.loading-line {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: loadingSweep 2s ease-in-out forwards;
+}
+
+.loading-outer {
+  stroke-dasharray: 640;
+  stroke-dashoffset: 640;
+  animation: loadingSweep 2.5s ease-in-out forwards;
+}
+
+/* ═══════════════════════════
+   2. PAGE ENTRANCE
+   ═══════════════════════════ */
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
 @keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-25px); }
+  from { opacity: 0; transform: translateY(-30px) scale(0.95); filter: blur(6px); }
+  to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.fade-in { animation: fadeIn 0.5s ease forwards; }
+.fade-in { animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
 
-/* ─── Blueprint frame drawing ─── */
+/* Title shimmer effect */
+@keyframes titleShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Header line expand */
+@keyframes lineExpand {
+  from { width: 0; opacity: 0; }
+  to   { width: 80px; opacity: 0.5; }
+}
+
+/* ═══════════════════════════
+   3. BLUEPRINT FRAME
+   ═══════════════════════════ */
+
+/* Two-phase draw: horizontal sweep, then vertical drop */
 @keyframes blueprintDraw {
   0% {
     opacity: 0;
-    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+    clip-path: inset(0 100% 100% 0);
+    filter: blur(3px);
   }
-  50% {
-    opacity: 1;
-    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+  30% {
+    opacity: 0.6;
+    clip-path: inset(0 0 100% 0);
+    filter: blur(1px);
+  }
+  60% {
+    opacity: 0.9;
+    clip-path: inset(0 0 30% 0);
+    filter: blur(0);
   }
   100% {
     opacity: 1;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    clip-path: inset(0 0 0 0);
+    filter: blur(0);
   }
 }
 
-/* ─── Room appear (bouncy stagger) ─── */
+/* ═══════════════════════════
+   4. ROOM ANIMATIONS
+   ═══════════════════════════ */
+
+/* Staggered pop-in with elastic overshoot */
 @keyframes roomAppear {
   0% {
     opacity: 0;
-    transform: scale(0.6);
-    filter: blur(4px);
+    transform: scale(0) rotate(-5deg);
+    filter: blur(8px) brightness(2);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12) rotate(1deg);
+    filter: blur(0) brightness(1.2);
   }
   70% {
-    opacity: 1;
-    transform: scale(1.06);
-    filter: blur(0);
+    transform: scale(0.97) rotate(-0.5deg);
+    filter: brightness(1.05);
+  }
+  85% {
+    transform: scale(1.02) rotate(0deg);
   }
   100% {
     opacity: 1;
-    transform: scale(1);
-    filter: blur(0);
+    transform: scale(1) rotate(0deg);
+    filter: blur(0) brightness(1);
   }
 }
 
-/* ─── Room glow (unlocked breathing) ─── */
+/* Unlocked room breathing glow — slower, more dramatic */
 @keyframes roomGlow {
-  from {
+  0% {
     box-shadow:
-      0 0 12px color-mix(in srgb, var(--room-color, #f6ad55) 12%, transparent),
+      0 0 10px color-mix(in srgb, var(--room-color, #f6ad55) 10%, transparent),
+      0 0 30px color-mix(in srgb, var(--room-color, #f6ad55) 5%, transparent),
       inset 0 0 15px color-mix(in srgb, var(--room-color, #f6ad55) 3%, transparent);
   }
-  to {
+  50% {
     box-shadow:
-      0 0 28px color-mix(in srgb, var(--room-color, #f6ad55) 25%, transparent),
-      inset 0 0 35px color-mix(in srgb, var(--room-color, #f6ad55) 6%, transparent);
+      0 0 20px color-mix(in srgb, var(--room-color, #f6ad55) 20%, transparent),
+      0 0 50px color-mix(in srgb, var(--room-color, #f6ad55) 8%, transparent),
+      inset 0 0 30px color-mix(in srgb, var(--room-color, #f6ad55) 5%, transparent);
+  }
+  100% {
+    box-shadow:
+      0 0 10px color-mix(in srgb, var(--room-color, #f6ad55) 10%, transparent),
+      0 0 30px color-mix(in srgb, var(--room-color, #f6ad55) 5%, transparent),
+      inset 0 0 15px color-mix(in srgb, var(--room-color, #f6ad55) 3%, transparent);
   }
 }
 
-/* ─── Icon float (unlocked rooms) ─── */
+/* Icon floating with slight rotation */
 @keyframes iconFloat {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-4px); }
+  0%   { transform: translateY(0) rotate(0deg) scale(1); }
+  25%  { transform: translateY(-3px) rotate(2deg) scale(1.02); }
+  50%  { transform: translateY(-5px) rotate(0deg) scale(1.04); }
+  75%  { transform: translateY(-3px) rotate(-2deg) scale(1.02); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
 }
 
-/* ─── Lock shake on hover ─── */
+/* Lock shake — more aggressive, with scale */
 @keyframes lockShake {
-  0%, 100% { transform: rotate(0); }
-  10% { transform: rotate(-8deg); }
-  20% { transform: rotate(8deg); }
-  30% { transform: rotate(-6deg); }
-  40% { transform: rotate(6deg); }
-  50% { transform: rotate(-3deg); }
-  60% { transform: rotate(3deg); }
-  70% { transform: rotate(-1deg); }
+  0%   { transform: rotate(0) scale(1); }
+  10%  { transform: rotate(-12deg) scale(1.1); }
+  20%  { transform: rotate(10deg) scale(1.15); }
+  30%  { transform: rotate(-8deg) scale(1.1); }
+  40%  { transform: rotate(8deg) scale(1.05); }
+  50%  { transform: rotate(-4deg) scale(1.03); }
+  60%  { transform: rotate(4deg) scale(1.01); }
+  70%  { transform: rotate(-2deg); }
+  80%  { transform: rotate(1deg); }
+  100% { transform: rotate(0) scale(1); }
 }
 
-/* ─── Multi-stage room unlock ─── */
+/* Locked room hover — scanline hint */
+@keyframes scanline {
+  0%   { top: -10%; opacity: 0; }
+  10%  { opacity: 0.3; }
+  90%  { opacity: 0.3; }
+  100% { top: 110%; opacity: 0; }
+}
+
+/* ═══════════════════════════
+   5. ROOM UNLOCK — SPECTACULAR
+   ═══════════════════════════ */
+
+/* Main unlock: white flash → color flood → settle */
 @keyframes roomUnlockBurst {
   0% {
-    filter: brightness(1) saturate(0);
+    filter: brightness(1) saturate(0) blur(0px);
     transform: scale(1);
     border-color: var(--bp-wall);
     background: transparent;
   }
-  15% {
-    filter: brightness(2.5) saturate(0.5);
-    transform: scale(1.15);
+  8% {
+    filter: brightness(4) saturate(0) blur(2px);
+    transform: scale(1.2);
+    background: rgba(255, 255, 255, 0.3);
+  }
+  16% {
+    filter: brightness(2.5) saturate(0.5) blur(0);
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.1);
   }
   30% {
-    filter: brightness(1.8) saturate(1);
-    transform: scale(1.05);
+    filter: brightness(1.8) saturate(1.2);
+    transform: scale(1.12);
+    border-color: white;
   }
   50% {
-    filter: brightness(1.3);
-    transform: scale(1.08);
+    filter: brightness(1.3) saturate(1);
+    transform: scale(1.05);
     border-color: var(--room-color, #f6ad55);
   }
-  75% {
+  70% {
     filter: brightness(1.1);
+    transform: scale(0.98);
+  }
+  85% {
     transform: scale(1.02);
   }
   100% {
-    filter: brightness(1);
+    filter: brightness(1) saturate(1);
     transform: scale(1);
     border-color: color-mix(in srgb, var(--room-color, #f6ad55) 30%, transparent);
     background: radial-gradient(ellipse at center, color-mix(in srgb, var(--room-color, #f6ad55) 10%, transparent), transparent 80%);
@@ -126,104 +227,185 @@
 }
 
 .room--just-unlocked {
-  animation: roomUnlockBurst 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  animation: roomUnlockBurst 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
   z-index: 10;
 }
 
-/* Light ring expanding outward on unlock */
-.room--just-unlocked .room__unlock-ring {
-  position: absolute;
-  inset: 0;
-  border: 2px solid var(--room-color, #f6ad55);
-  border-radius: 4px;
-  animation: unlockRing 0.8s ease-out forwards;
-  pointer-events: none;
-}
-
+/* Expanding ring 1 */
 @keyframes unlockRing {
-  0% {
-    opacity: 0.8;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.8);
-  }
+  0%   { opacity: 0.9; transform: scale(1); border-width: 3px; }
+  100% { opacity: 0; transform: scale(2.2); border-width: 0.5px; }
 }
 
-/* Particle burst on unlock */
+/* Expanding ring 2 (delayed) */
+@keyframes unlockRing2 {
+  0%   { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 0; transform: scale(2.8); }
+}
+
+/* Particle burst — fly out with trail */
 @keyframes unlockParticle {
   0% {
     opacity: 1;
-    transform: translate(0, 0) scale(1);
+    transform: translate(0, 0) scale(1.5);
+    filter: blur(0);
+  }
+  40% {
+    opacity: 1;
+    filter: blur(0);
   }
   100% {
     opacity: 0;
-    transform: translate(var(--px, 30px), var(--py, -30px)) scale(0);
+    transform: translate(var(--px, 40px), var(--py, -40px)) scale(0);
+    filter: blur(2px);
   }
 }
 
 .unlock-particle {
-  position: absolute;
-  width: 4px;
-  height: 4px;
+  position: fixed;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   pointer-events: none;
-  animation: unlockParticle 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: unlockParticle 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  box-shadow: 0 0 6px currentColor;
 }
 
-/* ─── Progress bar shimmer ─── */
+/* Unlock flash overlay */
+@keyframes unlockFlash {
+  0%   { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+/* ═══════════════════════════
+   6. PROGRESS BAR
+   ═══════════════════════════ */
+
 @keyframes shimmer {
-  0%   { transform: translateX(-200%); }
-  50%  { transform: translateX(200%); }
-  100% { transform: translateX(200%); }
+  0%   { transform: translateX(-300%); }
+  40%  { transform: translateX(300%); }
+  100% { transform: translateX(300%); }
 }
 
-/* ─── Confetti (physics-based with sway) ─── */
+/* Pulse when progress changes */
+@keyframes progressPulse {
+  0%   { filter: brightness(1); }
+  50%  { filter: brightness(1.5); }
+  100% { filter: brightness(1); }
+}
+
+/* ═══════════════════════════
+   7. CONFETTI — CINEMA QUALITY
+   ═══════════════════════════ */
+
 @keyframes confettiFall {
   0% {
-    transform: translateY(-10vh) rotate(0deg) translateX(0);
-    opacity: 1;
-  }
-  20% {
-    transform: translateY(20vh) rotate(var(--rot1, 180deg)) translateX(var(--sway, 25px));
-  }
-  40% {
-    transform: translateY(40vh) rotate(var(--rot2, 360deg)) translateX(calc(var(--sway, 25px) * -0.7));
-  }
-  60% {
-    transform: translateY(60vh) rotate(var(--rot3, 540deg)) translateX(calc(var(--sway, 25px) * 0.5));
-    opacity: 0.8;
-  }
-  80% {
-    transform: translateY(80vh) rotate(var(--rot4, 650deg)) translateX(calc(var(--sway, 25px) * -0.3));
-    opacity: 0.4;
-  }
-  100% {
-    transform: translateY(105vh) rotate(var(--rot5, 720deg)) translateX(0);
+    transform: translateY(-15vh) rotate(0deg) translateX(0) scaleX(1);
     opacity: 0;
   }
+  5% {
+    opacity: 1;
+  }
+  15% {
+    transform: translateY(15vh) rotate(var(--rot1, 120deg)) translateX(var(--sway, 30px)) scaleX(0.8);
+  }
+  30% {
+    transform: translateY(30vh) rotate(var(--rot2, 280deg)) translateX(calc(var(--sway, 30px) * -0.8)) scaleX(1);
+  }
+  45% {
+    transform: translateY(45vh) rotate(var(--rot3, 420deg)) translateX(calc(var(--sway, 30px) * 0.6)) scaleX(0.6);
+    opacity: 0.9;
+  }
+  60% {
+    transform: translateY(60vh) rotate(var(--rot4, 540deg)) translateX(calc(var(--sway, 30px) * -0.4)) scaleX(1);
+    opacity: 0.7;
+  }
+  75% {
+    transform: translateY(75vh) rotate(var(--rot4, 620deg)) translateX(calc(var(--sway, 30px) * 0.2)) scaleX(0.7);
+    opacity: 0.4;
+  }
+  90% {
+    opacity: 0.15;
+  }
+  100% {
+    transform: translateY(108vh) rotate(var(--rot5, 720deg)) translateX(0) scaleX(1);
+    opacity: 0;
+  }
+}
+
+/* Confetti flip (alternating axis) */
+@keyframes confettiFlip {
+  0%   { transform: perspective(200px) rotateX(0deg) rotateY(0deg); }
+  25%  { transform: perspective(200px) rotateX(90deg) rotateY(45deg); }
+  50%  { transform: perspective(200px) rotateX(180deg) rotateY(90deg); }
+  75%  { transform: perspective(200px) rotateX(270deg) rotateY(135deg); }
+  100% { transform: perspective(200px) rotateX(360deg) rotateY(180deg); }
 }
 
 .confetti-piece {
   position: fixed;
   top: -20px;
   z-index: 1000;
-  animation: confettiFall var(--fall-duration, 3.5s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation:
+    confettiFall var(--fall-duration, 4s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards,
+    confettiFlip var(--flip-duration, 2s) linear infinite;
   animation-delay: var(--fall-delay, 0s);
   pointer-events: none;
   will-change: transform, opacity;
 }
 
-.confetti-piece--circle { border-radius: 50%; }
-.confetti-piece--rect   { border-radius: 2px; }
-.confetti-piece--star   { clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
-.confetti-piece--heart  { clip-path: polygon(50% 85%, 5% 40%, 15% 10%, 50% 30%, 85% 10%, 95% 40%); }
+.confetti-piece--circle {
+  border-radius: 50%;
+}
 
-/* ─── Pulse (hint button) ─── */
+.confetti-piece--rect {
+  border-radius: 1px;
+  width: var(--w, 10px) !important;
+  height: var(--h, 6px) !important;
+}
+
+.confetti-piece--star {
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.confetti-piece--heart {
+  clip-path: polygon(50% 85%, 5% 40%, 15% 10%, 50% 30%, 85% 10%, 95% 40%);
+}
+
+.confetti-piece--ribbon {
+  width: 3px !important;
+  height: 16px !important;
+  border-radius: 2px;
+}
+
+/* ═══════════════════════════
+   8. OVERLAY TRANSITIONS
+   ═══════════════════════════ */
+
+/* Content cards stagger in */
+@keyframes cardSlideIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ═══════════════════════════
+   9. UTILITY ANIMATIONS
+   ═══════════════════════════ */
+
 @keyframes pulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(246, 173, 85, 0.3); }
-  50%      { transform: scale(1.04); box-shadow: 0 0 0 8px rgba(246, 173, 85, 0); }
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(246, 173, 85, 0.4); }
+  50%      { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(246, 173, 85, 0); }
 }
 
 .pulse { animation: pulse 2s ease-in-out infinite; }
+
+@keyframes gentleBounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+/* Glow pulse for important elements */
+@keyframes glowPulse {
+  0%, 100% { filter: drop-shadow(0 0 3px var(--glow-color, var(--bp-accent))); }
+  50%      { filter: drop-shadow(0 0 12px var(--glow-color, var(--bp-accent))) drop-shadow(0 0 20px var(--glow-color, var(--bp-accent))); }
+}

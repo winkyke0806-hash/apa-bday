@@ -69,30 +69,35 @@ function showHint(container, text) {
 
 function launchMiniConfetti() {
   const colors = ['#f6ad55', '#68d391', '#fc8181', '#63b3ed', '#b794f4', '#f687b3', '#ecc94b', '#4fd1c5'];
-  const shapes = ['confetti-piece--circle', 'confetti-piece--rect', 'confetti-piece--star', 'confetti-piece--heart'];
+  const shapes = ['confetti-piece--circle', 'confetti-piece--rect', 'confetti-piece--star', 'confetti-piece--heart', 'confetti-piece--ribbon'];
 
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 55; i++) {
     const piece = document.createElement('div');
     const shape = shapes[Math.floor(Math.random() * shapes.length)];
-    const size = 5 + Math.random() * 12;
-    const rot = Math.floor(Math.random() * 720);
+    const size = 6 + Math.random() * 12;
+    const rot = 200 + Math.floor(Math.random() * 600);
 
     piece.className = `confetti-piece ${shape}`;
-    piece.style.left = (10 + Math.random() * 80) + '%';
+    piece.style.left = (5 + Math.random() * 90) + '%';
     piece.style.width = size + 'px';
     piece.style.height = size + 'px';
     piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-    piece.style.setProperty('--fall-duration', (3 + Math.random() * 3) + 's');
-    piece.style.setProperty('--fall-delay', Math.random() * 1 + 's');
-    piece.style.setProperty('--sway', (20 + Math.random() * 40) + 'px');
-    piece.style.setProperty('--rot1', rot * 0.25 + 'deg');
-    piece.style.setProperty('--rot2', rot * 0.5 + 'deg');
-    piece.style.setProperty('--rot3', rot * 0.75 + 'deg');
-    piece.style.setProperty('--rot4', rot * 0.9 + 'deg');
+    piece.style.setProperty('--fall-duration', (3.5 + Math.random() * 3) + 's');
+    piece.style.setProperty('--fall-delay', Math.random() * 1.2 + 's');
+    piece.style.setProperty('--flip-duration', (1 + Math.random() * 2) + 's');
+    piece.style.setProperty('--sway', (20 + Math.random() * 50) + 'px');
+    piece.style.setProperty('--rot1', rot * 0.17 + 'deg');
+    piece.style.setProperty('--rot2', rot * 0.39 + 'deg');
+    piece.style.setProperty('--rot3', rot * 0.58 + 'deg');
+    piece.style.setProperty('--rot4', rot * 0.78 + 'deg');
     piece.style.setProperty('--rot5', rot + 'deg');
+    if (shape === 'confetti-piece--rect') {
+      piece.style.setProperty('--w', (6 + Math.random() * 10) + 'px');
+      piece.style.setProperty('--h', (3 + Math.random() * 5) + 'px');
+    }
 
     document.body.appendChild(piece);
-    setTimeout(() => piece.remove(), 8000);
+    setTimeout(() => piece.remove(), 9000);
   }
 }
 

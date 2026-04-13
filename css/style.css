@@ -398,18 +398,24 @@ body::before {
   height: 20px;
 }
 
-/* Hover: room lights up subtly */
+/* Hover: room lights up with scanline */
 .room--locked:hover {
-  background: rgba(100, 170, 255, 0.04);
+  background: rgba(100, 170, 255, 0.05);
+  border-color: var(--bp-line-strong);
 }
 
+/* Scanline sweep on hover */
 .room--locked:hover::after {
-  opacity: 0;
+  opacity: 1;
+  background:
+    linear-gradient(180deg, transparent 40%, rgba(100, 170, 255, 0.08) 50%, transparent 60%);
+  animation: scanline 1.5s ease-in-out;
 }
 
 .room--locked:hover .room__icon {
-  animation: lockShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97);
-  opacity: 0.6;
+  animation: lockShake 0.7s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  opacity: 0.7;
+  filter: grayscale(0.5);
 }
 
 .room--locked .room__icon {

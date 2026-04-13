@@ -98,26 +98,61 @@ function randomDimension() {
   return `${w}m × ${h}m`;
 }
 
-// Particle burst when a room is unlocked
-function spawnUnlockParticles(roomEl, color) {
+// Spectacular unlock effect
+function spawnUnlockEffect(roomEl, color) {
   const rect = roomEl.getBoundingClientRect();
   const cx = rect.left + rect.width / 2;
   const cy = rect.top + rect.height / 2;
 
-  for (let i = 0; i < 16; i++) {
-    const angle = (Math.PI * 2 * i) / 16;
-    const dist = 30 + Math.random() * 40;
-    const p = document.createElement('div');
-    p.className = 'unlock-particle';
-    p.style.left = cx + 'px';
-    p.style.top = cy + 'px';
-    p.style.background = color;
-    p.style.position = 'fixed';
-    p.style.zIndex = '999';
-    p.style.setProperty('--px', Math.cos(angle) * dist + 'px');
-    p.style.setProperty('--py', Math.sin(angle) * dist + 'px');
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), 900);
+  // 1. Flash overlay
+  const flash = document.createElement('div');
+  flash.style.cssText = `
+    position:fixed; left:${rect.left}px; top:${rect.top}px;
+    width:${rect.width}px; height:${rect.height}px;
+    background:radial-gradient(circle, rgba(255,255,255,0.6), ${color}44, transparent);
+    z-index:998; pointer-events:none; border-radius:4px;
+    animation: unlockFlash 0.6s ease-out forwards;
+  `;
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 600);
+
+  // 2. Double expanding ring
+  for (let ring = 0; ring < 2; ring++) {
+    const r = document.createElement('div');
+    r.style.cssText = `
+      position:fixed; left:${rect.left}px; top:${rect.top}px;
+      width:${rect.width}px; height:${rect.height}px;
+      border:2px solid ${color}; border-radius:4px;
+      z-index:997; pointer-events:none;
+      animation: unlockRing${ring === 0 ? '' : '2'} ${0.8 + ring * 0.3}s ease-out forwards;
+      animation-delay: ${ring * 0.15}s;
+    `;
+    document.body.appendChild(r);
+    setTimeout(() => r.remove(), 1200);
+  }
+
+  // 3. Particle burst — two waves
+  for (let wave = 0; wave < 2; wave++) {
+    setTimeout(() => {
+      const count = wave === 0 ? 20 : 12;
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + (wave * 0.3);
+        const dist = (wave === 0 ? 40 : 65) + Math.random() * 30;
+        const size = 3 + Math.random() * 4;
+        const p = document.createElement('div');
+        p.className = 'unlock-particle';
+        p.style.left = cx + 'px';
+        p.style.top = cy + 'px';
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.background = color;
+        p.style.color = color;
+        p.style.setProperty('--px', Math.cos(angle) * dist + 'px');
+        p.style.setProperty('--py', Math.sin(angle) * dist + 'px');
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 1100);
+      }
+    }, wave * 150);
   }
 }
 
@@ -145,7 +180,7 @@ async function onRoomClick(room) {
           const roomEl = grid.querySelector(`[data-room-id="${room.id}"]`);
           if (roomEl) {
             roomEl.classList.add('room--just-unlocked');
-            spawnUnlockParticles(roomEl, room.color);
+            spawnUnlockEffect(roomEl, room.color);
           }
         });
       });
