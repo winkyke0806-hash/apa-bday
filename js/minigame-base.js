@@ -68,17 +68,25 @@ function showHint(container, text) {
 }
 
 function launchMiniConfetti() {
-  const colors = ['#f6ad55', '#68d391', '#fc8181', '#63b3ed', '#b794f4', '#f687b3'];
-  for (let i = 0; i < 30; i++) {
+  const colors = ['#f6ad55', '#68d391', '#fc8181', '#63b3ed', '#b794f4', '#f687b3', '#ecc94b', '#4fd1c5'];
+  const shapes = ['confetti-piece--circle', 'confetti-piece--rect', 'confetti-piece--star'];
+
+  for (let i = 0; i < 40; i++) {
     const piece = document.createElement('div');
-    piece.className = 'confetti-piece';
+    const shape = shapes[Math.floor(Math.random() * shapes.length)];
+    const size = 6 + Math.random() * 10;
+
+    piece.className = `confetti-piece ${shape}`;
     piece.style.left = Math.random() * 100 + '%';
+    piece.style.width = size + 'px';
+    piece.style.height = size + 'px';
     piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-    piece.style.setProperty('--fall-duration', (2 + Math.random() * 2) + 's');
-    piece.style.setProperty('--fall-delay', Math.random() * 0.5 + 's');
-    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    piece.style.setProperty('--fall-duration', (2.5 + Math.random() * 3) + 's');
+    piece.style.setProperty('--fall-delay', Math.random() * 0.8 + 's');
+    piece.style.setProperty('--sway', (15 + Math.random() * 30) + 'px');
+
     document.body.appendChild(piece);
-    setTimeout(() => piece.remove(), 5000);
+    setTimeout(() => piece.remove(), 7000);
   }
 }
 

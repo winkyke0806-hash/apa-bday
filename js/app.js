@@ -131,4 +131,28 @@ function showView(view) {
 document.getElementById('back-to-house').addEventListener('click', () => showView('house'));
 document.getElementById('back-from-content').addEventListener('click', () => showView('house'));
 
+// Blueprint extras: compass + stamp
+function addBlueprintExtras() {
+  const compass = document.createElement('div');
+  compass.className = 'compass';
+  grid.appendChild(compass);
+
+  const stamp = document.createElement('div');
+  stamp.className = 'stamp';
+  stamp.textContent = '✦ JÓVÁHAGYVA — SZÜLINAPI MEGLEPETÉS ✦';
+  grid.appendChild(stamp);
+}
+
+// Loading sequence
+const loadingScreen = document.getElementById('loading-screen');
+
+function startLoadingSequence() {
+  setTimeout(() => {
+    loadingScreen.classList.add('hide');
+    setTimeout(() => loadingScreen.style.display = 'none', 800);
+  }, 1500);
+}
+
 renderRooms();
+addBlueprintExtras();
+startLoadingSequence();
