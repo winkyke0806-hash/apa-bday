@@ -15,6 +15,7 @@
     <div class="title-art">
       <div class="title-kart">🏎️</div>
       <h1 class="title-name">APU GOKART<br><span class="title-gp">GRAND PRIX</span></h1>
+      <div class="title-version">v2.0 — Turbo Edition</div>
     </div>
     <div class="title-menu">
       <button class="menu-btn" id="btn-garage">🔧 GARÁZS</button>
@@ -29,22 +30,23 @@
     <div class="howto-card">
       <h2>🎮 Irányítás</h2>
       <div class="howto-grid">
-        <div class="howto-item">
-          <div class="howto-key">W / ↑</div>
-          <div>Gáz</div>
+        <div class="howto-item"><div class="howto-key">W / ↑</div><div>Gáz</div></div>
+        <div class="howto-item"><div class="howto-key">S / ↓</div><div>Fék</div></div>
+        <div class="howto-item"><div class="howto-key">A / ←</div><div>Balra</div></div>
+        <div class="howto-item"><div class="howto-key">D / →</div><div>Jobbra</div></div>
+        <div class="howto-item"><div class="howto-key">SPACE</div><div>🔥 NITRO</div></div>
+      </div>
+      <div class="howto-section">
+        <h3>⚡ Power-upok</h3>
+        <div class="howto-powerups">
+          <div>🟡 <b>Boost</b> — Azonnali sebesség lökés</div>
+          <div>🛡️ <b>Pajzs</b> — Véd a fal ütközéstől</div>
+          <div>🛢️ <b>Olaj</b> — Csúszós folt mögötted</div>
         </div>
-        <div class="howto-item">
-          <div class="howto-key">S / ↓</div>
-          <div>Fék</div>
-        </div>
-        <div class="howto-item">
-          <div class="howto-key">A / ←</div>
-          <div>Balra</div>
-        </div>
-        <div class="howto-item">
-          <div class="howto-key">D / →</div>
-          <div>Jobbra</div>
-        </div>
+      </div>
+      <div class="howto-section">
+        <h3>🔥 Nitro rendszer</h3>
+        <p class="howto-tip">Driftelj a kanyarokban hogy feltöltsd a Nitro mérőt! SPACE-szel lövöd ki!</p>
       </div>
       <p class="howto-tip">📱 Mobilon: érintsd a képernyő széleit!</p>
       <button class="menu-btn" id="btn-howto-back">VISSZA</button>
@@ -55,22 +57,16 @@
   <div id="garage-screen" class="screen">
     <div class="garage-layout">
       <h2 class="garage-title">🔧 GARÁZS</h2>
-
-      <!-- Car preview -->
       <canvas id="car-preview" width="200" height="200"></canvas>
 
-      <!-- Color picker -->
       <div class="garage-section">
         <span class="garage-label">KAROSSZÉRIA</span>
         <div class="color-row" id="body-colors"></div>
       </div>
-
       <div class="garage-section">
         <span class="garage-label">CSÍK</span>
         <div class="color-row" id="stripe-colors"></div>
       </div>
-
-      <!-- Size -->
       <div class="garage-section">
         <span class="garage-label">MÉRET</span>
         <div class="size-row" id="size-options">
@@ -79,8 +75,21 @@
           <button class="size-btn" data-size="large">L</button>
         </div>
       </div>
-
-      <!-- Name -->
+      <div class="garage-section">
+        <span class="garage-label">NEHÉZSÉG</span>
+        <div class="size-row">
+          <button class="diff-btn active" data-diff="easy">🟢</button>
+          <button class="diff-btn" data-diff="normal">🟡</button>
+          <button class="diff-btn" data-diff="hard">🔴</button>
+        </div>
+      </div>
+      <div class="garage-section">
+        <span class="garage-label">MÓD</span>
+        <div class="size-row">
+          <button class="mode-btn active" data-mode="day">☀️ Nappal</button>
+          <button class="mode-btn" data-mode="night">🌙 Éjszaka</button>
+        </div>
+      </div>
       <div class="garage-section">
         <span class="garage-label">NÉV</span>
         <input type="text" id="car-name" class="garage-input" value="Apu Racer" maxlength="14">
@@ -100,6 +109,10 @@
     <!-- HUD -->
     <div class="hud">
       <div class="hud-item">
+        <span class="hud-label">POZÍCIÓ</span>
+        <span class="hud-value" id="hud-pos">4/4</span>
+      </div>
+      <div class="hud-item">
         <span class="hud-label">KÖR</span>
         <span class="hud-value" id="hud-lap">1 / 3</span>
       </div>
@@ -108,17 +121,36 @@
         <span class="hud-value" id="hud-time">0:00.0</span>
       </div>
       <div class="hud-item">
-        <span class="hud-label">POZÍCIÓ</span>
-        <span class="hud-value" id="hud-pos">4.</span>
-      </div>
-      <div class="hud-item">
         <span class="hud-label">LEGJOBB</span>
         <span class="hud-value" id="hud-best">--:--.-</span>
       </div>
     </div>
 
+    <!-- Nitro bar -->
+    <div class="nitro-bar-container" id="nitro-hud">
+      <div class="nitro-label">🔥 NITRO</div>
+      <div class="nitro-bar-track">
+        <div class="nitro-bar-fill" id="nitro-bar"></div>
+      </div>
+    </div>
+
+    <!-- Speedometer -->
+    <div class="speedo" id="speedo">
+      <div class="speedo-value" id="speedo-value">0</div>
+      <div class="speedo-unit">km/h</div>
+    </div>
+
+    <!-- Power-up indicator -->
+    <div class="powerup-indicator" id="powerup-indicator" style="display:none;">
+      <span id="powerup-icon"></span>
+      <span id="powerup-name"></span>
+    </div>
+
     <!-- Countdown overlay -->
     <div class="countdown" id="countdown"></div>
+
+    <!-- Lap notification -->
+    <div class="lap-notify" id="lap-notify"></div>
 
     <!-- Mobile touch controls -->
     <div class="touch-controls" id="touch-controls">
@@ -132,13 +164,15 @@
   <!-- Finish screen -->
   <div id="finish-screen" class="screen">
     <div class="finish-card">
-      <div class="finish-trophy">🏆</div>
-      <h2 class="finish-title">CÉL!</h2>
+      <div class="finish-trophy" id="finish-trophy">🏆</div>
+      <h2 class="finish-title" id="finish-title">CÉL!</h2>
       <div class="finish-time" id="finish-time">0:00.0</div>
       <p class="finish-label">Összidő</p>
+      <div class="finish-stats" id="finish-stats"></div>
       <div class="finish-laps" id="finish-laps"></div>
       <div class="finish-btns">
         <button class="menu-btn" id="btn-retry">🔄 ÚJRA</button>
+        <button class="menu-btn menu-btn--secondary" id="btn-back-title">🏠 MENÜ</button>
         <a href="../../index.html" class="menu-btn menu-btn--secondary menu-link">← HÁZBA</a>
       </div>
     </div>
