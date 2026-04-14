@@ -127,10 +127,10 @@ class Car {
     this.x = 0; this.y = 0; this.angle = 0; this.speed = 0;
     this.color = color; this.stripe = stripe; this.name = name;
     this.isPlayer = isPlayer;
-    this.maxSpeed = isPlayer ? 4.8 : 4.0 + Math.random() * 0.8;
-    this.accel = isPlayer ? 0.13 : 0.09 + Math.random() * 0.04;
+    this.maxSpeed = isPlayer ? 5.0 : 3.2 + Math.random() * 0.6;
+    this.accel = isPlayer ? 0.14 : 0.07 + Math.random() * 0.03;
     this.friction = 0.975; this.offFriction = 0.88;
-    this.turnSpeed = isPlayer ? 0.065 : 0.055;
+    this.turnSpeed = isPlayer ? 0.07 : 0.045;
     this.w = 12; this.h = 22;
     this.lap = 0; this.nextCP = 0; this.cpPassed = 0;
     this.finished = false; this.finishTime = 0;
