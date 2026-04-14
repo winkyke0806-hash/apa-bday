@@ -167,6 +167,111 @@ body {
 }
 
 /* === Game Screen === */
+/* === Garage === */
+#garage-screen {
+  background: radial-gradient(ellipse at 50% 30%, rgba(246, 173, 85, 0.08), transparent 60%), var(--retro-bg);
+}
+
+.garage-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 360px;
+  width: 90%;
+}
+
+.garage-title {
+  font-family: var(--font-pixel);
+  font-size: 1rem;
+  color: var(--retro-accent);
+  text-shadow: 2px 2px 0 rgba(246, 173, 85, 0.3);
+}
+
+#car-preview {
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  background: #222;
+}
+
+.garage-section {
+  width: 100%;
+  text-align: center;
+}
+
+.garage-label {
+  display: block;
+  font-family: var(--font-pixel);
+  font-size: 0.5rem;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+}
+
+.color-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.color-swatch:hover { transform: scale(1.15); }
+.color-swatch.active { border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.3); transform: scale(1.1); }
+
+.size-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.size-btn {
+  font-family: var(--font-pixel);
+  font-size: 0.7rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 2px solid rgba(255,255,255,0.2);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.size-btn:hover { border-color: rgba(255,255,255,0.5); }
+.size-btn.active { border-color: var(--retro-accent); background: rgba(246,173,85,0.15); color: var(--retro-accent); }
+
+.garage-input {
+  font-family: var(--font-pixel);
+  font-size: 0.65rem;
+  padding: 10px 16px;
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  text-align: center;
+  width: 100%;
+  max-width: 220px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.garage-input:focus { border-color: var(--retro-accent); }
+
+.garage-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
 #game-screen { background: #2a2a2a; }
 
 #game-canvas {

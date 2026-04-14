@@ -4,7 +4,7 @@
    ══════════════════════════════════════════ */
 
 // ─── Screens ───
-const screens = { title: document.getElementById('title-screen'), howto: document.getElementById('howto-screen'), game: document.getElementById('game-screen'), finish: document.getElementById('finish-screen') };
+const screens = { title: document.getElementById('title-screen'), howto: document.getElementById('howto-screen'), garage: document.getElementById('garage-screen'), game: document.getElementById('game-screen'), finish: document.getElementById('finish-screen') };
 function showScreen(n) { Object.values(screens).forEach(s => s.classList.remove('active')); screens[n].classList.add('active'); }
 
 const canvas = document.getElementById('game-canvas');
@@ -764,7 +764,13 @@ async function startRace() {
   resizeCanvas();
   track = buildTrack(canvas.width, canvas.height);
 
-  player = new Car('#e94560', '#ff8a9e', 'Apu', true);
+  const sd = SIZE_DEFS[garageState.size];
+  player = new Car(garageState.bodyColor, garageState.stripeColor, garageState.name, true);
+  player.w = sd.w;
+  player.h = sd.h;
+  player.maxSpeed = sd.maxSpeed;
+  player.accel = sd.accel;
+  player.turnSpeed = sd.turnSpeed;
   aiCars = AI_DEFS.map(d => new Car(d.color, d.stripe, d.name));
   allCars = [player, ...aiCars];
 
@@ -818,8 +824,154 @@ function formatTime(ms) {
   return `${m}:${s.toString().padStart(2, '0')}.${t}`;
 }
 
+/* ═══════════════════════════
+   GARAGE — Car Builder
+   ═══════════════════════════ */
+
+const BODY_COLORS = ['#e94560','#3b82f6','#22c55e','#f6ad55','#a855f7','#ec4899','#14b8a6','#f97316','#fff','#333'];
+const STRIPE_COLORS = ['#ff8a9e','#60a5fa','#4ade80','#fcd34d','#c084fc','#f9a8d4','#5eead4','#fdba74','#888','#e94560'];
+
+const SIZE_DEFS = {
+  small:  { w: 10, h: 18, maxSpeed: 5.5, accel: 0.16, turnSpeed: 0.08, label: 'Gyors & agilis' },
+  medium: { w: 14, h: 24, maxSpeed: 5.0, accel: 0.14, turnSpeed: 0.07, label: 'Kiegyensúlyozott' },
+  large:  { w: 18, h: 30, maxSpeed: 4.5, accel: 0.12, turnSpeed: 0.06, label: 'Erős & stabil' },
+};
+
+let garageState = {
+  bodyColor: BODY_COLORS[0],
+  stripeColor: STRIPE_COLORS[0],
+  size: 'medium',
+  name: 'Apu Racer',
+};
+
+// Load saved config
+try {
+  const saved = JSON.parse(localStorage.getItem('apu-gokart-car'));
+  if (saved) Object.assign(garageState, saved);
+} catch {}
+
+function initGarage() {
+  // Body colors
+  const bodyRow = document.getElementById('body-colors');
+  bodyRow.innerHTML = '';
+  BODY_COLORS.forEach(c => {
+    const el = document.createElement('div');
+    el.className = `color-swatch ${c === garageState.bodyColor ? 'active' : ''}`;
+    el.style.background = c;
+    el.addEventListener('click', () => {
+      garageState.bodyColor = c;
+      bodyRow.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+      drawCarPreview();
+    });
+    bodyRow.appendChild(el);
+  });
+
+  // Stripe colors
+  const stripeRow = document.getElementById('stripe-colors');
+  stripeRow.innerHTML = '';
+  STRIPE_COLORS.forEach(c => {
+    const el = document.createElement('div');
+    el.className = `color-swatch ${c === garageState.stripeColor ? 'active' : ''}`;
+    el.style.background = c;
+    el.addEventListener('click', () => {
+      garageState.stripeColor = c;
+      stripeRow.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+      drawCarPreview();
+    });
+    stripeRow.appendChild(el);
+  });
+
+  // Size buttons
+  document.querySelectorAll('.size-btn').forEach(btn => {
+    if (btn.dataset.size === garageState.size) btn.classList.add('active');
+    else btn.classList.remove('active');
+    btn.addEventListener('click', () => {
+      garageState.size = btn.dataset.size;
+      document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      drawCarPreview();
+    });
+  });
+
+  // Name
+  const nameInput = document.getElementById('car-name');
+  nameInput.value = garageState.name;
+  nameInput.addEventListener('input', () => {
+    garageState.name = nameInput.value || 'Apu';
+    drawCarPreview();
+  });
+
+  drawCarPreview();
+}
+
+function drawCarPreview() {
+  const cvs = document.getElementById('car-preview');
+  const c = cvs.getContext('2d');
+  const cw = cvs.width, ch = cvs.height;
+  c.clearRect(0, 0, cw, ch);
+
+  const sd = SIZE_DEFS[garageState.size];
+  const scale = 3.5;
+  const W = sd.w * scale, H = sd.h * scale;
+  const cx = cw / 2, cy = ch / 2 - 10;
+
+  // Shadow
+  c.fillStyle = 'rgba(0,0,0,0.4)';
+  roundRectCtx(c, cx - W/2 + 3, cy - H/2 + 3, W, H, 6);
+  c.fill();
+
+  // Body
+  c.fillStyle = garageState.bodyColor;
+  roundRectCtx(c, cx - W/2, cy - H/2, W, H, 6);
+  c.fill();
+
+  // Stripe
+  c.fillStyle = garageState.stripeColor;
+  c.fillRect(cx - 3, cy - H/2 + 3, 6, H - 6);
+
+  // Windshield
+  c.fillStyle = 'rgba(120,200,255,0.7)';
+  roundRectCtx(c, cx - W/2 + 4, cy - H/2 + 4, W - 8, 12, 3);
+  c.fill();
+
+  // Rear lights
+  c.fillStyle = '#ff3333';
+  c.fillRect(cx - W/2 + 2, cy + H/2 - 6, 6, 4);
+  c.fillRect(cx + W/2 - 8, cy + H/2 - 6, 6, 4);
+
+  // Name
+  c.fillStyle = '#fff';
+  c.font = 'bold 11px JetBrains Mono';
+  c.textAlign = 'center';
+  c.fillText(garageState.name, cx, cy + H/2 + 22);
+
+  // Size label
+  c.fillStyle = 'rgba(255,255,255,0.35)';
+  c.font = '9px JetBrains Mono';
+  c.fillText(sd.label, cx, cy + H/2 + 36);
+}
+
+function roundRectCtx(c, x, y, w, h, r) {
+  c.beginPath();
+  c.moveTo(x + r, y);
+  c.lineTo(x + w - r, y); c.quadraticCurveTo(x + w, y, x + w, y + r);
+  c.lineTo(x + w, y + h - r); c.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  c.lineTo(x + r, y + h); c.quadraticCurveTo(x, y + h, x, y + h - r);
+  c.lineTo(x, y + r); c.quadraticCurveTo(x, y, x + r, y);
+  c.closePath();
+}
+
+function saveGarageAndStart() {
+  localStorage.setItem('apu-gokart-car', JSON.stringify(garageState));
+  startRace();
+}
+
 // ─── Menu ───
-document.getElementById('btn-start').addEventListener('click', startRace);
+document.getElementById('btn-garage').addEventListener('click', () => { initGarage(); showScreen('garage'); });
 document.getElementById('btn-howto').addEventListener('click', () => showScreen('howto'));
 document.getElementById('btn-howto-back').addEventListener('click', () => showScreen('title'));
+document.getElementById('btn-garage-back').addEventListener('click', () => showScreen('title'));
+document.getElementById('btn-race').addEventListener('click', saveGarageAndStart);
 document.getElementById('btn-retry').addEventListener('click', startRace);

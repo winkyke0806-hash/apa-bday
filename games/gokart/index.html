@@ -17,7 +17,7 @@
       <h1 class="title-name">APU GOKART<br><span class="title-gp">GRAND PRIX</span></h1>
     </div>
     <div class="title-menu">
-      <button class="menu-btn" id="btn-start">▶ RAJT</button>
+      <button class="menu-btn" id="btn-garage">🔧 GARÁZS</button>
       <button class="menu-btn menu-btn--secondary" id="btn-howto">? IRÁNYÍTÁS</button>
       <a href="../../index.html" class="menu-btn menu-btn--secondary menu-link">← VISSZA A HÁZBA</a>
     </div>
@@ -48,6 +48,48 @@
       </div>
       <p class="howto-tip">📱 Mobilon: érintsd a képernyő széleit!</p>
       <button class="menu-btn" id="btn-howto-back">VISSZA</button>
+    </div>
+  </div>
+
+  <!-- Garage / Car Builder -->
+  <div id="garage-screen" class="screen">
+    <div class="garage-layout">
+      <h2 class="garage-title">🔧 GARÁZS</h2>
+
+      <!-- Car preview -->
+      <canvas id="car-preview" width="200" height="200"></canvas>
+
+      <!-- Color picker -->
+      <div class="garage-section">
+        <span class="garage-label">KAROSSZÉRIA</span>
+        <div class="color-row" id="body-colors"></div>
+      </div>
+
+      <div class="garage-section">
+        <span class="garage-label">CSÍK</span>
+        <div class="color-row" id="stripe-colors"></div>
+      </div>
+
+      <!-- Size -->
+      <div class="garage-section">
+        <span class="garage-label">MÉRET</span>
+        <div class="size-row" id="size-options">
+          <button class="size-btn" data-size="small">S</button>
+          <button class="size-btn active" data-size="medium">M</button>
+          <button class="size-btn" data-size="large">L</button>
+        </div>
+      </div>
+
+      <!-- Name -->
+      <div class="garage-section">
+        <span class="garage-label">NÉV</span>
+        <input type="text" id="car-name" class="garage-input" value="Apu Racer" maxlength="14">
+      </div>
+
+      <div class="garage-btns">
+        <button class="menu-btn" id="btn-race">🏁 VERSENY!</button>
+        <button class="menu-btn menu-btn--secondary" id="btn-garage-back">← VISSZA</button>
+      </div>
     </div>
   </div>
 
