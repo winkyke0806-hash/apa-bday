@@ -10,21 +10,22 @@ const COUPONS = [
 ];
 
 export function renderMinigame(container, room, onSuccess) {
-  let scratched = 0;
-  const targetScratches = 3;
+  let revealed = 0;
+  const targetReveals = 3;
 
   container.innerHTML = `
     <h2 class="minigame-title">🎁 Ajándékraktár</h2>
-    <p class="minigame-instructions">Kapard le a sorsjegyeket! Húzd az egered/ujjad a szürke felületen.</p>
+    <p class="minigame-instructions">Kapard le a sorsjegyeket! Húzd az egered a szürke felületen.</p>
     <div id="scratch-cards" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; max-width:500px; margin:0 auto;"></div>
   `;
 
   const cardsEl = container.querySelector('#scratch-cards');
 
-  COUPONS.slice(0, targetScratches).forEach(coupon => {
+  COUPONS.slice(0, targetReveals).forEach(coupon => {
     const card = document.createElement('div');
     card.style.cssText = 'position:relative; aspect-ratio:3/4; border-radius:12px; overflow:hidden;';
 
+    // Kupon tartalom alatta
     const content = document.createElement('div');
     content.style.cssText = `
       position:absolute; inset:0; display:flex; flex-direction:column;
@@ -37,72 +38,91 @@ export function renderMinigame(container, room, onSuccess) {
       <div style="font-size:0.7rem; color:rgba(255,255,255,0.5); margin-top:4px;">${coupon.description}</div>
     `;
 
-    const canvas = document.createElement('canvas');
-    canvas.width = 200;
-    canvas.height = 260;
-    canvas.style.cssText = 'position:absolute; inset:0; width:100%; height:100%; cursor:crosshair; border-radius:12px;';
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#4a5568';
-    ctx.fillRect(0, 0, 200, 260);
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.font = '14px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('Kapard le!', 100, 130);
+    // Scratch overlay (div-based, nem canvas)
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position:absolute; inset:0; background:#4a5568; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      cursor:crosshair; transition:opacity 0.5s;
+      font-size:0.8rem; color:rgba(255,255,255,0.3); font-family:var(--font-mono);
+      user-select:none;
+    `;
+    overlay.textContent = 'Kapard le!';
 
-    let isScratching = false;
-    let scratchCount = 0;
+    // Scratch cells grid felette
+    const scratchGrid = document.createElement('div');
+    scratchGrid.style.cssText = `
+      position:absolute; inset:0; display:grid;
+      grid-template-columns:repeat(5,1fr); grid-template-rows:repeat(6,1fr);
+      border-radius:12px; overflow:hidden; cursor:crosshair;
+    `;
 
-    function scratch(x, y) {
-      ctx.globalCompositeOperation = 'destination-out';
-      // Bigger brush for easier scratching
-      ctx.beginPath();
-      ctx.arc(x, y, 22, 0, Math.PI * 2);
-      ctx.fill();
+    const totalCells = 30;
+    let clearedCells = 0;
+    const threshold = Math.floor(totalCells * 0.4); // 40% elég
 
-      scratchCount++;
+    for (let i = 0; i < totalCells; i++) {
+      const cell = document.createElement('div');
+      cell.style.cssText = `
+        background:#4a5568; transition:opacity 0.3s;
+        border:0.5px solid rgba(255,255,255,0.03);
+      `;
+      cell.dataset.cleared = 'false';
 
-      // Check every 5 scratches (performance), low threshold (25%)
-      if (scratchCount % 5 !== 0) return;
+      const clearCell = () => {
+        if (cell.dataset.cleared === 'true') return;
+        cell.dataset.cleared = 'true';
+        cell.style.opacity = '0';
+        clearedCells++;
 
-      const imageData = ctx.getImageData(0, 0, 200, 260);
-      let transparent = 0;
-      // Sample every 4th pixel for speed
-      for (let j = 3; j < imageData.data.length; j += 16) {
-        if (imageData.data[j] === 0) transparent++;
-      }
-      const totalSampled = (200 * 260) / 4;
+        if (clearedCells >= threshold && !card.dataset.done) {
+          card.dataset.done = 'true';
+          // Eltüntetjük az egész scratch réteget
+          scratchGrid.style.opacity = '0';
+          scratchGrid.style.pointerEvents = 'none';
+          overlay.style.opacity = '0';
+          revealed++;
 
-      if (transparent / totalSampled > 0.25 && !card.dataset.done) {
-        card.dataset.done = 'true';
-        canvas.style.opacity = '0';
-        canvas.style.transition = 'opacity 0.5s';
-        scratched++;
-        if (scratched >= targetScratches) {
-          setTimeout(() => showSuccess(container, room, onSuccess, 'Minden kupont lekapartál!'), 600);
+          if (revealed >= targetReveals) {
+            setTimeout(() => showSuccess(container, room, onSuccess, 'Minden kupont lekapartál!'), 600);
+          }
         }
-      }
-    }
+      };
 
-    function getPos(e) {
-      const rect = canvas.getBoundingClientRect();
-      const touch = e.touches ? e.touches[0] : e;
-      return { x: (touch.clientX - rect.left) / rect.width * 200, y: (touch.clientY - rect.top) / rect.height * 260 };
-    }
+      cell.addEventListener('mouseenter', (e) => { if (e.buttons > 0) clearCell(); });
+      cell.addEventListener('mousedown', clearCell);
+      cell.addEventListener('touchstart', (e) => { e.preventDefault(); clearCell(); });
+      cell.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (el && el.dataset.cleared === 'false' && el.parentElement === scratchGrid) {
+          el.dataset.cleared = 'true';
+          el.style.opacity = '0';
+          clearedCells++;
+          if (clearedCells >= threshold && !card.dataset.done) {
+            card.dataset.done = 'true';
+            scratchGrid.style.opacity = '0';
+            scratchGrid.style.pointerEvents = 'none';
+            overlay.style.opacity = '0';
+            revealed++;
+            if (revealed >= targetReveals) {
+              setTimeout(() => showSuccess(container, room, onSuccess, 'Minden kupont lekapartál!'), 600);
+            }
+          }
+        }
+      });
 
-    canvas.addEventListener('mousedown', e => { isScratching = true; scratch(...Object.values(getPos(e))); });
-    canvas.addEventListener('mousemove', e => { if (isScratching) scratch(...Object.values(getPos(e))); });
-    canvas.addEventListener('mouseup', () => isScratching = false);
-    canvas.addEventListener('mouseleave', () => isScratching = false);
-    canvas.addEventListener('touchstart', e => { e.preventDefault(); isScratching = true; scratch(...Object.values(getPos(e))); });
-    canvas.addEventListener('touchmove', e => { e.preventDefault(); if (isScratching) scratch(...Object.values(getPos(e))); });
-    canvas.addEventListener('touchend', () => isScratching = false);
+      scratchGrid.appendChild(cell);
+    }
 
     card.appendChild(content);
-    card.appendChild(canvas);
+    card.appendChild(overlay);
+    card.appendChild(scratchGrid);
     cardsEl.appendChild(card);
   });
 
-  createHintSkip(container, ['Húzd az egered a szürke felületen'],
+  createHintSkip(container, ['Húzd az egered a szürke felületen — lenyomva tartva kaparj!'],
     () => showSuccess(container, room, onSuccess, 'Átugrottad — de a szoba a tiéd!')
   );
 }
