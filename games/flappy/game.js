@@ -29,12 +29,12 @@ function sfxCollect() { beep(880, 0.08, 'sine', 0.1); setTimeout(() => beep(1100
 function sfxPowerup() { beep(440, 0.1, 'sine', 0.08); setTimeout(() => beep(660, 0.1, 'sine', 0.08), 80); setTimeout(() => beep(880, 0.15, 'sine', 0.1), 160); }
 
 // ─── Constants ───
-const GRAVITY = 0.45;
-const JUMP_FORCE = -7.5;
-const PIPE_SPEED_BASE = 3;
-const PIPE_GAP_BASE = 160;
-const PIPE_WIDTH = 60;
-const PIPE_SPACING = 250;
+const GRAVITY = 0.55;
+const JUMP_FORCE = -8.5;
+const PIPE_SPEED_BASE = 4.5;
+const PIPE_GAP_BASE = 170;
+const PIPE_WIDTH = 80;
+const PIPE_SPACING = 220;
 const CAKE_SIZE = 28;
 
 // ─── Game state ───
