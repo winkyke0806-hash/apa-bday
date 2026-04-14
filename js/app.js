@@ -71,10 +71,9 @@ function renderRooms() {
       `;
     }
 
-    // Only play entrance animation on first load
-    if (!initialRender) {
-      el.style.opacity = '1';
-      el.style.animation = 'none';
+    // Entrance animation only on first load
+    if (initialRender) {
+      el.classList.add('room--entering');
     }
 
     el.addEventListener('click', () => onRoomClick(room));
@@ -109,9 +108,8 @@ function renderRooms() {
     `;
   }
 
-  if (!initialRender) {
-    szefEl.style.opacity = '1';
-    szefEl.style.animation = 'none';
+  if (initialRender) {
+    szefEl.classList.add('room--entering');
   }
 
   grid.appendChild(szefEl);
