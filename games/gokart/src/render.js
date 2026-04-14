@@ -127,14 +127,26 @@ export function render() {
   // Particles
   renderParticles(ctx);
 
-  // Ghost car
-  if (ghostPlayback.length > 0 && G.ghostFrame < ghostPlayback.length) {
+  // Ghost car (only advance during actual race, not flyover)
+  if (G.gameRunning && !G.flyoverActive && ghostPlayback.length > 0 && G.ghostFrame < ghostPlayback.length) {
     const g = ghostPlayback[G.ghostFrame];
-    ctx.save(); ctx.globalAlpha = 0.25;
-    ctx.translate(g.x, g.y); ctx.rotate(g.angle);
-    ctx.fillStyle = '#fff';
-    roundRect(ctx, -7, -12, 14, 24, 3); ctx.fill();
-    ctx.restore();
+    if (g) {
+      ctx.save(); ctx.globalAlpha = 0.2;
+      ctx.translate(g.x, g.y); ctx.rotate(g.angle);
+      // Ghost body (white, transparent)
+      ctx.fillStyle = '#fff';
+      roundRect(ctx, -7, -12, 14, 24, 3); ctx.fill();
+      // Ghost stripe
+      ctx.fillStyle = 'rgba(255,255,255,0.3)';
+      ctx.fillRect(-1, -12, 2, 24);
+      // Ghost label
+      ctx.restore();
+      ctx.save();
+      ctx.globalAlpha = 0.15;
+      ctx.fillStyle = '#fff'; ctx.font = '600 6px JetBrains Mono'; ctx.textAlign = 'center';
+      ctx.fillText('GHOST', g.x, g.y - 16);
+      ctx.restore();
+    }
     G.ghostFrame++;
   }
 

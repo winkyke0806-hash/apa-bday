@@ -331,7 +331,9 @@ async function startRace() {
   hidePowerupHUD(); G.player.nitro = 0;
   document.getElementById('nitro-bar').style.width = '0%';
   spawnPowerups();
-  try { G.ghostPlayback = JSON.parse(localStorage.getItem('apu-gokart-ghost') || '[]'); } catch { G.ghostPlayback = []; }
+  // Load ghost for THIS track only
+  const ghostKey = `apu-gokart-ghost-${G.currentTrackId}${G.reverseMode ? '-rev' : ''}`;
+  try { G.ghostPlayback = JSON.parse(localStorage.getItem(ghostKey) || '[]'); } catch { G.ghostPlayback = []; }
 
   G.camera.x = G.player.x; G.camera.y = G.player.y; G.camera.zoom = 2.2;
   G._lastCollCount = 0;
@@ -375,7 +377,9 @@ function finishRace() {
     G.gameRunning = false;
   }
   if (!G.bestTime || total < parseFloat(G.bestTime)) { G.bestTime = total; localStorage.setItem('apu-gokart-best', total.toString()); }
-  try { localStorage.setItem('apu-gokart-ghost', JSON.stringify(G.ghostData)); } catch {}
+  // Save ghost per-track
+  const ghostSaveKey = `apu-gokart-ghost-${G.currentTrackId}${G.reverseMode ? '-rev' : ''}`;
+  try { localStorage.setItem(ghostSaveKey, JSON.stringify(G.ghostData)); } catch {}
 
   // Save track record
   const trackId = G.currentTrackId;

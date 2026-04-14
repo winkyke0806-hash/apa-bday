@@ -19,7 +19,7 @@ export const G = {
   gameRunning: false,
   startTime: 0,
   lapTimes: [],
-  TOTAL_LAPS: 5,
+  TOTAL_LAPS: 8,
   positions: [],
   lastPosition: 4,
 
