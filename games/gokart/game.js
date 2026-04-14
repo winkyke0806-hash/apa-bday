@@ -101,8 +101,9 @@ const TRACK_RAW = [
   [0.646, 0.093],
 ];
 
-// Decorations placed by user in deco-editor
-const DECORATIONS = [{"type":"tire","x":0.361,"y":0.047},{"type":"tire","x":0.345,"y":0.059},{"type":"tire","x":0.353,"y":0.05},{"type":"tire","x":0.337,"y":0.07},{"type":"tire","x":0.331,"y":0.075},{"type":"tire","x":0.324,"y":0.086},{"type":"tire","x":0.32,"y":0.096},{"type":"tire","x":0.314,"y":0.108},{"type":"tire","x":0.31,"y":0.126},{"type":"tire","x":0.305,"y":0.149},{"type":"tire","x":0.308,"y":0.137},{"type":"tire","x":0.303,"y":0.167},{"type":"tire","x":0.353,"y":0.397},{"type":"tire","x":0.349,"y":0.418},{"type":"tire","x":0.345,"y":0.436},{"type":"tire","x":0.339,"y":0.457},{"type":"tire","x":0.336,"y":0.472},{"type":"tire","x":0.33,"y":0.487},{"type":"tire","x":0.323,"y":0.501},{"type":"tire","x":0.314,"y":0.514},{"type":"tire","x":0.307,"y":0.528},{"type":"tire","x":0.3,"y":0.537},{"type":"tire","x":0.005,"y":0.354},{"type":"tire","x":0.009,"y":0.333},{"type":"tire","x":0.016,"y":0.317},{"type":"tire","x":0.021,"y":0.297},{"type":"tire","x":0.027,"y":0.288},{"type":"tire","x":0.033,"y":0.278},{"type":"tire","x":0.048,"y":0.371},{"type":"tire","x":0.056,"y":0.35},{"type":"tire","x":0.064,"y":0.333},{"type":"tire","x":0.072,"y":0.326},{"type":"tire","x":0.08,"y":0.324},{"type":"tire","x":0.088,"y":0.322},{"type":"tire","x":0.097,"y":0.326},{"type":"tire","x":0.103,"y":0.345},{"type":"tire","x":0.043,"y":0.743},{"type":"tire","x":0.051,"y":0.771},{"type":"tire","x":0.047,"y":0.755},{"type":"tire","x":0.058,"y":0.791},{"type":"tire","x":0.063,"y":0.807},{"type":"tire","x":0.069,"y":0.818},{"type":"tire","x":0.076,"y":0.83},{"type":"tire","x":0.084,"y":0.83},{"type":"tire","x":0.093,"y":0.836},{"type":"tire","x":0.101,"y":0.837},{"type":"tire","x":0.11,"y":0.838},{"type":"tire","x":0.008,"y":0.784},{"type":"tire","x":0.011,"y":0.807},{"type":"tire","x":0.016,"y":0.828},{"type":"tire","x":0.022,"y":0.853},{"type":"tire","x":0.028,"y":0.87},{"type":"tire","x":0.036,"y":0.888},{"type":"tire","x":0.042,"y":0.901},{"type":"tire","x":0.053,"y":0.907},{"type":"tire","x":0.061,"y":0.914},{"type":"tire","x":0.072,"y":0.922},{"type":"tire","x":0.082,"y":0.928},{"type":"tire","x":0.095,"y":0.933},{"type":"tire","x":0.087,"y":0.934},{"type":"tire","x":0.116,"y":0.462},{"type":"tire","x":0.118,"y":0.475},{"type":"tire","x":0.119,"y":0.493},{"type":"tire","x":0.124,"y":0.512},{"type":"tire","x":0.132,"y":0.528},{"type":"tire","x":0.138,"y":0.547},{"type":"tire","x":0.145,"y":0.562},{"type":"tire","x":0.155,"y":0.572},{"type":"tire","x":0.162,"y":0.574},{"type":"tire","x":0.181,"y":0.489},{"type":"tire","x":0.174,"y":0.489},{"type":"tire","x":0.166,"y":0.48},{"type":"tire","x":0.163,"y":0.454},{"type":"tire","x":0.16,"y":0.432},{"type":"tire","x":0.041,"y":0.255},{"type":"tire","x":0.05,"y":0.245},{"type":"tire","x":0.061,"y":0.241},{"type":"tire","x":0.068,"y":0.234},{"type":"tire","x":0.079,"y":0.23},{"type":"tire","x":0.087,"y":0.23},{"type":"tire","x":0.096,"y":0.233},{"type":"tire","x":0.105,"y":0.236},{"type":"tire","x":0.114,"y":0.243},{"type":"tire","x":0.124,"y":0.253},{"type":"tire","x":0.13,"y":0.266},{"type":"tire","x":0.138,"y":0.278},{"type":"tire","x":0.145,"y":0.295},{"type":"tire","x":0.148,"y":0.313},{"type":"tire","x":0.289,"y":0.442},{"type":"tire","x":0.299,"y":0.428},{"type":"tire","x":0.303,"y":0.414},{"type":"tire","x":0.307,"y":0.392},{"type":"tire","x":0.311,"y":0.364},{"type":"tire","x":0.342,"y":0.201},{"type":"tire","x":0.348,"y":0.178},{"type":"tire","x":0.356,"y":0.151},{"type":"tire","x":0.37,"y":0.139},{"type":"tire","x":0.38,"y":0.132},{"type":"garage","x":0.268,"y":0.264},{"type":"grandstand","x":0.439,"y":0.184},{"type":"grandstand","x":0.553,"y":0.197},{"type":"tire","x":0.889,"y":0.929},{"type":"tire","x":0.899,"y":0.913},{"type":"tire","x":0.905,"y":0.892},{"type":"tire","x":0.916,"y":0.872},{"type":"tire","x":0.922,"y":0.845},{"type":"tire","x":0.929,"y":0.817},{"type":"tire","x":0.932,"y":0.789},{"type":"tire","x":0.929,"y":0.75},{"type":"tire","x":0.796,"y":0.445},{"type":"tire","x":0.803,"y":0.459},{"type":"tire","x":0.811,"y":0.466},{"type":"tire","x":0.82,"y":0.47},{"type":"tire","x":0.833,"y":0.471},{"type":"tire","x":0.839,"y":0.454},{"type":"tire","x":0.845,"y":0.43},{"type":"tire","x":0.847,"y":0.403},{"type":"tire","x":0.764,"y":0.491},{"type":"tire","x":0.77,"y":0.511},{"type":"tire","x":0.777,"y":0.53},{"type":"tire","x":0.783,"y":0.537},{"type":"tire","x":0.792,"y":0.547},{"type":"tire","x":0.797,"y":0.55},{"type":"tire","x":0.811,"y":0.563},{"type":"tire","x":0.82,"y":0.564},{"type":"tire","x":0.837,"y":0.564},{"type":"tire","x":0.832,"y":0.564},{"type":"tire","x":0.804,"y":0.557},{"type":"tire","x":0.848,"y":0.555},{"type":"tire","x":0.856,"y":0.549},{"type":"tire","x":0.864,"y":0.533},{"type":"tire","x":0.873,"y":0.514},{"type":"tire","x":0.88,"y":0.501},{"type":"tire","x":0.889,"y":0.482},{"type":"tire","x":0.891,"y":0.461},{"type":"tire","x":0.81,"y":0.154},{"type":"tire","x":0.817,"y":0.167},{"type":"tire","x":0.824,"y":0.178},{"type":"tire","x":0.827,"y":0.186},{"type":"tire","x":0.833,"y":0.201},{"type":"tire","x":0.826,"y":0.07},{"type":"tire","x":0.837,"y":0.08},{"type":"tire","x":0.847,"y":0.095},{"type":"tire","x":0.857,"y":0.105},{"type":"tire","x":0.862,"y":0.117},{"type":"tire","x":0.868,"y":0.133},{"type":"tire","x":0.874,"y":0.149},{"type":"tire","x":0.884,"y":0.172},{"type":"tire","x":0.883,"y":0.188},{"type":"tire","x":0.716,"y":0.305},{"type":"tire","x":0.708,"y":0.289},{"type":"tire","x":0.696,"y":0.295},{"type":"tire","x":0.689,"y":0.311},{"type":"tire","x":0.678,"y":0.317},{"type":"tire","x":0.668,"y":0.334},{"type":"tire","x":0.663,"y":0.353},{"type":"tire","x":0.663,"y":0.375},{"type":"tire","x":0.607,"y":0.547},{"type":"tire","x":0.622,"y":0.55},{"type":"tire","x":0.631,"y":0.528},{"type":"tire","x":0.639,"y":0.501},{"type":"tire","x":0.645,"y":0.483},{"type":"tire","x":0.611,"y":0.403},{"type":"tire","x":0.607,"y":0.417},{"type":"tire","x":0.6,"y":0.434},{"type":"tire","x":0.591,"y":0.443},{"type":"tire","x":0.58,"y":0.443},{"type":"tire","x":0.566,"y":0.449},{"type":"tire","x":0.499,"y":0.5},{"type":"tire","x":0.492,"y":0.509},{"type":"tire","x":0.487,"y":0.538},{"type":"tire","x":0.487,"y":0.563},{"type":"tire","x":0.484,"y":0.589},{"type":"tire","x":0.485,"y":0.616},{"type":"tire","x":0.489,"y":0.636},{"type":"tire","x":0.495,"y":0.654},{"type":"tire","x":0.505,"y":0.668},{"type":"tire","x":0.522,"y":0.695},{"type":"tire","x":0.514,"y":0.683},{"type":"tire","x":0.534,"y":0.712},{"type":"tire","x":0.545,"y":0.714},{"type":"tire","x":0.555,"y":0.72},{"type":"tire","x":0.548,"y":0.555},{"type":"tire","x":0.54,"y":0.563},{"type":"tire","x":0.54,"y":0.583},{"type":"tire","x":0.549,"y":0.604},{"type":"tire","x":0.563,"y":0.614},{"type":"tire","x":0.834,"y":0.672},{"type":"tire","x":0.845,"y":0.687},{"type":"tire","x":0.855,"y":0.705},{"type":"tire","x":0.865,"y":0.722},{"type":"tire","x":0.876,"y":0.753},{"type":"tire","x":0.876,"y":0.775},{"type":"tire","x":0.871,"y":0.816},{"type":"tire","x":0.874,"y":0.796},{"type":"tire","x":0.865,"y":0.838},{"type":"tire","x":0.851,"y":0.843},{"type":"tire","x":0.882,"y":0.626},{"type":"tire","x":0.892,"y":0.638},{"type":"tire","x":0.9,"y":0.649},{"type":"tire","x":0.912,"y":0.662},{"type":"tire","x":0.92,"y":0.676},{"type":"tire","x":0.929,"y":0.704},{"type":"tire","x":0.631,"y":0.264},{"type":"tire","x":0.645,"y":0.254},{"type":"tire","x":0.655,"y":0.233},{"type":"tire","x":0.664,"y":0.217},{"type":"tire","x":0.674,"y":0.208},{"type":"tire","x":0.684,"y":0.207},{"type":"tire","x":0.697,"y":0.2},{"type":"tire","x":0.709,"y":0.199},{"type":"tire","x":0.725,"y":0.203},{"type":"tire","x":0.739,"y":0.213},{"type":"tire","x":0.747,"y":0.224},{"type":"tire","x":0.749,"y":0.246},{"type":"tire","x":0.755,"y":0.266},{"type":"tire","x":0.766,"y":0.297},{"type":"tire","x":0.764,"y":0.279},{"type":"tire","x":0.77,"y":0.326}];
+// Decorations placed by user in deco-editor (shifted +0.05 x to match track)
+const DECORATIONS_RAW = [{"type":"tire","x":0.361,"y":0.047},{"type":"tire","x":0.345,"y":0.059},{"type":"tire","x":0.353,"y":0.05},{"type":"tire","x":0.337,"y":0.07},{"type":"tire","x":0.331,"y":0.075},{"type":"tire","x":0.324,"y":0.086},{"type":"tire","x":0.32,"y":0.096},{"type":"tire","x":0.314,"y":0.108},{"type":"tire","x":0.31,"y":0.126},{"type":"tire","x":0.305,"y":0.149},{"type":"tire","x":0.308,"y":0.137},{"type":"tire","x":0.303,"y":0.167},{"type":"tire","x":0.353,"y":0.397},{"type":"tire","x":0.349,"y":0.418},{"type":"tire","x":0.345,"y":0.436},{"type":"tire","x":0.339,"y":0.457},{"type":"tire","x":0.336,"y":0.472},{"type":"tire","x":0.33,"y":0.487},{"type":"tire","x":0.323,"y":0.501},{"type":"tire","x":0.314,"y":0.514},{"type":"tire","x":0.307,"y":0.528},{"type":"tire","x":0.3,"y":0.537},{"type":"tire","x":0.005,"y":0.354},{"type":"tire","x":0.009,"y":0.333},{"type":"tire","x":0.016,"y":0.317},{"type":"tire","x":0.021,"y":0.297},{"type":"tire","x":0.027,"y":0.288},{"type":"tire","x":0.033,"y":0.278},{"type":"tire","x":0.048,"y":0.371},{"type":"tire","x":0.056,"y":0.35},{"type":"tire","x":0.064,"y":0.333},{"type":"tire","x":0.072,"y":0.326},{"type":"tire","x":0.08,"y":0.324},{"type":"tire","x":0.088,"y":0.322},{"type":"tire","x":0.097,"y":0.326},{"type":"tire","x":0.103,"y":0.345},{"type":"tire","x":0.043,"y":0.743},{"type":"tire","x":0.051,"y":0.771},{"type":"tire","x":0.047,"y":0.755},{"type":"tire","x":0.058,"y":0.791},{"type":"tire","x":0.063,"y":0.807},{"type":"tire","x":0.069,"y":0.818},{"type":"tire","x":0.076,"y":0.83},{"type":"tire","x":0.084,"y":0.83},{"type":"tire","x":0.093,"y":0.836},{"type":"tire","x":0.101,"y":0.837},{"type":"tire","x":0.11,"y":0.838},{"type":"tire","x":0.008,"y":0.784},{"type":"tire","x":0.011,"y":0.807},{"type":"tire","x":0.016,"y":0.828},{"type":"tire","x":0.022,"y":0.853},{"type":"tire","x":0.028,"y":0.87},{"type":"tire","x":0.036,"y":0.888},{"type":"tire","x":0.042,"y":0.901},{"type":"tire","x":0.053,"y":0.907},{"type":"tire","x":0.061,"y":0.914},{"type":"tire","x":0.072,"y":0.922},{"type":"tire","x":0.082,"y":0.928},{"type":"tire","x":0.095,"y":0.933},{"type":"tire","x":0.087,"y":0.934},{"type":"tire","x":0.116,"y":0.462},{"type":"tire","x":0.118,"y":0.475},{"type":"tire","x":0.119,"y":0.493},{"type":"tire","x":0.124,"y":0.512},{"type":"tire","x":0.132,"y":0.528},{"type":"tire","x":0.138,"y":0.547},{"type":"tire","x":0.145,"y":0.562},{"type":"tire","x":0.155,"y":0.572},{"type":"tire","x":0.162,"y":0.574},{"type":"tire","x":0.181,"y":0.489},{"type":"tire","x":0.174,"y":0.489},{"type":"tire","x":0.166,"y":0.48},{"type":"tire","x":0.163,"y":0.454},{"type":"tire","x":0.16,"y":0.432},{"type":"tire","x":0.041,"y":0.255},{"type":"tire","x":0.05,"y":0.245},{"type":"tire","x":0.061,"y":0.241},{"type":"tire","x":0.068,"y":0.234},{"type":"tire","x":0.079,"y":0.23},{"type":"tire","x":0.087,"y":0.23},{"type":"tire","x":0.096,"y":0.233},{"type":"tire","x":0.105,"y":0.236},{"type":"tire","x":0.114,"y":0.243},{"type":"tire","x":0.124,"y":0.253},{"type":"tire","x":0.13,"y":0.266},{"type":"tire","x":0.138,"y":0.278},{"type":"tire","x":0.145,"y":0.295},{"type":"tire","x":0.148,"y":0.313},{"type":"tire","x":0.289,"y":0.442},{"type":"tire","x":0.299,"y":0.428},{"type":"tire","x":0.303,"y":0.414},{"type":"tire","x":0.307,"y":0.392},{"type":"tire","x":0.311,"y":0.364},{"type":"tire","x":0.342,"y":0.201},{"type":"tire","x":0.348,"y":0.178},{"type":"tire","x":0.356,"y":0.151},{"type":"tire","x":0.37,"y":0.139},{"type":"tire","x":0.38,"y":0.132},{"type":"garage","x":0.268,"y":0.264},{"type":"grandstand","x":0.439,"y":0.184},{"type":"grandstand","x":0.553,"y":0.197},{"type":"tire","x":0.889,"y":0.929},{"type":"tire","x":0.899,"y":0.913},{"type":"tire","x":0.905,"y":0.892},{"type":"tire","x":0.916,"y":0.872},{"type":"tire","x":0.922,"y":0.845},{"type":"tire","x":0.929,"y":0.817},{"type":"tire","x":0.932,"y":0.789},{"type":"tire","x":0.929,"y":0.75},{"type":"tire","x":0.796,"y":0.445},{"type":"tire","x":0.803,"y":0.459},{"type":"tire","x":0.811,"y":0.466},{"type":"tire","x":0.82,"y":0.47},{"type":"tire","x":0.833,"y":0.471},{"type":"tire","x":0.839,"y":0.454},{"type":"tire","x":0.845,"y":0.43},{"type":"tire","x":0.847,"y":0.403},{"type":"tire","x":0.764,"y":0.491},{"type":"tire","x":0.77,"y":0.511},{"type":"tire","x":0.777,"y":0.53},{"type":"tire","x":0.783,"y":0.537},{"type":"tire","x":0.792,"y":0.547},{"type":"tire","x":0.797,"y":0.55},{"type":"tire","x":0.811,"y":0.563},{"type":"tire","x":0.82,"y":0.564},{"type":"tire","x":0.837,"y":0.564},{"type":"tire","x":0.832,"y":0.564},{"type":"tire","x":0.804,"y":0.557},{"type":"tire","x":0.848,"y":0.555},{"type":"tire","x":0.856,"y":0.549},{"type":"tire","x":0.864,"y":0.533},{"type":"tire","x":0.873,"y":0.514},{"type":"tire","x":0.88,"y":0.501},{"type":"tire","x":0.889,"y":0.482},{"type":"tire","x":0.891,"y":0.461},{"type":"tire","x":0.81,"y":0.154},{"type":"tire","x":0.817,"y":0.167},{"type":"tire","x":0.824,"y":0.178},{"type":"tire","x":0.827,"y":0.186},{"type":"tire","x":0.833,"y":0.201},{"type":"tire","x":0.826,"y":0.07},{"type":"tire","x":0.837,"y":0.08},{"type":"tire","x":0.847,"y":0.095},{"type":"tire","x":0.857,"y":0.105},{"type":"tire","x":0.862,"y":0.117},{"type":"tire","x":0.868,"y":0.133},{"type":"tire","x":0.874,"y":0.149},{"type":"tire","x":0.884,"y":0.172},{"type":"tire","x":0.883,"y":0.188},{"type":"tire","x":0.716,"y":0.305},{"type":"tire","x":0.708,"y":0.289},{"type":"tire","x":0.696,"y":0.295},{"type":"tire","x":0.689,"y":0.311},{"type":"tire","x":0.678,"y":0.317},{"type":"tire","x":0.668,"y":0.334},{"type":"tire","x":0.663,"y":0.353},{"type":"tire","x":0.663,"y":0.375},{"type":"tire","x":0.607,"y":0.547},{"type":"tire","x":0.622,"y":0.55},{"type":"tire","x":0.631,"y":0.528},{"type":"tire","x":0.639,"y":0.501},{"type":"tire","x":0.645,"y":0.483},{"type":"tire","x":0.611,"y":0.403},{"type":"tire","x":0.607,"y":0.417},{"type":"tire","x":0.6,"y":0.434},{"type":"tire","x":0.591,"y":0.443},{"type":"tire","x":0.58,"y":0.443},{"type":"tire","x":0.566,"y":0.449},{"type":"tire","x":0.499,"y":0.5},{"type":"tire","x":0.492,"y":0.509},{"type":"tire","x":0.487,"y":0.538},{"type":"tire","x":0.487,"y":0.563},{"type":"tire","x":0.484,"y":0.589},{"type":"tire","x":0.485,"y":0.616},{"type":"tire","x":0.489,"y":0.636},{"type":"tire","x":0.495,"y":0.654},{"type":"tire","x":0.505,"y":0.668},{"type":"tire","x":0.522,"y":0.695},{"type":"tire","x":0.514,"y":0.683},{"type":"tire","x":0.534,"y":0.712},{"type":"tire","x":0.545,"y":0.714},{"type":"tire","x":0.555,"y":0.72},{"type":"tire","x":0.548,"y":0.555},{"type":"tire","x":0.54,"y":0.563},{"type":"tire","x":0.54,"y":0.583},{"type":"tire","x":0.549,"y":0.604},{"type":"tire","x":0.563,"y":0.614},{"type":"tire","x":0.834,"y":0.672},{"type":"tire","x":0.845,"y":0.687},{"type":"tire","x":0.855,"y":0.705},{"type":"tire","x":0.865,"y":0.722},{"type":"tire","x":0.876,"y":0.753},{"type":"tire","x":0.876,"y":0.775},{"type":"tire","x":0.871,"y":0.816},{"type":"tire","x":0.874,"y":0.796},{"type":"tire","x":0.865,"y":0.838},{"type":"tire","x":0.851,"y":0.843},{"type":"tire","x":0.882,"y":0.626},{"type":"tire","x":0.892,"y":0.638},{"type":"tire","x":0.9,"y":0.649},{"type":"tire","x":0.912,"y":0.662},{"type":"tire","x":0.92,"y":0.676},{"type":"tire","x":0.929,"y":0.704},{"type":"tire","x":0.631,"y":0.264},{"type":"tire","x":0.645,"y":0.254},{"type":"tire","x":0.655,"y":0.233},{"type":"tire","x":0.664,"y":0.217},{"type":"tire","x":0.674,"y":0.208},{"type":"tire","x":0.684,"y":0.207},{"type":"tire","x":0.697,"y":0.2},{"type":"tire","x":0.709,"y":0.199},{"type":"tire","x":0.725,"y":0.203},{"type":"tire","x":0.739,"y":0.213},{"type":"tire","x":0.747,"y":0.224},{"type":"tire","x":0.749,"y":0.246},{"type":"tire","x":0.755,"y":0.266},{"type":"tire","x":0.766,"y":0.297},{"type":"tire","x":0.764,"y":0.279},{"type":"tire","x":0.77,"y":0.326}];
+const DECORATIONS = DECORATIONS_RAW.map(d => ({ ...d, x: d.x + 0.05 }));
 
 const TRACK_HALF_W = 0.042; // half-width — wide enough for 2 cars side by side
 
@@ -611,7 +612,7 @@ function renderDecorations(w, h) {
 
     else if (d.type === 'grandstand') {
       // Tribün — metal bleachers with colored dots (people)
-      const gw = 40, gh = 25;
+      const gw = 70, gh = 40;
       // Structure
       ctx.fillStyle = '#444';
       ctx.fillRect(px - gw/2, py - gh/2, gw, gh);
@@ -622,44 +623,61 @@ function renderDecorations(w, h) {
       ctx.fillStyle = '#555';
       ctx.fillRect(px - gw/2, py - gh/2 + 8, gw, 2);
       ctx.fillRect(px - gw/2, py - gh/2 + 16, gw, 2);
-      // People (colored dots)
-      const pColors = ['#e94560','#f6ad55','#3b82f6','#22c55e','#a855f7','#fff'];
-      for (let i = 0; i < 12; i++) {
-        const row = Math.floor(i / 4);
-        const col = i % 4;
-        ctx.fillStyle = pColors[i % pColors.length];
-        ctx.beginPath();
-        ctx.arc(px - 12 + col * 8, py - 6 + row * 8, 2, 0, Math.PI * 2);
-        ctx.fill();
+      // People (colored dots) — more rows and columns
+      const pColors = ['#e94560','#f6ad55','#3b82f6','#22c55e','#a855f7','#fff','#ff6b9d','#ffd93d'];
+      for (let row = 0; row < 4; row++) {
+        for (let col = 0; col < 8; col++) {
+          ctx.fillStyle = pColors[(row * 8 + col) % pColors.length];
+          ctx.beginPath();
+          ctx.arc(px - gw/2 + 6 + col * 8, py - gh/2 + 6 + row * 9, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
-      // "GOKART" text
-      ctx.fillStyle = 'rgba(255,255,255,0.3)';
-      ctx.font = '5px JetBrains Mono';
+      // "GOKART GP" banner
+      ctx.fillStyle = '#e94560';
+      ctx.fillRect(px - gw/2, py + gh/2 + 2, gw, 10);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 7px JetBrains Mono';
       ctx.textAlign = 'center';
-      ctx.fillText('GOKART', px, py + gh/2 + 8);
+      ctx.fillText('GOKART GP', px, py + gh/2 + 10);
     }
 
     else if (d.type === 'garage') {
-      // Garage/paddock — rectangular building
-      const gw = 35, gh = 28;
+      // Garage/paddock — larger building with 3 bays
+      const gw = 65, gh = 45;
+      // Building shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.fillRect(px - gw/2 + 3, py - gh/2 + 3, gw, gh);
       // Building
       ctx.fillStyle = '#3a3a3a';
       ctx.fillRect(px - gw/2, py - gh/2, gw, gh);
-      // Roof
+      // Roof stripe
       ctx.fillStyle = '#e94560';
-      ctx.fillRect(px - gw/2, py - gh/2, gw, 4);
-      // Door
-      ctx.fillStyle = '#555';
-      ctx.fillRect(px - 5, py, 10, gh/2);
+      ctx.fillRect(px - gw/2, py - gh/2, gw, 6);
+      // 3 garage doors
+      for (let i = 0; i < 3; i++) {
+        const dx = px - gw/2 + 5 + i * 20;
+        ctx.fillStyle = '#555';
+        ctx.fillRect(dx, py - 2, 16, gh/2 + 2);
+        // Door lines
+        ctx.strokeStyle = '#444';
+        ctx.lineWidth = 0.5;
+        for (let line = 0; line < 4; line++) {
+          ctx.beginPath();
+          ctx.moveTo(dx, py + 2 + line * 5);
+          ctx.lineTo(dx + 16, py + 2 + line * 5);
+          ctx.stroke();
+        }
+      }
       // Border
       ctx.strokeStyle = '#555';
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1.5;
       ctx.strokeRect(px - gw/2, py - gh/2, gw, gh);
       // Label
-      ctx.fillStyle = 'rgba(255,255,255,0.25)';
-      ctx.font = '5px JetBrains Mono';
+      ctx.fillStyle = '#f6ad55';
+      ctx.font = 'bold 8px JetBrains Mono';
       ctx.textAlign = 'center';
-      ctx.fillText('PIT', px, py - gh/2 - 3);
+      ctx.fillText('⚙ PIT STOP', px, py - gh/2 - 5);
     }
   });
 }
