@@ -64,6 +64,9 @@ let milestoneTimer = 0;
 let bgBirds = []; // flying birds
 let wooshLines = []; // pipe pass effect
 let bgConfetti = []; // celebration confetti at high score
+let shootingStars = [];
+let airplane = { x: -200, y: 0, active: false, timer: 0 };
+let deathSlowMo = 0;
 
 // Death messages
 const DEATH_MSGS = [
@@ -385,12 +388,50 @@ function update() {
   bgConfetti.forEach(c => { c.y += c.vy; c.x += c.vx; c.rot += c.rotSpeed; });
   bgConfetti = bgConfetti.filter(c => c.y < canvas.height + 10);
   if (bgConfetti.length > 60) bgConfetti.splice(0, 5);
+
+  // Shooting stars at night
+  if (dayNightCycle > 0.5 && frameCount % 300 === 0 && shootingStars.length < 2) {
+    shootingStars.push({
+      x: Math.random() * canvas.width * 0.6,
+      y: Math.random() * canvas.height * 0.25,
+      vx: 6 + Math.random() * 4,
+      vy: 2 + Math.random() * 2,
+      life: 20 + Math.random() * 15,
+      maxLife: 35,
+    });
+  }
+  shootingStars.forEach(s => { s.x += s.vx; s.y += s.vy; s.life--; });
+  shootingStars = shootingStars.filter(s => s.life > 0);
+
+  // Airplane (rare, every ~600 frames)
+  airplane.timer++;
+  if (!airplane.active && airplane.timer > 600 + Math.random() * 400) {
+    airplane.active = true;
+    airplane.x = -100;
+    airplane.y = canvas.height * 0.08 + Math.random() * canvas.height * 0.12;
+    airplane.timer = 0;
+  }
+  if (airplane.active) {
+    airplane.x += 1.5;
+    if (airplane.x > canvas.width + 200) airplane.active = false;
+  }
 }
 
 // ─── Die ───
 function die() {
-  gameActive = false;
+  // Slow-mo death: keep running for a few frames at reduced speed
+  deathSlowMo = 15;
   sfxDie();
+
+  // After slow-mo, actually stop
+  const slowDeath = setInterval(() => {
+    deathSlowMo--;
+    cake.vy *= 0.7; // slow down
+    if (deathSlowMo <= 0) {
+      clearInterval(slowDeath);
+      gameActive = false;
+    }
+  }, 50);
   screenShake = 20;
   screenFlash = 0.5;
   screenFlashColor = '#e94560';
@@ -545,6 +586,45 @@ function render() {
     ctx.lineTo(x, h * 0.64 + Math.sin((x + bgOffset * 0.2) * 0.009) * 25 + Math.sin(x * 0.018) * 12);
   }
   ctx.lineTo(w, h * 0.72); ctx.closePath(); ctx.fill();
+
+  // Shooting stars
+  shootingStars.forEach(s => {
+    const alpha = s.life / s.maxLife;
+    ctx.strokeStyle = `rgba(255,255,220,${alpha * 0.7})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(s.x, s.y);
+    ctx.lineTo(s.x - s.vx * 4, s.y - s.vy * 4);
+    ctx.stroke();
+    // Head glow
+    ctx.fillStyle = `rgba(255,255,220,${alpha})`;
+    ctx.beginPath(); ctx.arc(s.x, s.y, 2, 0, Math.PI * 2); ctx.fill();
+  });
+
+  // Airplane with banner
+  if (airplane.active) {
+    const ax = airplane.x, ay = airplane.y;
+    // Plane body
+    ctx.fillStyle = `rgba(255,255,255,${t > 0.5 ? 0.15 : 0.25})`;
+    ctx.beginPath();
+    ctx.moveTo(ax + 12, ay); ctx.lineTo(ax - 8, ay - 4); ctx.lineTo(ax - 12, ay - 8);
+    ctx.lineTo(ax - 8, ay); ctx.lineTo(ax - 12, ay + 4); ctx.lineTo(ax - 8, ay + 2);
+    ctx.closePath(); ctx.fill();
+    // Banner
+    const bannerWave = Math.sin(frameCount * 0.05) * 3;
+    ctx.fillStyle = `rgba(233,69,96,${t > 0.5 ? 0.2 : 0.35})`;
+    ctx.beginPath();
+    ctx.moveTo(ax - 12, ay);
+    ctx.lineTo(ax - 80, ay + bannerWave);
+    ctx.lineTo(ax - 80, ay + 12 + bannerWave);
+    ctx.lineTo(ax - 12, ay + 10);
+    ctx.closePath(); ctx.fill();
+    // Banner text
+    ctx.fillStyle = `rgba(255,255,255,${t > 0.5 ? 0.25 : 0.5})`;
+    ctx.font = '5px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText('BOLDOG SZÜLINAPOT!', ax - 46, ay + 8 + bannerWave);
+  }
 
   // Background buildings/city silhouette
   ctx.fillStyle = `rgba(${Math.max(0, r - 25)},${Math.max(0, g - 20)},${Math.max(0, b - 12)},0.35)`;
@@ -706,6 +786,43 @@ function render() {
     ctx.beginPath(); ctx.arc(p.x + 4, botY + 10, 2, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(p.x + PIPE_WIDTH + 4, botY + 10, 2, 0, Math.PI * 2); ctx.fill();
 
+    // Birthday flag on top of some pipes
+    if (Math.floor(p.x) % 3 === 0) {
+      const flagX = p.x + PIPE_WIDTH / 2;
+      // Pole
+      ctx.strokeStyle = '#888';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(flagX, topH - 20); ctx.lineTo(flagX, topH - 42); ctx.stroke();
+      // Flag (triangle, waving)
+      const wave = Math.sin(frameCount * 0.04 + p.x * 0.01) * 2;
+      const flagColors = ['#e94560', '#f6ad55', '#3b82f6', '#ec4899'];
+      ctx.fillStyle = flagColors[Math.floor(p.x) % flagColors.length];
+      ctx.beginPath();
+      ctx.moveTo(flagX, topH - 42);
+      ctx.lineTo(flagX + 14 + wave, topH - 36);
+      ctx.lineTo(flagX, topH - 30);
+      ctx.closePath(); ctx.fill();
+    }
+
+    // Bats at night in the pipe gap
+    if (t > 0.5 && !p.scored && Math.floor(p.x * 0.1) % 4 === 0) {
+      const batX = p.x + PIPE_WIDTH / 2;
+      const batY = topH + p.gap / 2 + Math.sin(frameCount * 0.06 + p.x) * 15;
+      const wing = Math.sin(frameCount * 0.12 + p.x) * 8;
+      ctx.fillStyle = 'rgba(100,80,120,0.4)';
+      ctx.beginPath();
+      ctx.moveTo(batX - 10, batY + wing);
+      ctx.quadraticCurveTo(batX - 3, batY - 2, batX, batY);
+      ctx.quadraticCurveTo(batX + 3, batY - 2, batX + 10, batY + wing);
+      ctx.lineTo(batX + 5, batY + 2);
+      ctx.lineTo(batX - 5, batY + 2);
+      ctx.closePath(); ctx.fill();
+      // Bat eyes
+      ctx.fillStyle = 'rgba(255,100,100,0.5)';
+      ctx.beginPath(); ctx.arc(batX - 2, batY - 1, 1, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(batX + 2, batY - 1, 1, 0, Math.PI * 2); ctx.fill();
+    }
+
     // Moving pipe — warning stripes
     if (p.moving) {
       ctx.save();
@@ -779,12 +896,17 @@ function render() {
     ctx.stroke();
   });
 
-  // Trail behind cake
-  trail.forEach((t, i) => {
-    const alpha = (t.life / 12) * 0.3;
-    const s = cake.size * (t.life / 12) * 0.6;
-    ctx.fillStyle = `rgba(236, 72, 153, ${alpha})`;
-    ctx.beginPath(); ctx.arc(t.x, t.y, s, 0, Math.PI * 2); ctx.fill();
+  // Trail behind cake (rainbow at combo 5+)
+  const rainbowColors = ['#e94560', '#f6ad55', '#fbbf24', '#22c55e', '#3b82f6', '#a855f7'];
+  trail.forEach((tr, i) => {
+    const alpha = (tr.life / 12) * 0.35;
+    const s = cake.size * (tr.life / 12) * 0.6;
+    if (combo >= 5) {
+      ctx.fillStyle = rainbowColors[i % rainbowColors.length] + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+    } else {
+      ctx.fillStyle = `rgba(236, 72, 153, ${alpha})`;
+    }
+    ctx.beginPath(); ctx.arc(tr.x, tr.y, s, 0, Math.PI * 2); ctx.fill();
   });
 
   // Cake
@@ -1010,6 +1132,9 @@ function startGame() {
   bgBirds = [];
   wooshLines = [];
   bgConfetti = [];
+  shootingStars = [];
+  airplane = { x: -200, y: 0, active: false, timer: 0 };
+  deathSlowMo = 0;
   gameActive = true;
   gameStarted = true;
 
