@@ -50,20 +50,29 @@ export function renderMinigame(container, room, onSuccess) {
     ctx.fillText('Kapard le!', 100, 130);
 
     let isScratching = false;
+    let scratchCount = 0;
 
     function scratch(x, y) {
       ctx.globalCompositeOperation = 'destination-out';
+      // Bigger brush for easier scratching
       ctx.beginPath();
-      ctx.arc(x, y, 15, 0, Math.PI * 2);
+      ctx.arc(x, y, 22, 0, Math.PI * 2);
       ctx.fill();
+
+      scratchCount++;
+
+      // Check every 5 scratches (performance), low threshold (25%)
+      if (scratchCount % 5 !== 0) return;
 
       const imageData = ctx.getImageData(0, 0, 200, 260);
       let transparent = 0;
-      for (let j = 3; j < imageData.data.length; j += 4) {
+      // Sample every 4th pixel for speed
+      for (let j = 3; j < imageData.data.length; j += 16) {
         if (imageData.data[j] === 0) transparent++;
       }
+      const totalSampled = (200 * 260) / 4;
 
-      if (transparent / (200 * 260) > 0.5 && !card.dataset.done) {
+      if (transparent / totalSampled > 0.25 && !card.dataset.done) {
         card.dataset.done = 'true';
         canvas.style.opacity = '0';
         canvas.style.transition = 'opacity 0.5s';
