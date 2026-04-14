@@ -21,44 +21,37 @@ resizeCanvas();
 
 // Centerline waypoints (normalized 0-1, mapped to screen)
 // Layout: clockwise, matching the reference photo
+// Track traced from reference photo (blue line)
 const TRACK_RAW = [
-  // START straight (bottom-left going right)
-  [0.12, 0.78], [0.22, 0.78], [0.32, 0.78], [0.42, 0.78],
-  // Gentle right curve
-  [0.50, 0.77], [0.56, 0.74],
-  // Sharp right hairpin going up-right
-  [0.60, 0.68], [0.62, 0.60], [0.62, 0.52],
-  // Right kink
-  [0.64, 0.46], [0.68, 0.42],
-  // Short straight up-right
-  [0.72, 0.38], [0.76, 0.34],
-  // Top-right hairpin (180°)
-  [0.79, 0.28], [0.78, 0.22], [0.74, 0.18], [0.68, 0.17],
-  // Left along top
-  [0.62, 0.19], [0.56, 0.22],
-  // S-curve down
-  [0.52, 0.27], [0.50, 0.32], [0.52, 0.37],
-  // Right kink into middle section
-  [0.48, 0.42], [0.42, 0.44],
-  // Left hairpin
-  [0.36, 0.42], [0.30, 0.38], [0.26, 0.32],
-  // Up to top-left
-  [0.24, 0.26], [0.24, 0.20],
-  // Top-left hairpin
-  [0.26, 0.15], [0.30, 0.12], [0.36, 0.12],
-  // Right along top-center
-  [0.40, 0.14], [0.44, 0.18],
-  // Down through center chicane
-  [0.44, 0.24], [0.42, 0.30], [0.38, 0.36],
-  // Sweeping left going down
-  [0.34, 0.44], [0.28, 0.52], [0.22, 0.56],
-  // Down left side
-  [0.18, 0.60], [0.15, 0.66], [0.14, 0.72],
-  // Back to start
-  [0.13, 0.76],
+  // START/FINISH straight — bottom, going right
+  [0.08, 0.85], [0.18, 0.85], [0.28, 0.85], [0.38, 0.85], [0.48, 0.85],
+  // Curve right + up along right side
+  [0.55, 0.84], [0.60, 0.82], [0.65, 0.78], [0.68, 0.72],
+  // Up the right side
+  [0.70, 0.65], [0.72, 0.57], [0.73, 0.48],
+  // Top-right section — sharp left hairpin
+  [0.74, 0.40], [0.75, 0.33], [0.74, 0.27], [0.70, 0.22], [0.64, 0.20],
+  // Left along the top
+  [0.57, 0.19], [0.50, 0.18], [0.43, 0.18],
+  // Down into left T-section
+  [0.38, 0.20], [0.34, 0.24], [0.32, 0.30],
+  // Left hairpin going down-left
+  [0.30, 0.36], [0.26, 0.40], [0.22, 0.42],
+  // Sharp right U-turn at left side
+  [0.17, 0.42], [0.13, 0.40], [0.11, 0.35], [0.12, 0.30], [0.15, 0.26],
+  // Right going back toward center-top
+  [0.20, 0.23], [0.25, 0.22], [0.30, 0.24],
+  // S-curve going down through the middle
+  [0.33, 0.28], [0.34, 0.34], [0.32, 0.40],
+  // Sweeping right turn going down-center
+  [0.28, 0.46], [0.24, 0.52], [0.22, 0.58],
+  // Bottom-left curve back toward start
+  [0.20, 0.64], [0.17, 0.70], [0.14, 0.76], [0.11, 0.82],
+  // Close back to start
+  [0.09, 0.85],
 ];
 
-const TRACK_HALF_W = 0.032; // half-width as fraction of min(w,h)
+const TRACK_HALF_W = 0.038; // half-width as fraction of min(w,h) — wider for playability
 
 let track = null;
 let trackLen = 0;
@@ -134,10 +127,10 @@ class Car {
     this.x = 0; this.y = 0; this.angle = 0; this.speed = 0;
     this.color = color; this.stripe = stripe; this.name = name;
     this.isPlayer = isPlayer;
-    this.maxSpeed = isPlayer ? 5.5 : 4.5 + Math.random() * 1.0;
-    this.accel = isPlayer ? 0.14 : 0.10 + Math.random() * 0.04;
-    this.friction = 0.97; this.offFriction = 0.90;
-    this.turnSpeed = isPlayer ? 0.048 : 0.042;
+    this.maxSpeed = isPlayer ? 4.8 : 4.0 + Math.random() * 0.8;
+    this.accel = isPlayer ? 0.13 : 0.09 + Math.random() * 0.04;
+    this.friction = 0.975; this.offFriction = 0.88;
+    this.turnSpeed = isPlayer ? 0.065 : 0.055;
     this.w = 12; this.h = 22;
     this.lap = 0; this.nextCP = 0; this.cpPassed = 0;
     this.finished = false; this.finishTime = 0;
@@ -240,16 +233,23 @@ function updatePlayer(car) {
     if (skidMarks.length > 500) skidMarks.splice(0, 2);
   }
 
-  car.trailX = car.x; car.trailY = car.y;
+  const prevX = car.x, prevY = car.y;
   car.x += Math.sin(car.angle) * car.speed;
   car.y -= Math.cos(car.angle) * car.speed;
 
   if (!isOnTrack(car.x, car.y)) {
+    // Revert to previous position
+    car.x = prevX;
+    car.y = prevY;
+    // Bounce: reverse a bit and slow down
+    car.x -= Math.sin(car.angle) * 1.5;
+    car.y += Math.cos(car.angle) * 1.5;
+    car.speed *= -0.2; // slight bounce back
+    // Also nudge toward nearest track center
     const p = track.center[findNearestIdx(car.x, car.y)];
     const d = Math.hypot(p.x - car.x, p.y - car.y) || 1;
-    car.x += (p.x - car.x) / d * 3;
-    car.y += (p.y - car.y) / d * 3;
-    car.speed *= 0.35;
+    car.x += (p.x - car.x) / d * 1.5;
+    car.y += (p.y - car.y) / d * 1.5;
   }
 }
 
@@ -277,15 +277,17 @@ function updateAI(car) {
 
   if (Math.hypot(dx, dy) < track.hw * 1.5) car.aiTarget = (car.aiTarget + 1) % tc.length;
 
+  const aPrevX = car.x, aPrevY = car.y;
   car.x += Math.sin(car.angle) * car.speed;
   car.y -= Math.cos(car.angle) * car.speed;
 
   if (!isOnTrack(car.x, car.y)) {
+    car.x = aPrevX; car.y = aPrevY;
     const p = tc[car.aiTarget];
     const d = Math.hypot(p.x - car.x, p.y - car.y) || 1;
-    car.x += (p.x - car.x) / d * 3.5;
-    car.y += (p.y - car.y) / d * 3.5;
-    car.speed *= 0.5;
+    car.x += (p.x - car.x) / d * 2;
+    car.y += (p.y - car.y) / d * 2;
+    car.speed *= 0.4;
   }
 }
 
