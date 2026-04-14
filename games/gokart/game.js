@@ -284,7 +284,7 @@ const AI_DEFS = [
 
 let player, aiCars, allCars;
 let gameRunning = false, startTime = 0, lapTimes = [];
-const TOTAL_LAPS = 3;
+const TOTAL_LAPS = 5;
 let bestTime = localStorage.getItem('apu-gokart-best') || null;
 let skidMarks = [];
 let positions = [];
@@ -487,23 +487,40 @@ function update() {
    RENDER
    ═══════════════════════════ */
 
+// Camera state
+const camera = { x: 0, y: 0, zoom: 2.2, targetZoom: 2.2, smoothing: 0.08 };
+
 function render() {
   const w = canvas.width, h = canvas.height;
 
-  // Night mode: darker everything
-  if (nightMode) {
-    ctx.fillStyle = '#111';
-    ctx.fillRect(0, 0, w, h);
-  } else {
-    ctx.fillStyle = '#2a2a2a';
-    ctx.fillRect(0, 0, w, h);
-  }
+  // Adjust camera zoom based on speed
+  camera.targetZoom = 2.2 - Math.abs(player.speed) * 0.08; // zoom out at high speed
+  camera.targetZoom = Math.max(1.6, Math.min(2.5, camera.targetZoom));
+  camera.zoom += (camera.targetZoom - camera.zoom) * 0.05;
 
-  // Floor texture
-  ctx.strokeStyle = nightMode ? 'rgba(255,255,255,0.015)' : 'rgba(255,255,255,0.03)';
-  ctx.lineWidth = 1;
-  for (let x = 0; x < w; x += 80) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
-  for (let y = 0; y < h; y += 80) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+  // Smooth camera follow
+  camera.x += (player.x - camera.x) * camera.smoothing;
+  camera.y += (player.y - camera.y) * camera.smoothing;
+
+  // Clear
+  ctx.fillStyle = nightMode ? '#080808' : '#1e1e1e';
+  ctx.fillRect(0, 0, w, h);
+
+  // ─── BEGIN CAMERA TRANSFORM ───
+  ctx.save();
+  ctx.translate(w / 2, h / 2);
+  ctx.scale(camera.zoom, camera.zoom);
+  ctx.translate(-camera.x, -camera.y);
+
+  // Floor texture (expanded for zoom)
+  const floorSize = Math.max(w, h) * 2;
+  const fx = camera.x - floorSize/2, fy = camera.y - floorSize/2;
+  ctx.strokeStyle = nightMode ? 'rgba(255,255,255,0.015)' : 'rgba(255,255,255,0.025)';
+  ctx.lineWidth = 0.5;
+  const gridStart = Math.floor(fx / 80) * 80;
+  for (let x = gridStart; x < fx + floorSize; x += 80) { ctx.beginPath(); ctx.moveTo(x, fy); ctx.lineTo(x, fy+floorSize); ctx.stroke(); }
+  const gridStartY = Math.floor(fy / 80) * 80;
+  for (let y = gridStartY; y < fy + floorSize; y += 80) { ctx.beginPath(); ctx.moveTo(fx, y); ctx.lineTo(fx+floorSize, y); ctx.stroke(); }
 
   // Track asphalt
   ctx.beginPath();
@@ -594,35 +611,61 @@ function render() {
   const sorted = [...allCars].sort((a,b) => a.y - b.y);
   sorted.forEach(renderCar);
 
-  // Night mode: headlight cone for player
+  // Headlight in world space (before camera restore)
   if (nightMode) {
     ctx.save();
     ctx.translate(player.x, player.y);
     ctx.rotate(player.angle);
-    const grad = ctx.createRadialGradient(0, -player.h, 0, 0, -player.h - 80, 50);
-    grad.addColorStop(0, 'rgba(255,240,200,0.15)');
+    const grad = ctx.createRadialGradient(0, -player.h, 0, 0, -player.h - 60, 40);
+    grad.addColorStop(0, 'rgba(255,240,200,0.2)');
     grad.addColorStop(1, 'rgba(255,240,200,0)');
     ctx.fillStyle = grad;
     ctx.beginPath();
-    ctx.moveTo(-15, -player.h/2);
-    ctx.lineTo(15, -player.h/2);
-    ctx.lineTo(40, -player.h/2 - 80);
-    ctx.lineTo(-40, -player.h/2 - 80);
+    ctx.moveTo(-12, -player.h/2);
+    ctx.lineTo(12, -player.h/2);
+    ctx.lineTo(30, -player.h/2 - 60);
+    ctx.lineTo(-30, -player.h/2 - 60);
     ctx.closePath();
     ctx.fill();
     ctx.restore();
+  }
 
-    // Vignette
-    const vig = ctx.createRadialGradient(player.x, player.y, 100, player.x, player.y, Math.max(w,h)*0.6);
+  // ─── END CAMERA TRANSFORM ───
+  ctx.restore();
+
+  // ─── SCREEN SPACE (HUD, effects) ───
+
+  // Night vignette (screen space)
+  if (nightMode) {
+    const vig = ctx.createRadialGradient(w/2, h/2, Math.min(w,h)*0.2, w/2, h/2, Math.max(w,h)*0.55);
     vig.addColorStop(0, 'rgba(0,0,0,0)');
-    vig.addColorStop(1, 'rgba(0,0,0,0.7)');
+    vig.addColorStop(1, 'rgba(0,0,0,0.75)');
     ctx.fillStyle = vig;
     ctx.fillRect(0, 0, w, h);
   }
 
+  // Speed lines at high speed (screen space)
+  if (Math.abs(player.speed) > 3.5) {
+    const intensity = (Math.abs(player.speed) - 3.5) / 3;
+    ctx.save();
+    ctx.globalAlpha = Math.min(0.15, intensity * 0.1);
+    for (let i = 0; i < 8; i++) {
+      const lx = Math.random() * w;
+      const ly = Math.random() * h;
+      const len = 20 + intensity * 40;
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(lx, ly);
+      ctx.lineTo(lx - Math.sin(player.angle) * len, ly + Math.cos(player.angle) * len);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   // Camera shake
   if (player.speed > 4.5) {
-    const s = (player.speed-4.5)*0.25;
+    const s = (player.speed-4.5)*0.3;
     canvas.style.transform = `translate(${(Math.random()-0.5)*s}px,${(Math.random()-0.5)*s}px)`;
   } else canvas.style.transform = '';
 
@@ -782,6 +825,11 @@ async function startRace() {
   document.getElementById('hud-lap').textContent = `1 / ${TOTAL_LAPS}`;
   document.getElementById('hud-best').textContent = bestTime ? formatTime(parseFloat(bestTime)) : '--:--.-';
   document.getElementById('hud-pos').textContent = `4/${allCars.length}`;
+
+  // Init camera on player
+  camera.x = player.x;
+  camera.y = player.y;
+  camera.zoom = 2.2;
 
   showScreen('game'); render();
   await runCountdown();
