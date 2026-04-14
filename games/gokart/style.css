@@ -167,7 +167,7 @@ body {
 }
 
 /* === Game Screen === */
-#game-screen { background: #2d5a27; }
+#game-screen { background: #2a2a2a; }
 
 #game-canvas {
   position: absolute;

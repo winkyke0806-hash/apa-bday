@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dekoráció editor</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1a1a2e; color: #fff; font-family: monospace; display: flex; flex-direction: column; height: 100vh; }
+    .info { padding: 8px 12px; background: #222; font-size: 0.75rem; color: #f6ad55; }
+    .toolbar { display: flex; gap: 8px; padding: 10px; background: #111; flex-wrap: wrap; align-items: center; }
+    .toolbar button { font-family: monospace; padding: 6px 14px; border: 2px solid #444; background: #333; color: #fff; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+    .toolbar button:hover { background: #555; }
+    .toolbar button.active { border-color: #e94560; background: #e94560; }
+    .toolbar span { font-size: 0.75rem; color: #888; }
+    canvas { flex: 1; cursor: crosshair; }
+    .output { padding: 10px; background: #0a0a1a; font-size: 0.65rem; color: #4ade80; max-height: 130px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <div class="info">
+    🎨 Válassz típust, aztán <b>kattints</b> a pályára. A pálya körvonala háttérben látszik. Exportáld ha kész!
+  </div>
+  <div class="toolbar">
+    <button class="active" data-type="tree">🌳 Fa</button>
+    <button data-type="bush">🌿 Bokor</button>
+    <button data-type="tire">⚫ Gumikorlát</button>
+    <button data-type="grandstand">🏟️ Tribün</button>
+    <button data-type="garage">🏠 Garázs</button>
+    <button data-type="custom">⭐ Egyéb</button>
+    <span>|</span>
+    <button id="btn-undo">↩</button>
+    <button id="btn-clear">🗑</button>
+    <button id="btn-export" style="border-color:#4ade80;color:#4ade80;">📋 Export</button>
+    <span id="count">0 elem</span>
+  </div>
+  <canvas id="canvas"></canvas>
+  <div class="output" id="output">Kattints a pályára elemek elhelyezéséhez...</div>
+
+  <script>
+    // Track from user (for background reference)
+    const TRACK = [
+      [0.498,0.125],[0.455,0.125],[0.439,0.167],[0.437,0.222],[0.438,0.273],[0.438,0.329],
+      [0.435,0.389],[0.426,0.41],[0.413,0.434],[0.398,0.458],[0.384,0.467],[0.371,0.476],
+      [0.355,0.491],[0.345,0.491],[0.33,0.493],[0.297,0.497],[0.275,0.487],[0.271,0.442],
+      [0.264,0.402],[0.259,0.355],[0.255,0.323],[0.255,0.292],[0.256,0.26],[0.242,0.239],
+      [0.22,0.244],[0.204,0.26],[0.197,0.292],[0.191,0.352],[0.193,0.437],[0.191,0.492],
+      [0.192,0.543],[0.195,0.597],[0.202,0.639],[0.216,0.65],[0.253,0.66],[0.286,0.659],
+      [0.321,0.656],[0.353,0.658],[0.378,0.666],[0.407,0.662],[0.441,0.656],[0.47,0.663],
+      [0.495,0.662],[0.532,0.66],[0.566,0.659],[0.608,0.66],[0.643,0.656],[0.679,0.641],
+      [0.689,0.612],[0.689,0.571],[0.687,0.531],[0.681,0.501],[0.671,0.481],[0.653,0.475],
+      [0.637,0.476],[0.622,0.473],[0.603,0.481],[0.585,0.485],[0.568,0.498],[0.553,0.512],
+      [0.534,0.516],[0.514,0.497],[0.506,0.442],[0.518,0.398],[0.535,0.381],[0.551,0.36],
+      [0.572,0.355],[0.597,0.358],[0.621,0.368],[0.634,0.379],[0.652,0.379],[0.67,0.364],
+      [0.672,0.334],[0.672,0.302],[0.673,0.235],[0.667,0.198],[0.655,0.176],[0.64,0.16],
+      [0.631,0.15],[0.613,0.141],[0.6,0.131],[0.585,0.129],[0.576,0.129],[0.565,0.133],
+      [0.526,0.129],[0.499,0.127],
+    ];
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const output = document.getElementById('output');
+    const countEl = document.getElementById('count');
+
+    let items = [];
+    let activeType = 'tree';
+
+    // Type buttons
+    document.querySelectorAll('[data-type]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-type]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeType = btn.dataset.type;
+      });
+    });
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      draw();
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / canvas.width;
+      const y = (e.clientY - rect.top) / canvas.height;
+      items.push({ type: activeType, x: +x.toFixed(3), y: +y.toFixed(3) });
+      countEl.textContent = items.length + ' elem';
+      draw();
+    });
+
+    document.getElementById('btn-undo').addEventListener('click', () => {
+      items.pop();
+      countEl.textContent = items.length + ' elem';
+      draw();
+    });
+
+    document.getElementById('btn-clear').addEventListener('click', () => {
+      items = [];
+      countEl.textContent = '0 elem';
+      draw();
+    });
+
+    document.getElementById('btn-export').addEventListener('click', () => {
+      if (!items.length) { output.textContent = 'Nincs elem!'; return; }
+      const code = 'const DECORATIONS = ' + JSON.stringify(items, null, 2) + ';';
+      output.textContent = code;
+      navigator.clipboard.writeText(code).then(() => {
+        output.textContent += '\n\n✅ VÁGÓLAPRA MÁSOLVA!';
+      }).catch(() => {
+        output.textContent += '\n\n⚠️ Jelöld ki és Ctrl+C';
+      });
+    });
+
+    const ICONS = { tree: '🌳', bush: '🌿', tire: '⚫', grandstand: '🏟️', garage: '🏠', custom: '⭐' };
+    const COLORS = { tree: '#22c55e', bush: '#16a34a', tire: '#555', grandstand: '#f6ad55', garage: '#e94560', custom: '#a855f7' };
+
+    function draw() {
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // Dark grass bg
+      ctx.fillStyle = '#1e4d1a';
+      ctx.fillRect(0, 0, w, h);
+
+      // Track reference (wide blue line)
+      ctx.beginPath();
+      TRACK.forEach((p, i) => {
+        const px = p[0] * w, py = p[1] * h;
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      });
+      ctx.closePath();
+      ctx.strokeStyle = 'rgba(100,170,255,0.25)';
+      ctx.lineWidth = Math.min(w, h) * 0.08;
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(100,170,255,0.4)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Items
+      items.forEach((item, idx) => {
+        const px = item.x * w, py = item.y * h;
+        const color = COLORS[item.type] || '#fff';
+
+        // Circle marker
+        ctx.beginPath();
+        ctx.arc(px, py, 8, 0, Math.PI * 2);
+        ctx.fillStyle = color + '44';
+        ctx.fill();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Icon
+        ctx.font = '14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(ICONS[item.type] || '⭐', px, py + 5);
+
+        // Number
+        ctx.fillStyle = '#fff';
+        ctx.font = '9px monospace';
+        ctx.fillText(idx + 1, px, py - 12);
+      });
+    }
+  </script>
+</body>
+</html>

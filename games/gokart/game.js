@@ -396,93 +396,61 @@ function update() {
 function render() {
   const w = canvas.width, h = canvas.height;
 
-  // ─ Background: dark green with texture ─
-  ctx.fillStyle = '#1e4d1a';
+  // ─ INDOOR: Concrete floor ─
+  ctx.fillStyle = '#2a2a2a';
   ctx.fillRect(0, 0, w, h);
 
-  // Grass patches (subtle variation)
-  for (let i = 0; i < 200; i++) {
-    const gx = (i * 173 + 29) % w, gy = (i * 241 + 67) % h;
-    ctx.fillStyle = i % 3 === 0 ? '#1a4216' : '#225520';
-    ctx.fillRect(gx, gy, 4 + (i % 3), 4 + (i % 2));
-  }
+  // Floor texture (concrete panels)
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < w; x += 80) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+  for (let y = 0; y < h; y += 80) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
 
-  // ─ Track surface ─
-  // Outer fill (asphalt)
-  ctx.beginPath();
-  track.outer.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-  ctx.closePath();
-  ctx.fillStyle = '#333';
-  ctx.fill();
-
-  // Inner cutout (grass island)
-  ctx.beginPath();
-  track.inner.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-  ctx.closePath();
-  ctx.fillStyle = '#1e4d1a';
-  ctx.fill();
-
-  // Inner island lighter center
-  ctx.beginPath();
-  track.center.forEach((p, i) => {
-    const ip = track.inner[i];
-    const mx = (p.x + ip.x) / 2, my = (p.y + ip.y) / 2;
-    i === 0 ? ctx.moveTo(mx, my) : ctx.lineTo(mx, my);
-  });
-  ctx.closePath();
-  ctx.fillStyle = '#245a20';
-  ctx.fill();
-
-  // ─ Asphalt detail: rubber marks ─
-  ctx.globalAlpha = 0.08;
-  for (let i = 0; i < track.center.length; i += 8) {
-    const p = track.center[i];
-    ctx.fillStyle = '#111';
+  // Subtle floor stains
+  ctx.globalAlpha = 0.04;
+  for (let i = 0; i < 60; i++) {
+    ctx.fillStyle = i % 2 ? '#1a1a1a' : '#333';
     ctx.beginPath();
-    ctx.arc(p.x + (Math.sin(i) * 6), p.y + (Math.cos(i) * 6), 3, 0, Math.PI * 2);
+    ctx.arc((i * 211 + 47) % w, (i * 157 + 83) % h, 5 + (i % 8), 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.globalAlpha = 1;
 
-  // ─ Kerbs (red-white) on high-curvature sections ─
-  for (let i = 0; i < track.center.length; i++) {
-    if (Math.abs(track.curvature[i]) > 0.015) {
-      const o = track.outer[i];
-      const blockIdx = Math.floor(i / 4);
-      ctx.fillStyle = blockIdx % 2 === 0 ? '#cc2233' : '#fff';
-      ctx.beginPath();
-      ctx.arc(o.x, o.y, 4, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
-  // ─ Tire barriers on sharp corners ─
-  for (let i = 0; i < track.center.length; i += 3) {
-    if (Math.abs(track.curvature[i]) > 0.025) {
-      const o = track.outer[i];
-      // Stack of tires
-      ctx.fillStyle = '#222';
-      ctx.beginPath();
-      ctx.arc(o.x, o.y, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#444';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
-  }
-
-  // ─ Track borders ─
+  // ─ Track surface (smoother asphalt) ─
   ctx.beginPath();
   track.outer.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
   ctx.closePath();
-  ctx.strokeStyle = '#ccc';
-  ctx.lineWidth = 2;
-  ctx.stroke();
+  ctx.fillStyle = '#3d3d3d';
+  ctx.fill();
 
+  // Inner cutout (concrete island)
   ctx.beginPath();
   track.inner.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
   ctx.closePath();
-  ctx.strokeStyle = '#ccc';
+  ctx.fillStyle = '#2a2a2a';
+  ctx.fill();
+
+  // ─ Track borders: solid barriers (indoor walls) ─
+  // Outer wall (thick, industrial)
+  ctx.beginPath();
+  track.outer.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.closePath();
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 5;
+  ctx.stroke();
+  // Bright safety line on wall
+  ctx.strokeStyle = '#e94560';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Inner wall
+  ctx.beginPath();
+  track.inner.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.closePath();
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 5;
+  ctx.stroke();
+  ctx.strokeStyle = '#f6ad55';
   ctx.lineWidth = 2;
   ctx.stroke();
 
@@ -491,14 +459,13 @@ function render() {
   ctx.beginPath();
   track.center.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
   ctx.closePath();
-  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
   ctx.lineWidth = 1;
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // ─ Start/finish ─
+  // ─ Start/finish line ─
   const s0 = track.outer[0], s1 = track.inner[0];
-  // Checkerboard pattern
   const sfDx = s1.x - s0.x, sfDy = s1.y - s0.y;
   const sfLen = Math.hypot(sfDx, sfDy);
   const sfNx = sfDx / sfLen, sfNy = sfDy / sfLen;
@@ -517,6 +484,17 @@ function render() {
       ctx.restore();
     }
   }
+
+  // ─ Indoor details: neon strip lights along outer wall ─
+  ctx.globalAlpha = 0.15;
+  for (let i = 0; i < track.outer.length; i += 2) {
+    const p = track.outer[i];
+    ctx.fillStyle = i % 20 < 10 ? '#00ffff' : '#ff00ff';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
 
   // ─ Skid marks ─
   skidMarks.forEach(m => {
