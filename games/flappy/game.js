@@ -61,6 +61,9 @@ let slowMoDeath = 0; // slow-mo frame counter on death
 let trail = []; // cake trail positions
 let floatingTexts = []; // "+5" floating texts
 let milestoneTimer = 0;
+let bgBirds = []; // flying birds
+let wooshLines = []; // pipe pass effect
+let bgConfetti = []; // celebration confetti at high score
 
 // Death messages
 const DEATH_MSGS = [
@@ -333,6 +336,50 @@ function update() {
 
   // Background scroll
   bgOffset -= pipeSpeed * 0.3;
+
+  // Background birds — spawn occasionally
+  if (frameCount % 200 === 0 && bgBirds.length < 5) {
+    const by = canvas.height * 0.1 + Math.random() * canvas.height * 0.3;
+    bgBirds.push({ x: canvas.width + 20, y: by, speed: 1 + Math.random(), wingPhase: Math.random() * Math.PI * 2, size: 3 + Math.random() * 3 });
+  }
+  bgBirds.forEach(b => { b.x -= b.speed; b.wingPhase += 0.08; });
+  bgBirds = bgBirds.filter(b => b.x > -30);
+
+  // Woosh lines — when passing through pipe gap
+  pipes.forEach(p => {
+    const px = p.x + PIPE_WIDTH;
+    if (Math.abs(px - cake.x) < 5 && !p._wooshed) {
+      p._wooshed = true;
+      for (let i = 0; i < 6; i++) {
+        wooshLines.push({
+          x: cake.x + 10 + Math.random() * 10,
+          y: cake.y - 15 + Math.random() * 30,
+          len: 15 + Math.random() * 20,
+          life: 10 + Math.random() * 5,
+          maxLife: 15,
+        });
+      }
+    }
+  });
+  wooshLines.forEach(wl => { wl.x -= pipeSpeed * 0.5; wl.life--; });
+  wooshLines = wooshLines.filter(wl => wl.life > 0);
+
+  // Background confetti at score 20+
+  if (score >= 20 && frameCount % 8 === 0) {
+    bgConfetti.push({
+      x: Math.random() * canvas.width,
+      y: -5,
+      vy: 0.5 + Math.random() * 1,
+      vx: (Math.random() - 0.5) * 0.5,
+      size: 2 + Math.random() * 3,
+      color: ['#e94560', '#f6ad55', '#3b82f6', '#22c55e', '#ec4899', '#a855f7'][Math.floor(Math.random() * 6)],
+      rot: Math.random() * Math.PI,
+      rotSpeed: (Math.random() - 0.5) * 0.1,
+    });
+  }
+  bgConfetti.forEach(c => { c.y += c.vy; c.x += c.vx; c.rot += c.rotSpeed; });
+  bgConfetti = bgConfetti.filter(c => c.y < canvas.height + 10);
+  if (bgConfetti.length > 60) bgConfetti.splice(0, 5);
 }
 
 // ─── Die ───
@@ -478,15 +525,43 @@ function render() {
     ctx.beginPath(); ctx.moveTo(bx, by + 10); ctx.lineTo(bx + Math.sin(frameCount * 0.02 + i) * 3, by + 25); ctx.stroke();
   }
 
-  // Mountains/hills silhouette
-  ctx.fillStyle = `rgba(${Math.max(0, r - 30)},${Math.max(0, g - 25)},${Math.max(0, b - 15)},0.4)`;
-  ctx.beginPath();
-  ctx.moveTo(0, h * 0.7);
-  for (let x = 0; x <= w; x += 40) {
-    const hillY = h * 0.62 + Math.sin(x * 0.008 + 1) * 30 + Math.sin(x * 0.015) * 15;
-    ctx.lineTo(x, hillY);
+  // Mountains/hills silhouette — two layers
+  // Far mountains
+  ctx.fillStyle = `rgba(${Math.max(0, r - 40)},${Math.max(0, g - 35)},${Math.max(0, b - 25)},0.3)`;
+  ctx.beginPath(); ctx.moveTo(0, h * 0.68);
+  for (let x = 0; x <= w; x += 30) {
+    ctx.lineTo(x, h * 0.58 + Math.sin((x + bgOffset * 0.1) * 0.006 + 2) * 35 + Math.sin(x * 0.012) * 20);
   }
-  ctx.lineTo(w, h * 0.7); ctx.closePath(); ctx.fill();
+  ctx.lineTo(w, h * 0.68); ctx.closePath(); ctx.fill();
+  // Near hills
+  ctx.fillStyle = `rgba(${Math.max(0, r - 30)},${Math.max(0, g - 25)},${Math.max(0, b - 15)},0.4)`;
+  ctx.beginPath(); ctx.moveTo(0, h * 0.72);
+  for (let x = 0; x <= w; x += 25) {
+    ctx.lineTo(x, h * 0.64 + Math.sin((x + bgOffset * 0.2) * 0.009) * 25 + Math.sin(x * 0.018) * 12);
+  }
+  ctx.lineTo(w, h * 0.72); ctx.closePath(); ctx.fill();
+
+  // Birds in background
+  bgBirds.forEach(b => {
+    const wing = Math.sin(b.wingPhase) * b.size;
+    ctx.strokeStyle = `rgba(${50 + r * 0.3},${50 + g * 0.3},${50 + b.size * 10},${t > 0.5 ? 0.15 : 0.25})`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(b.x - b.size * 2, b.y + wing);
+    ctx.quadraticCurveTo(b.x - b.size * 0.5, b.y - wing * 0.5, b.x, b.y);
+    ctx.quadraticCurveTo(b.x + b.size * 0.5, b.y - wing * 0.5, b.x + b.size * 2, b.y + wing);
+    ctx.stroke();
+  });
+
+  // Background confetti (score 20+)
+  bgConfetti.forEach(c => {
+    ctx.save();
+    ctx.translate(c.x, c.y);
+    ctx.rotate(c.rot);
+    ctx.fillStyle = c.color + '88';
+    ctx.fillRect(-c.size / 2, -c.size / 4, c.size, c.size / 2);
+    ctx.restore();
+  });
 
   // Ground
   const groundH = 40;
@@ -522,6 +597,18 @@ function render() {
       ctx.fillStyle = '#fbbf24';
       ctx.beginPath(); ctx.arc(fx, fy, 1.5, 0, Math.PI * 2); ctx.fill();
     }
+  }
+
+  // Underground layer
+  ctx.fillStyle = t > 0.5 ? '#2a1a0a' : '#8B6914';
+  ctx.fillRect(0, h - groundH + 15, w, 8);
+  ctx.fillStyle = t > 0.5 ? '#1a0f05' : '#6B4F12';
+  ctx.fillRect(0, h - groundH + 23, w, h);
+  // Rocks
+  ctx.fillStyle = t > 0.5 ? '#333' : '#999';
+  for (let i = 0; i < w / 45; i++) {
+    const rx = (i * 45 + 15 + bgOffset * 0.3) % (w + 20) - 10;
+    ctx.beginPath(); ctx.arc(rx, h - groundH + 30 + (i % 3) * 4, 2 + (i % 2), 0, Math.PI * 2); ctx.fill();
   }
 
   // Pipes
@@ -621,6 +708,17 @@ function render() {
   });
   ctx.globalAlpha = 1;
 
+  // Woosh lines (pipe pass effect)
+  wooshLines.forEach(wl => {
+    const alpha = wl.life / wl.maxLife;
+    ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.3})`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(wl.x, wl.y);
+    ctx.lineTo(wl.x + wl.len, wl.y);
+    ctx.stroke();
+  });
+
   // Trail behind cake
   trail.forEach((t, i) => {
     const alpha = (t.life / 12) * 0.3;
@@ -713,14 +811,28 @@ function render() {
     ctx.fillStyle = `rgba(255,200,50,${0.1 + Math.sin(frameCount * 0.15) * 0.05})`;
     ctx.beginPath(); ctx.arc(0, -s / 3 - 15, 14, 0, Math.PI * 2); ctx.fill();
 
-    // Eyes (cute!)
+    // Eyes — look at nearest pipe!
+    let lookX = 0, lookY = 0;
+    const nearPipe = pipes.find(p => p.x > cake.x - 20);
+    if (nearPipe) {
+      const dx = (nearPipe.x + PIPE_WIDTH / 2) - cake.x;
+      const dy = (nearPipe.topH + nearPipe.gap / 2 + (nearPipe.moveOffset || 0)) - cake.y;
+      const d = Math.hypot(dx, dy) || 1;
+      lookX = (dx / d) * 1.5;
+      lookY = (dy / d) * 1.5;
+    }
+    // Eye whites
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(-s / 5, -s / 3 + s * 0.12, 3.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s / 5, -s / 3 + s * 0.12, 3.5, 0, Math.PI * 2); ctx.fill();
+    // Pupils (follow pipe)
     ctx.fillStyle = '#333';
-    ctx.beginPath(); ctx.arc(-s / 5, -s / 3 + s * 0.12, 2.5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(s / 5, -s / 3 + s * 0.12, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-s / 5 + lookX, -s / 3 + s * 0.12 + lookY, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s / 5 + lookX, -s / 3 + s * 0.12 + lookY, 2, 0, Math.PI * 2); ctx.fill();
     // Eye highlights
     ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(-s / 5 + 1, -s / 3 + s * 0.11, 1, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(s / 5 + 1, -s / 3 + s * 0.11, 1, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-s / 5 + lookX + 0.8, -s / 3 + s * 0.11 + lookY - 0.5, 0.8, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s / 5 + lookX + 0.8, -s / 3 + s * 0.11 + lookY - 0.5, 0.8, 0, Math.PI * 2); ctx.fill();
     // Mouth (smile when combo, neutral otherwise)
     ctx.strokeStyle = '#333';
     ctx.lineWidth = 1.5;
@@ -809,6 +921,9 @@ function startGame() {
   trail = [];
   floatingTexts = [];
   milestoneTimer = 0;
+  bgBirds = [];
+  wooshLines = [];
+  bgConfetti = [];
   gameActive = true;
   gameStarted = true;
 
