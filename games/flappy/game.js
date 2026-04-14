@@ -54,7 +54,13 @@ let slowTimer = 0;
 let tinyTimer = 0;
 let screenShake = 0;
 let bgOffset = 0;
-let dayNightCycle = 0; // 0-1, 0=day, 0.5=night
+let dayNightCycle = 0;
+let screenFlash = 0; // white flash alpha
+let screenFlashColor = '#fff';
+let slowMoDeath = 0; // slow-mo frame counter on death
+let trail = []; // cake trail positions
+let floatingTexts = []; // "+5" floating texts
+let milestoneTimer = 0;
 
 // Death messages
 const DEATH_MSGS = [
@@ -87,14 +93,18 @@ function jump() {
   cake.rotation = -0.4;
   sfxJump();
 
-  // Jump particles
-  for (let i = 0; i < 5; i++) {
+  // Jump particles — bigger burst
+  for (let i = 0; i < 10; i++) {
+    const angle = Math.PI * 0.3 + Math.random() * Math.PI * 0.4; // downward spread
+    const speed = 2 + Math.random() * 3;
     particles.push({
-      x: cake.x, y: cake.y + cake.size / 2,
-      vx: (Math.random() - 0.5) * 2, vy: 1 + Math.random() * 2,
-      life: 15 + Math.random() * 10, maxLife: 25,
-      size: 2 + Math.random() * 3,
-      color: '#f6ad55',
+      x: cake.x + (Math.random() - 0.5) * 10,
+      y: cake.y + cake.size / 2,
+      vx: Math.cos(angle) * speed * (Math.random() > 0.5 ? 1 : -1),
+      vy: Math.sin(angle) * speed,
+      life: 18 + Math.random() * 12, maxLife: 30,
+      size: 2 + Math.random() * 4,
+      color: ['#f6ad55', '#ec4899', '#fbbf24'][Math.floor(Math.random() * 3)],
     });
   }
 }
@@ -211,13 +221,29 @@ function update() {
         setTimeout(() => comboEl.classList.remove('visible'), 1500);
       }
 
-      // Score particles
-      for (let i = 0; i < 3; i++) {
+      // Score flash
+      screenFlash = 0.15;
+      screenFlashColor = combo > 4 ? '#f6ad55' : '#fff';
+
+      // Floating "+1"
+      floatingTexts.push({ x: cake.x + 30, y: cake.y - 20, text: combo > 2 ? `+${combo}` : '+1', life: 40, maxLife: 40, color: combo > 4 ? '#f6ad55' : '#4ade80' });
+
+      // Score particles — bigger burst
+      for (let i = 0; i < 8; i++) {
         particles.push({
           x: cake.x + 20, y: cake.y - 10,
-          vx: 1 + Math.random() * 2, vy: -2 + Math.random(),
-          life: 20, maxLife: 20, size: 3, color: '#4ade80',
+          vx: 1 + Math.random() * 3, vy: -3 + Math.random() * 2,
+          life: 20, maxLife: 20, size: 2 + Math.random() * 3,
+          color: ['#4ade80', '#22c55e', '#86efac'][Math.floor(Math.random() * 3)],
         });
+      }
+
+      // Milestone flash (every 10 points)
+      if (score % 10 === 0 && score > 0) {
+        screenFlash = 0.4;
+        screenFlashColor = '#f6ad55';
+        milestoneTimer = 60;
+        floatingTexts.push({ x: canvas.width / 2, y: canvas.height / 3, text: `🔥 ${score} PONT! 🔥`, life: 60, maxLife: 60, color: '#f6ad55', big: true });
       }
     }
   });
@@ -234,12 +260,19 @@ function update() {
       else if (c.type.effect === 'tiny') { tinyTimer = 240; sfxPowerup(); }
       else sfxCollect();
 
-      // Collect particles
-      for (let i = 0; i < 8; i++) {
+      // Collect flash + floating text
+      screenFlash = 0.12;
+      screenFlashColor = c.type.color;
+      if (c.type.points > 0) floatingTexts.push({ x: c.x, y: c.y - 15, text: `+${c.type.points}`, life: 35, maxLife: 35, color: c.type.color });
+      if (c.type.effect) floatingTexts.push({ x: c.x, y: c.y - 30, text: c.type.effect === 'slow' ? '🎈 SLOW-MO!' : c.type.effect === 'shield' ? '🛡️ PAJZS!' : '🔮 TINY!', life: 50, maxLife: 50, color: c.type.color, big: true });
+
+      // Collect particles — ring burst
+      for (let i = 0; i < 14; i++) {
+        const angle = (Math.PI * 2 * i) / 14;
         particles.push({
           x: c.x, y: c.y,
-          vx: (Math.random() - 0.5) * 4, vy: (Math.random() - 0.5) * 4,
-          life: 15, maxLife: 15, size: 3, color: c.type.color,
+          vx: Math.cos(angle) * (3 + Math.random() * 2), vy: Math.sin(angle) * (3 + Math.random() * 2),
+          life: 18, maxLife: 18, size: 3 + Math.random() * 2, color: c.type.color,
         });
       }
     }
@@ -281,6 +314,20 @@ function update() {
   particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life--; });
   particles = particles.filter(p => p.life > 0);
 
+  // Trail
+  trail.push({ x: cake.x, y: cake.y, life: 12 });
+  if (trail.length > 15) trail.shift();
+  trail.forEach(t => t.life--);
+  trail = trail.filter(t => t.life > 0);
+
+  // Floating texts
+  floatingTexts.forEach(ft => { ft.y -= 1.2; ft.life--; });
+  floatingTexts = floatingTexts.filter(ft => ft.life > 0);
+
+  // Screen flash decay
+  if (screenFlash > 0) screenFlash *= 0.85;
+  if (milestoneTimer > 0) milestoneTimer--;
+
   // HUD
   document.getElementById('hud-score').textContent = score;
 
@@ -292,18 +339,25 @@ function update() {
 function die() {
   gameActive = false;
   sfxDie();
-  screenShake = 15;
+  screenShake = 20;
+  screenFlash = 0.5;
+  screenFlashColor = '#e94560';
   combo = 0;
 
-  // Death explosion
-  for (let i = 0; i < 20; i++) {
+  // Death explosion — massive burst
+  for (let i = 0; i < 35; i++) {
+    const angle = (Math.PI * 2 * i) / 35;
+    const speed = 3 + Math.random() * 6;
     particles.push({
       x: cake.x, y: cake.y,
-      vx: (Math.random() - 0.5) * 8, vy: (Math.random() - 0.5) * 8,
-      life: 25, maxLife: 25, size: 3 + Math.random() * 5,
-      color: ['#e94560', '#f6ad55', '#ec4899', '#fff'][Math.floor(Math.random() * 4)],
+      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+      life: 25 + Math.random() * 15, maxLife: 40, size: 3 + Math.random() * 6,
+      color: ['#e94560', '#f6ad55', '#ec4899', '#fff', '#fbbf24'][Math.floor(Math.random() * 5)],
     });
   }
+
+  // Shockwave ring
+  floatingTexts.push({ x: cake.x, y: cake.y, text: '', life: 30, maxLife: 30, color: '#e94560', big: false });
 
   // High score
   if (score > highScore) {
@@ -436,6 +490,14 @@ function render() {
   });
   ctx.globalAlpha = 1;
 
+  // Trail behind cake
+  trail.forEach((t, i) => {
+    const alpha = (t.life / 12) * 0.3;
+    const s = cake.size * (t.life / 12) * 0.6;
+    ctx.fillStyle = `rgba(236, 72, 153, ${alpha})`;
+    ctx.beginPath(); ctx.arc(t.x, t.y, s, 0, Math.PI * 2); ctx.fill();
+  });
+
   // Cake
   if (gameActive || gameStarted) {
     ctx.save();
@@ -493,6 +555,37 @@ function render() {
   }
 
   if (screenShake > 0.5) ctx.restore();
+
+  // Floating texts
+  floatingTexts.forEach(ft => {
+    const alpha = ft.life / ft.maxLife;
+    const scale = ft.big ? 1.5 : 1;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.font = `bold ${ft.big ? 18 : 14}px 'Press Start 2P', monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = ft.color;
+    ctx.shadowColor = ft.color;
+    ctx.shadowBlur = 10;
+    ctx.fillText(ft.text, ft.x, ft.y);
+    ctx.restore();
+  });
+
+  // Screen flash
+  if (screenFlash > 0.01) {
+    ctx.fillStyle = screenFlashColor + Math.floor(screenFlash * 255).toString(16).padStart(2, '0');
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  // Milestone pulse ring
+  if (milestoneTimer > 0) {
+    const prog = 1 - milestoneTimer / 60;
+    ctx.strokeStyle = `rgba(246, 173, 85, ${(1 - prog) * 0.4})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(cake.x, cake.y, 30 + prog * 80, 0, Math.PI * 2);
+    ctx.stroke();
+  }
 }
 
 // ─── Game loop ───
@@ -519,8 +612,12 @@ function startGame() {
   slowTimer = 0;
   tinyTimer = 0;
   screenShake = 0;
+  screenFlash = 0;
   bgOffset = 0;
   dayNightCycle = 0;
+  trail = [];
+  floatingTexts = [];
+  milestoneTimer = 0;
   gameActive = true;
   gameStarted = true;
 
