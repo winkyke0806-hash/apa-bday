@@ -290,6 +290,25 @@ let skidMarks = [];
 let positions = [];
 let nightMode = false;
 let difficulty = 'easy';
+let reverseMode = false;
+let turboStartWindow = false; // true during the "RAJT!" moment
+let turboStartUsed = false;
+let lastPosition = 4;
+let ghostData = []; // recorded positions for ghost
+let ghostPlayback = []; // loaded ghost
+let ghostFrame = 0;
+let achievements = JSON.parse(localStorage.getItem('apu-gokart-achievements') || '{}');
+let currentTrackId = 'indoor';
+let lapCompare = []; // previous lap times for comparison
+
+// Second track: outdoor
+const TRACK_OUTDOOR = [
+  [0.50,0.08],[0.40,0.08],[0.30,0.09],[0.22,0.12],[0.16,0.18],[0.12,0.26],
+  [0.10,0.36],[0.09,0.48],[0.10,0.58],[0.13,0.66],[0.18,0.73],[0.25,0.78],
+  [0.34,0.82],[0.44,0.85],[0.54,0.87],[0.64,0.86],[0.73,0.82],[0.80,0.76],
+  [0.85,0.68],[0.88,0.58],[0.89,0.47],[0.88,0.36],[0.84,0.27],[0.78,0.20],
+  [0.72,0.16],[0.64,0.13],[0.56,0.10],
+];
 
 /* ═══════════════════════════
    INPUT
@@ -364,7 +383,16 @@ function checkCarCP(car) {
         lapTimes.push(lt);
         document.getElementById('hud-lap').textContent = `${Math.min(car.lap+1,TOTAL_LAPS)} / ${TOTAL_LAPS}`;
         sfxLap();
-        showLapNotify(car.lap);
+        // Lap time comparison
+        if (lapTimes.length >= 2) {
+          const cur = lapTimes[lapTimes.length - 1];
+          const prev = lapTimes[lapTimes.length - 2];
+          const diff = cur - prev;
+          const sign = diff < 0 ? '🟢 -' : '🔴 +';
+          showLapNotify(`KÖR ${car.lap}/${TOTAL_LAPS} — ${sign}${formatTime(Math.abs(diff))}`);
+        } else {
+          showLapNotify(car.lap);
+        }
       }
       if (car.lap >= TOTAL_LAPS) { car.finished = true; car.finishTime = performance.now()-startTime; if(car.isPlayer) finishRace(); }
     }
@@ -477,7 +505,37 @@ function update() {
   updateParticles();
 
   document.getElementById('hud-time').textContent = formatTime(performance.now()-startTime);
-  document.getElementById('hud-pos').textContent = `${positions.indexOf(player)+1}/${allCars.length}`;
+  const curPos = positions.indexOf(player)+1;
+  document.getElementById('hud-pos').textContent = `${curPos}/${allCars.length}`;
+
+  // Position change notification
+  if (curPos !== lastPosition) {
+    if (curPos < lastPosition) showLapNotify(`↑ ${curPos}. hely!`);
+    lastPosition = curPos;
+  }
+
+  // Slipstream: if behind an AI within range, get speed boost
+  aiCars.forEach(ai => {
+    const dx = ai.x - player.x, dy = ai.y - player.y;
+    const dist = Math.hypot(dx, dy);
+    const behindAngle = Math.atan2(dx, -dy);
+    let angleDiff = behindAngle - player.angle;
+    while (angleDiff > Math.PI) angleDiff -= Math.PI*2;
+    while (angleDiff < -Math.PI) angleDiff += Math.PI*2;
+    if (dist < 60 && dist > 15 && Math.abs(angleDiff) < 0.4) {
+      player.speed += 0.02; // slipstream boost
+    }
+  });
+
+  // Rubber banding: if player is last, AI slows slightly
+  if (curPos === allCars.length && player.lap < TOTAL_LAPS - 1) {
+    aiCars.forEach(ai => { if (!ai.finished) ai.speed *= 0.995; });
+  }
+
+  // Ghost recording
+  if (ghostData.length < 100000) {
+    ghostData.push({ x: player.x, y: player.y, angle: player.angle });
+  }
 
   skidMarks.forEach(m=>m.age++);
   skidMarks=skidMarks.filter(m=>m.age<150);
@@ -507,8 +565,14 @@ function render() {
   ctx.fillRect(0, 0, w, h);
 
   // ─── BEGIN CAMERA TRANSFORM ───
+  // Camera rotation: lean into turns
+  const turnInput = (isLeft() ? -1 : 0) + (isRight() ? 1 : 0);
+  const camRotTarget = turnInput * -0.03 * Math.min(1, Math.abs(player.speed) / 3);
+  camera.rotation = (camera.rotation || 0) + (camRotTarget - (camera.rotation || 0)) * 0.06;
+
   ctx.save();
   ctx.translate(w / 2, h / 2);
+  ctx.rotate(camera.rotation);
   ctx.scale(camera.zoom, camera.zoom);
   ctx.translate(-camera.x, -camera.y);
 
@@ -606,6 +670,20 @@ function render() {
 
   // Particles
   renderParticles();
+
+  // Ghost car
+  if (ghostPlayback.length > 0 && ghostFrame < ghostPlayback.length) {
+    const g = ghostPlayback[ghostFrame];
+    ctx.save();
+    ctx.globalAlpha = 0.25;
+    ctx.translate(g.x, g.y);
+    ctx.rotate(g.angle);
+    ctx.fillStyle = '#fff';
+    roundRect(ctx, -7, -12, 14, 24, 3);
+    ctx.fill();
+    ctx.restore();
+    ghostFrame++;
+  }
 
   // Cars
   const sorted = [...allCars].sort((a,b) => a.y - b.y);
@@ -775,23 +853,83 @@ function runCountdown() {
     const el = document.getElementById('countdown');
     const steps = ['3','2','1','RAJT!'];
     let i = 0;
+    turboStartWindow = false;
+    turboStartUsed = false;
+
     function next() {
-      if (i >= steps.length) { el.classList.remove('visible'); resolve(); return; }
+      if (i >= steps.length) {
+        el.classList.remove('visible');
+        // Turbo start check: if gas was pressed during "RAJT!"
+        if (turboStartUsed) {
+          player.speed = player.maxSpeed * 0.6;
+          sfxBoost();
+          for (let j = 0; j < 15; j++) spawnSparks(player.x, player.y);
+          showLapNotify('⚡ TURBO START!');
+        }
+        turboStartWindow = false;
+        resolve();
+        return;
+      }
       el.textContent = steps[i];
       el.classList.remove('pop'); el.classList.add('visible');
-      if (i < 3) sfxCountdown(); else sfxGo();
+      if (i < 3) sfxCountdown(); else { sfxGo(); turboStartWindow = true; }
       setTimeout(() => { el.classList.add('pop'); i++; setTimeout(next, 300); }, 700);
     }
     next();
   });
 }
 
+// Detect turbo start (gas during "RAJT!")
+window.addEventListener('keydown', e => {
+  if (turboStartWindow && (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp')) {
+    turboStartUsed = true;
+  }
+});
+
 function getTrackAngle(idx){const tc=track.center;const i=((idx%tc.length)+tc.length)%tc.length;const n=tc[(i+1)%tc.length],c=tc[i];return Math.atan2(n.x-c.x,-(n.y-c.y));}
 
 async function startRace() {
   initAudio();
   resizeCanvas();
-  track = buildTrack(canvas.width, canvas.height);
+
+  // Select track data
+  const trackData = currentTrackId === 'outdoor' ? TRACK_OUTDOOR : TRACK_RAW;
+  // Override TRACK_RAW temporarily for buildTrack
+  const originalRaw = TRACK_RAW;
+  const rawToUse = reverseMode ? [...trackData].reverse() : trackData;
+
+  // Temporarily replace for buildTrack
+  const savedBuild = buildTrack;
+  track = (function() {
+    const s = Math.min(canvas.width, canvas.height);
+    const hw = TRACK_HALF_W * s;
+    let center = rawToUse.map(p => ({ x: p[0] * canvas.width, y: p[1] * canvas.height }));
+    for (let iter = 0; iter < 3; iter++) {
+      const next = [];
+      for (let i = 0; i < center.length; i++) {
+        const j = (i + 1) % center.length;
+        next.push({ x: center[i].x * 0.75 + center[j].x * 0.25, y: center[i].y * 0.75 + center[j].y * 0.25 });
+        next.push({ x: center[i].x * 0.25 + center[j].x * 0.75, y: center[i].y * 0.25 + center[j].y * 0.75 });
+      }
+      center = next;
+    }
+    const outer = [], inner = [];
+    for (let i = 0; i < center.length; i++) {
+      const prev = center[(i - 1 + center.length) % center.length];
+      const nxt = center[(i + 1) % center.length];
+      const dx = nxt.x - prev.x, dy = nxt.y - prev.y;
+      const len = Math.hypot(dx, dy) || 1;
+      outer.push({ x: center[i].x + (-dy / len) * hw, y: center[i].y + (dx / len) * hw });
+      inner.push({ x: center[i].x - (-dy / len) * hw, y: center[i].y - (dx / len) * hw });
+    }
+    const curvature = center.map((p, i) => {
+      const prev = center[(i - 1 + center.length) % center.length];
+      const nxt = center[(i + 1) % center.length];
+      return ((p.x - prev.x) * (nxt.y - p.y) - (p.y - prev.y) * (nxt.x - p.x)) / ((Math.hypot(p.x-prev.x,p.y-prev.y)*Math.hypot(nxt.x-p.x,nxt.y-p.y))||1);
+    });
+    const cpIdx = [0, Math.floor(center.length*0.25), Math.floor(center.length*0.5), Math.floor(center.length*0.75)];
+    return { center, outer, inner, hw, curvature, checkpoints: cpIdx.map(i => ({ outer: outer[i], inner: inner[i], center: center[i] })) };
+  })();
 
   const sd = SIZE_DEFS[garageState.size];
   player = new Car(garageState.bodyColor, garageState.stripeColor, garageState.name, true);
@@ -818,6 +956,8 @@ async function startRace() {
   });
 
   lapTimes=[]; skidMarks=[]; particles=[]; oilSlicks=[]; playerPowerup=null;
+  ghostData = []; ghostFrame = 0; lastPosition = 4;
+  try { ghostPlayback = JSON.parse(localStorage.getItem('apu-gokart-ghost') || '[]'); } catch { ghostPlayback = []; }
   hidePowerupHUD();
   player.nitro = 0; updateNitroHUD();
   spawnPowerups();
@@ -856,6 +996,26 @@ function finishRace() {
     <div class="finish-stat"><div class="finish-stat-value">${formatTime(Math.min(...lapTimes))}</div><div class="finish-stat-label">LEGJOBB KÖR</div></div>
   `;
   document.getElementById('finish-laps').innerHTML = lapTimes.map((t,i) => `<div>Kör ${i+1}: ${formatTime(t)}</div>`).join('');
+
+  // Save ghost
+  try { localStorage.setItem('apu-gokart-ghost', JSON.stringify(ghostData)); } catch {}
+
+  // Achievements
+  const newAch = [];
+  if (pos === 1 && !achievements.firstWin) { achievements.firstWin = true; newAch.push('🏆 Első győzelem!'); }
+  if (player.collisions === 0 && !achievements.noHit) { achievements.noHit = true; newAch.push('🛡️ Sebezhetetlen (0 ütközés)'); }
+  if (player.totalDrift > 500 && !achievements.driftKing) { achievements.driftKing = true; newAch.push('🔥 Drift Király (500+ pont)'); }
+  if (total < 180000 && !achievements.speedDemon) { achievements.speedDemon = true; newAch.push('⚡ Speed Demon (3 perc alatt)'); }
+  if (pos === 1 && difficulty === 'hard' && !achievements.hardWin) { achievements.hardWin = true; newAch.push('💀 Nehéz győztes'); }
+  if (nightMode && pos <= 2 && !achievements.nightOwl) { achievements.nightOwl = true; newAch.push('🌙 Éjszakai bagoly (top 2 éjjel)'); }
+  if (turboStartUsed && !achievements.turboStart) { achievements.turboStart = true; newAch.push('🚀 Turbo Start mester'); }
+  localStorage.setItem('apu-gokart-achievements', JSON.stringify(achievements));
+
+  if (newAch.length > 0) {
+    const achDiv = document.createElement('div');
+    achDiv.innerHTML = `<div style="margin-top:12px;font-size:0.7rem;color:#f6ad55;">${newAch.map(a => `<div>${a}</div>`).join('')}</div>`;
+    document.getElementById('finish-stats').after(achDiv);
+  }
 
   setTimeout(() => showScreen('finish'), 400);
 }
@@ -922,6 +1082,28 @@ function initGarage() {
       btn.classList.add('active');
     });
   });
+
+  // Track selector
+  document.querySelectorAll('.track-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.track === currentTrackId);
+    btn.addEventListener('click', () => {
+      currentTrackId = btn.dataset.track;
+      document.querySelectorAll('.track-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Reverse mode
+  const revBtn = document.querySelector('.reverse-btn');
+  if (revBtn) {
+    revBtn.classList.toggle('active', reverseMode);
+    revBtn.textContent = reverseMode ? '🔄 Reverse' : '↔️ Normál';
+    revBtn.addEventListener('click', () => {
+      reverseMode = !reverseMode;
+      revBtn.classList.toggle('active', reverseMode);
+      revBtn.textContent = reverseMode ? '🔄 Reverse' : '↔️ Normál';
+    });
+  }
 
   const nameInput = document.getElementById('car-name');
   nameInput.value = garageState.name;
