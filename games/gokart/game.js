@@ -1,113 +1,118 @@
 /* ══════════════════════════════════════════
-   APU GOKART GP — Game Engine v2
-   Custom track + AI opponents
+   APU GOKART GP — Game Engine v3
+   Realistic track + polished graphics + AI
    ══════════════════════════════════════════ */
 
 // ─── Screens ───
-const screens = {
-  title: document.getElementById('title-screen'),
-  howto: document.getElementById('howto-screen'),
-  game: document.getElementById('game-screen'),
-  finish: document.getElementById('finish-screen'),
-};
-function showScreen(name) {
-  Object.values(screens).forEach(s => s.classList.remove('active'));
-  screens[name].classList.add('active');
-}
+const screens = { title: document.getElementById('title-screen'), howto: document.getElementById('howto-screen'), game: document.getElementById('game-screen'), finish: document.getElementById('finish-screen') };
+function showScreen(n) { Object.values(screens).forEach(s => s.classList.remove('active')); screens[n].classList.add('active'); }
 
-// ─── Canvas ───
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// ─── Track: custom layout based on reference image ───
-// Centerline waypoints — scaled to fit any screen
+/* ═══════════════════════════════════
+   TRACK — matches reference image:
+   Complex indoor kart circuit with
+   tight hairpins, S-curves, chicanes
+   ═══════════════════════════════════ */
+
+// Centerline waypoints (normalized 0-1, mapped to screen)
+// Layout: clockwise, matching the reference photo
 const TRACK_RAW = [
-  // Start/finish straight (bottom)
-  [0.15, 0.82], [0.30, 0.82], [0.45, 0.82], [0.58, 0.82],
-  // Right turn up
-  [0.68, 0.80], [0.75, 0.74], [0.78, 0.65],
-  // Up right side
-  [0.80, 0.55], [0.82, 0.45], [0.83, 0.35],
-  // Top-right hairpin
-  [0.82, 0.26], [0.78, 0.20], [0.72, 0.17], [0.65, 0.18],
-  // S-curve left
-  [0.58, 0.22], [0.52, 0.28], [0.48, 0.35],
-  // Middle left turn
-  [0.44, 0.42], [0.38, 0.45], [0.30, 0.44],
-  // Left chicane
-  [0.24, 0.40], [0.20, 0.34], [0.18, 0.27],
+  // START straight (bottom-left going right)
+  [0.12, 0.78], [0.22, 0.78], [0.32, 0.78], [0.42, 0.78],
+  // Gentle right curve
+  [0.50, 0.77], [0.56, 0.74],
+  // Sharp right hairpin going up-right
+  [0.60, 0.68], [0.62, 0.60], [0.62, 0.52],
+  // Right kink
+  [0.64, 0.46], [0.68, 0.42],
+  // Short straight up-right
+  [0.72, 0.38], [0.76, 0.34],
+  // Top-right hairpin (180°)
+  [0.79, 0.28], [0.78, 0.22], [0.74, 0.18], [0.68, 0.17],
+  // Left along top
+  [0.62, 0.19], [0.56, 0.22],
+  // S-curve down
+  [0.52, 0.27], [0.50, 0.32], [0.52, 0.37],
+  // Right kink into middle section
+  [0.48, 0.42], [0.42, 0.44],
+  // Left hairpin
+  [0.36, 0.42], [0.30, 0.38], [0.26, 0.32],
+  // Up to top-left
+  [0.24, 0.26], [0.24, 0.20],
   // Top-left hairpin
-  [0.18, 0.20], [0.22, 0.14], [0.28, 0.12], [0.35, 0.14],
-  // Down middle section
-  [0.40, 0.18], [0.43, 0.25], [0.42, 0.33],
-  // Sweeping left back down
-  [0.38, 0.42], [0.32, 0.50], [0.25, 0.55],
-  // Lower-left turn
-  [0.18, 0.58], [0.14, 0.64], [0.13, 0.72],
+  [0.26, 0.15], [0.30, 0.12], [0.36, 0.12],
+  // Right along top-center
+  [0.40, 0.14], [0.44, 0.18],
+  // Down through center chicane
+  [0.44, 0.24], [0.42, 0.30], [0.38, 0.36],
+  // Sweeping left going down
+  [0.34, 0.44], [0.28, 0.52], [0.22, 0.56],
+  // Down left side
+  [0.18, 0.60], [0.15, 0.66], [0.14, 0.72],
   // Back to start
-  [0.14, 0.78], [0.15, 0.82],
+  [0.13, 0.76],
 ];
 
-const TRACK_WIDTH = 0.045; // fraction of min(w,h)
+const TRACK_HALF_W = 0.032; // half-width as fraction of min(w,h)
 
-let track = null; // { center, outer, inner, width }
+let track = null;
 let trackLen = 0;
-let trackDists = []; // cumulative distance at each waypoint
 
 function buildTrack(w, h) {
   const s = Math.min(w, h);
-  const center = TRACK_RAW.map(p => ({ x: p[0] * w, y: p[1] * h }));
-  const tw = TRACK_WIDTH * s;
+  const hw = TRACK_HALF_W * s;
+  let center = TRACK_RAW.map(p => ({ x: p[0] * w, y: p[1] * h }));
 
-  // Smooth the centerline (Chaikin subdivision x2)
-  let smooth = [...center];
-  for (let iter = 0; iter < 2; iter++) {
+  // Chaikin smooth 3x for really smooth curves
+  for (let iter = 0; iter < 3; iter++) {
     const next = [];
-    for (let i = 0; i < smooth.length; i++) {
-      const j = (i + 1) % smooth.length;
-      const p = smooth[i], q = smooth[j];
-      next.push({ x: p.x * 0.75 + q.x * 0.25, y: p.y * 0.75 + q.y * 0.25 });
-      next.push({ x: p.x * 0.25 + q.x * 0.75, y: p.y * 0.25 + q.y * 0.75 });
+    for (let i = 0; i < center.length; i++) {
+      const j = (i + 1) % center.length;
+      next.push({ x: center[i].x * 0.75 + center[j].x * 0.25, y: center[i].y * 0.75 + center[j].y * 0.25 });
+      next.push({ x: center[i].x * 0.25 + center[j].x * 0.75, y: center[i].y * 0.25 + center[j].y * 0.75 });
     }
-    smooth = next;
+    center = next;
   }
 
-  // Build outer/inner by offsetting normals
-  const outer = [];
-  const inner = [];
-  for (let i = 0; i < smooth.length; i++) {
-    const prev = smooth[(i - 1 + smooth.length) % smooth.length];
-    const next = smooth[(i + 1) % smooth.length];
-    const dx = next.x - prev.x;
-    const dy = next.y - prev.y;
+  // Normals → outer/inner
+  const outer = [], inner = [];
+  for (let i = 0; i < center.length; i++) {
+    const prev = center[(i - 1 + center.length) % center.length];
+    const nxt = center[(i + 1) % center.length];
+    const dx = nxt.x - prev.x, dy = nxt.y - prev.y;
     const len = Math.hypot(dx, dy) || 1;
-    const nx = -dy / len;
-    const ny = dx / len;
-    outer.push({ x: smooth[i].x + nx * tw, y: smooth[i].y + ny * tw });
-    inner.push({ x: smooth[i].x - nx * tw, y: smooth[i].y - ny * tw });
+    const nx = -dy / len, ny = dx / len;
+    outer.push({ x: center[i].x + nx * hw, y: center[i].y + ny * hw });
+    inner.push({ x: center[i].x - nx * hw, y: center[i].y - ny * hw });
   }
 
-  // Cumulative distances for AI path following
-  const dists = [0];
-  for (let i = 1; i < smooth.length; i++) {
-    dists.push(dists[i - 1] + Math.hypot(smooth[i].x - smooth[i - 1].x, smooth[i].y - smooth[i - 1].y));
-  }
-  trackLen = dists[dists.length - 1] + Math.hypot(smooth[0].x - smooth[smooth.length - 1].x, smooth[0].y - smooth[smooth.length - 1].y);
-  trackDists = dists;
+  // Length
+  let totalLen = 0;
+  for (let i = 1; i < center.length; i++) totalLen += Math.hypot(center[i].x - center[i - 1].x, center[i].y - center[i - 1].y);
+  totalLen += Math.hypot(center[0].x - center[center.length - 1].x, center[0].y - center[center.length - 1].y);
+  trackLen = totalLen;
 
-  // Checkpoints at 25%, 50%, 75%, 0% of track
-  const cpIndices = [0, Math.floor(smooth.length * 0.25), Math.floor(smooth.length * 0.5), Math.floor(smooth.length * 0.75)];
-  const checkpoints = cpIndices.map(idx => ({
-    outer: outer[idx], inner: inner[idx], center: smooth[idx]
-  }));
+  // Checkpoints
+  const cpIdx = [0, Math.floor(center.length * 0.25), Math.floor(center.length * 0.5), Math.floor(center.length * 0.75)];
+  const checkpoints = cpIdx.map(idx => ({ outer: outer[idx], inner: inner[idx], center: center[idx] }));
 
-  return { center: smooth, outer, inner, width: tw, checkpoints, startIdx: 0 };
+  // Compute curvature at each point for kerb placement
+  const curvature = center.map((p, i) => {
+    const prev = center[(i - 1 + center.length) % center.length];
+    const nxt = center[(i + 1) % center.length];
+    const d1x = p.x - prev.x, d1y = p.y - prev.y;
+    const d2x = nxt.x - p.x, d2y = nxt.y - p.y;
+    const cross = d1x * d2y - d1y * d2x;
+    const mag = (Math.hypot(d1x, d1y) * Math.hypot(d2x, d2y)) || 1;
+    return cross / mag;
+  });
+
+  return { center, outer, inner, hw, checkpoints, curvature };
 }
 
 // ─── Point in polygon ───
@@ -121,28 +126,23 @@ function pip(px, py, poly) {
 }
 function isOnTrack(x, y) { return pip(x, y, track.outer) && !pip(x, y, track.inner); }
 
-// ─── Car class ───
+/* ═══════════════════════════
+   CAR CLASS
+   ═══════════════════════════ */
 class Car {
-  constructor(color, name, isPlayer = false) {
+  constructor(color, stripe, name, isPlayer = false) {
     this.x = 0; this.y = 0; this.angle = 0; this.speed = 0;
-    this.color = color;
-    this.name = name;
+    this.color = color; this.stripe = stripe; this.name = name;
     this.isPlayer = isPlayer;
-    this.maxSpeed = isPlayer ? 5.2 : 4.2 + Math.random() * 1.2;
-    this.accel = isPlayer ? 0.13 : 0.10 + Math.random() * 0.04;
-    this.friction = 0.97;
-    this.offFriction = 0.91;
-    this.turnSpeed = isPlayer ? 0.045 : 0.04;
+    this.maxSpeed = isPlayer ? 5.5 : 4.5 + Math.random() * 1.0;
+    this.accel = isPlayer ? 0.14 : 0.10 + Math.random() * 0.04;
+    this.friction = 0.97; this.offFriction = 0.90;
+    this.turnSpeed = isPlayer ? 0.048 : 0.042;
     this.w = 12; this.h = 22;
-    // Race state
-    this.lap = 0;
-    this.nextCP = 0;
-    this.cpPassed = 0;
-    this.finished = false;
-    this.finishTime = 0;
-    // AI
-    this.aiTarget = 0; // index into track.center
-    this.aiOffset = (Math.random() - 0.5) * 0.6; // lateral offset for variety
+    this.lap = 0; this.nextCP = 0; this.cpPassed = 0;
+    this.finished = false; this.finishTime = 0;
+    this.aiTarget = 0; this.aiOffset = (Math.random() - 0.5) * 0.5;
+    this.trailX = 0; this.trailY = 0; // for tire trails
   }
 }
 
@@ -151,44 +151,55 @@ const keys = {};
 window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
 window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 const touch = { left: false, right: false, gas: false, brake: false };
-['left', 'right', 'gas', 'brake'].forEach(zone => {
-  const el = document.getElementById(`touch-${zone}`);
+['left', 'right', 'gas', 'brake'].forEach(z => {
+  const el = document.getElementById(`touch-${z}`);
   if (!el) return;
-  el.addEventListener('touchstart', e => { e.preventDefault(); touch[zone] = true; });
-  el.addEventListener('touchend', e => { e.preventDefault(); touch[zone] = false; });
-  el.addEventListener('touchcancel', () => touch[zone] = false);
+  el.addEventListener('touchstart', e => { e.preventDefault(); touch[z] = true; });
+  el.addEventListener('touchend', e => { e.preventDefault(); touch[z] = false; });
+  el.addEventListener('touchcancel', () => touch[z] = false);
 });
-function isGas() { return keys['w'] || keys['arrowup'] || touch.gas; }
-function isBrake() { return keys['s'] || keys['arrowdown'] || touch.brake; }
-function isLeft() { return keys['a'] || keys['arrowleft'] || touch.left; }
-function isRight() { return keys['d'] || keys['arrowright'] || touch.right; }
+const isGas = () => keys['w'] || keys['arrowup'] || touch.gas;
+const isBrake = () => keys['s'] || keys['arrowdown'] || touch.brake;
+const isLeft = () => keys['a'] || keys['arrowleft'] || touch.left;
+const isRight = () => keys['d'] || keys['arrowright'] || touch.right;
 
-// ─── Game state ───
-let player = null;
-let aiCars = [];
-let allCars = [];
-let gameRunning = false;
-let startTime = 0;
-let lapTimes = [];
+// ─── Game State ───
+let player, aiCars, allCars;
+let gameRunning = false, startTime = 0, lapTimes = [];
 const TOTAL_LAPS = 3;
 let bestTime = localStorage.getItem('apu-gokart-best') || null;
-let skidMarks = [];
-let positions = []; // sorted by race progress
+let skidMarks = [], tireMarks = [];
+let positions = [];
 
-const AI_COLORS = ['#3b82f6', '#22c55e', '#a855f7'];
-const AI_NAMES = ['Kék Villám', 'Zöld Szörny', 'Lila Rakéta'];
+const AI_DEFS = [
+  { color: '#2563eb', stripe: '#60a5fa', name: 'Kék Villám' },
+  { color: '#16a34a', stripe: '#4ade80', name: 'Zöld Szörny' },
+  { color: '#9333ea', stripe: '#c084fc', name: 'Lila Rakéta' },
+];
 
-// ─── Checkpoint detection ───
+/* ═══════════════════════════
+   PHYSICS
+   ═══════════════════════════ */
+
 function distToSeg(px, py, ax, ay, bx, by) {
   const dx = bx - ax, dy = by - ay;
   const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)));
   return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
 }
 
-function checkCarCheckpoints(car) {
+function findNearestIdx(x, y) {
+  let best = 0, bestD = Infinity;
+  for (let i = 0; i < track.center.length; i++) {
+    const d = Math.hypot(track.center[i].x - x, track.center[i].y - y);
+    if (d < bestD) { bestD = d; best = i; }
+  }
+  return best;
+}
+
+function checkCarCP(car) {
   if (car.finished) return;
   const cp = track.checkpoints[car.nextCP];
-  if (distToSeg(car.x, car.y, cp.outer.x, cp.outer.y, cp.inner.x, cp.inner.y) < track.width * 1.5) {
+  if (distToSeg(car.x, car.y, cp.outer.x, cp.outer.y, cp.inner.x, cp.inner.y) < track.hw * 1.8) {
     car.nextCP = (car.nextCP + 1) % track.checkpoints.length;
     car.cpPassed++;
     if (car.cpPassed >= track.checkpoints.length) {
@@ -209,242 +220,259 @@ function checkCarCheckpoints(car) {
   }
 }
 
-// ─── AI logic ───
-function updateAI(car) {
-  if (car.finished) { car.speed *= 0.98; return; }
-
-  const tc = track.center;
-  const target = tc[car.aiTarget];
-
-  // Steer toward target with lateral offset
-  const prev = tc[(car.aiTarget - 1 + tc.length) % tc.length];
-  const next = tc[(car.aiTarget + 1) % tc.length];
-  const tdx = next.x - prev.x, tdy = next.y - prev.y;
-  const tl = Math.hypot(tdx, tdy) || 1;
-  const offX = target.x + (-tdy / tl) * track.width * car.aiOffset;
-  const offY = target.y + (tdx / tl) * track.width * car.aiOffset;
-
-  const dx = offX - car.x;
-  const dy = offY - car.y;
-  const targetAngle = Math.atan2(dx, -dy);
-  let angleDiff = targetAngle - car.angle;
-  while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-  while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-
-  // Steer
-  if (Math.abs(car.speed) > 0.2) {
-    car.angle += Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), car.turnSpeed * 1.2);
-  }
-
-  // Speed control — slow in turns
-  const turnSharpness = Math.abs(angleDiff);
-  const targetSpeed = turnSharpness > 0.3 ? car.maxSpeed * 0.55 : car.maxSpeed * (0.85 + Math.random() * 0.15);
-  if (car.speed < targetSpeed) car.speed += car.accel;
-  else car.speed *= 0.96;
-
-  // Advance target
-  if (Math.hypot(dx, dy) < track.width * 1.2) {
-    car.aiTarget = (car.aiTarget + 1) % tc.length;
-  }
-
-  // Move
-  car.x += Math.sin(car.angle) * car.speed;
-  car.y -= Math.cos(car.angle) * car.speed;
-
-  // Track constraint
-  if (!isOnTrack(car.x, car.y)) {
-    const cx = track.center[car.aiTarget].x;
-    const cy = track.center[car.aiTarget].y;
-    const d = Math.hypot(cx - car.x, cy - car.y) || 1;
-    car.x += (cx - car.x) / d * 3;
-    car.y += (cy - car.y) / d * 3;
-    car.speed *= 0.6;
-  }
-}
-
-// ─── Update player ───
 function updatePlayer(car) {
-  const canTurn = Math.abs(car.speed) > 0.3;
-  if (isLeft() && canTurn) car.angle -= car.turnSpeed * (car.speed > 0 ? 1 : -0.5);
-  if (isRight() && canTurn) car.angle += car.turnSpeed * (car.speed > 0 ? 1 : -0.5);
+  const ct = Math.abs(car.speed) > 0.3;
+  if (isLeft() && ct) car.angle -= car.turnSpeed * (car.speed > 0 ? 1 : -0.5);
+  if (isRight() && ct) car.angle += car.turnSpeed * (car.speed > 0 ? 1 : -0.5);
   if (isGas()) car.speed += car.accel;
-  if (isBrake()) car.speed -= 0.2;
-  car.speed = Math.max(-car.maxSpeed * 0.35, Math.min(car.maxSpeed, car.speed));
+  if (isBrake()) car.speed -= 0.22;
+  car.speed = Math.max(-car.maxSpeed * 0.3, Math.min(car.maxSpeed, car.speed));
 
-  const onTrack = isOnTrack(car.x, car.y);
-  car.speed *= onTrack ? car.friction : car.offFriction;
+  const on = isOnTrack(car.x, car.y);
+  car.speed *= on ? car.friction : car.offFriction;
 
-  if ((isLeft() || isRight()) && Math.abs(car.speed) > 2) {
-    car.speed *= 0.985;
-    if (Math.abs(car.speed) > 2.5) {
-      skidMarks.push({ x: car.x, y: car.y, age: 0 });
-      if (skidMarks.length > 300) skidMarks.shift();
-    }
+  // Drift
+  const drifting = (isLeft() || isRight()) && Math.abs(car.speed) > 2.2;
+  if (drifting) {
+    car.speed *= 0.984;
+    skidMarks.push({ x: car.x - Math.sin(car.angle) * 5, y: car.y + Math.cos(car.angle) * 5, age: 0 });
+    skidMarks.push({ x: car.x + Math.sin(car.angle + Math.PI / 6) * 4, y: car.y - Math.cos(car.angle + Math.PI / 6) * 4, age: 0 });
+    if (skidMarks.length > 500) skidMarks.splice(0, 2);
   }
+
+  car.trailX = car.x; car.trailY = car.y;
+  car.x += Math.sin(car.angle) * car.speed;
+  car.y -= Math.cos(car.angle) * car.speed;
+
+  if (!isOnTrack(car.x, car.y)) {
+    const p = track.center[findNearestIdx(car.x, car.y)];
+    const d = Math.hypot(p.x - car.x, p.y - car.y) || 1;
+    car.x += (p.x - car.x) / d * 3;
+    car.y += (p.y - car.y) / d * 3;
+    car.speed *= 0.35;
+  }
+}
+
+function updateAI(car) {
+  if (car.finished) { car.speed *= 0.97; return; }
+  const tc = track.center;
+  const tgt = tc[car.aiTarget];
+  const prev = tc[(car.aiTarget - 1 + tc.length) % tc.length];
+  const nxt = tc[(car.aiTarget + 1) % tc.length];
+  const tdx = nxt.x - prev.x, tdy = nxt.y - prev.y, tl = Math.hypot(tdx, tdy) || 1;
+  const ox = tgt.x + (-tdy / tl) * track.hw * car.aiOffset;
+  const oy = tgt.y + (tdx / tl) * track.hw * car.aiOffset;
+
+  const dx = ox - car.x, dy = oy - car.y;
+  let ta = Math.atan2(dx, -dy);
+  let diff = ta - car.angle;
+  while (diff > Math.PI) diff -= Math.PI * 2;
+  while (diff < -Math.PI) diff += Math.PI * 2;
+
+  if (Math.abs(car.speed) > 0.2) car.angle += Math.sign(diff) * Math.min(Math.abs(diff), car.turnSpeed * 1.3);
+
+  const sharp = Math.abs(diff);
+  const ts = sharp > 0.4 ? car.maxSpeed * 0.5 : sharp > 0.15 ? car.maxSpeed * 0.75 : car.maxSpeed * (0.88 + Math.random() * 0.12);
+  if (car.speed < ts) car.speed += car.accel; else car.speed *= 0.95;
+
+  if (Math.hypot(dx, dy) < track.hw * 1.5) car.aiTarget = (car.aiTarget + 1) % tc.length;
 
   car.x += Math.sin(car.angle) * car.speed;
   car.y -= Math.cos(car.angle) * car.speed;
 
-  // Wall collision
   if (!isOnTrack(car.x, car.y)) {
-    const nearest = findNearestCenter(car.x, car.y);
-    const d = Math.hypot(nearest.x - car.x, nearest.y - car.y) || 1;
-    car.x += (nearest.x - car.x) / d * 2.5;
-    car.y += (nearest.y - car.y) / d * 2.5;
-    car.speed *= 0.4;
+    const p = tc[car.aiTarget];
+    const d = Math.hypot(p.x - car.x, p.y - car.y) || 1;
+    car.x += (p.x - car.x) / d * 3.5;
+    car.y += (p.y - car.y) / d * 3.5;
+    car.speed *= 0.5;
   }
 }
 
-function findNearestCenter(x, y) {
-  let best = track.center[0], bestD = Infinity;
-  for (const p of track.center) {
-    const d = Math.hypot(p.x - x, p.y - y);
-    if (d < bestD) { bestD = d; best = p; }
-  }
-  return best;
-}
-
-// ─── Car-car collision ───
 function carCollisions() {
-  for (let i = 0; i < allCars.length; i++) {
-    for (let j = i + 1; j < allCars.length; j++) {
-      const a = allCars[i], b = allCars[j];
-      const dx = b.x - a.x, dy = b.y - a.y;
-      const dist = Math.hypot(dx, dy);
-      if (dist < 18 && dist > 0) {
-        const nx = dx / dist, ny = dy / dist;
-        const push = (18 - dist) / 2;
-        a.x -= nx * push; a.y -= ny * push;
-        b.x += nx * push; b.y += ny * push;
-        a.speed *= 0.85; b.speed *= 0.85;
-      }
+  for (let i = 0; i < allCars.length; i++) for (let j = i + 1; j < allCars.length; j++) {
+    const a = allCars[i], b = allCars[j];
+    const dx = b.x - a.x, dy = b.y - a.y, dist = Math.hypot(dx, dy);
+    if (dist < 16 && dist > 0) {
+      const nx = dx / dist, ny = dy / dist, push = (16 - dist) / 2;
+      a.x -= nx * push; a.y -= ny * push;
+      b.x += nx * push; b.y += ny * push;
+      a.speed *= 0.8; b.speed *= 0.8;
     }
   }
 }
 
-// ─── Positions ───
 function updatePositions() {
   positions = [...allCars].sort((a, b) => {
     if (a.lap !== b.lap) return b.lap - a.lap;
     if (a.cpPassed !== b.cpPassed) return b.cpPassed - a.cpPassed;
-    // Same checkpoint — who's closer to next?
-    const cpA = track.checkpoints[a.nextCP]?.center || track.center[0];
-    const cpB = track.checkpoints[b.nextCP]?.center || track.center[0];
-    return Math.hypot(a.x - cpA.x, a.y - cpA.y) - Math.hypot(b.x - cpB.x, b.y - cpB.y);
+    const ca = track.checkpoints[a.nextCP]?.center || track.center[0];
+    const cb = track.checkpoints[b.nextCP]?.center || track.center[0];
+    return Math.hypot(a.x - ca.x, a.y - ca.y) - Math.hypot(b.x - cb.x, b.y - cb.y);
   });
 }
 
-// ─── Main update ───
 function update() {
   if (!gameRunning) return;
   updatePlayer(player);
   aiCars.forEach(updateAI);
   carCollisions();
-  allCars.forEach(checkCarCheckpoints);
+  allCars.forEach(checkCarCP);
   updatePositions();
 
-  // HUD
-  const elapsed = performance.now() - startTime;
-  document.getElementById('hud-time').textContent = formatTime(elapsed);
-  const pos = positions.indexOf(player) + 1;
-  document.getElementById('hud-pos').textContent = `${pos}. hely`;
+  document.getElementById('hud-time').textContent = formatTime(performance.now() - startTime);
+  document.getElementById('hud-pos').textContent = `${positions.indexOf(player) + 1}/${allCars.length}`;
 
-  // Skid aging
   skidMarks.forEach(m => m.age++);
-  skidMarks = skidMarks.filter(m => m.age < 120);
+  skidMarks = skidMarks.filter(m => m.age < 150);
 }
 
-// ─── Render ───
+/* ═══════════════════════════
+   RENDER — polished graphics
+   ═══════════════════════════ */
+
 function render() {
   const w = canvas.width, h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
 
-  // Grass
-  ctx.fillStyle = '#2d5a27';
+  // ─ Background: dark green with texture ─
+  ctx.fillStyle = '#1e4d1a';
   ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = '#265422';
-  for (let i = 0; i < 100; i++) {
-    ctx.fillRect((i * 137 + 50) % w, (i * 191 + 30) % h, 2, 2);
+
+  // Grass patches (subtle variation)
+  for (let i = 0; i < 200; i++) {
+    const gx = (i * 173 + 29) % w, gy = (i * 241 + 67) % h;
+    ctx.fillStyle = i % 3 === 0 ? '#1a4216' : '#225520';
+    ctx.fillRect(gx, gy, 4 + (i % 3), 4 + (i % 2));
   }
 
-  // Track asphalt
+  // ─ Track surface ─
+  // Outer fill (asphalt)
   ctx.beginPath();
   track.outer.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
   ctx.closePath();
-  ctx.fillStyle = '#3a3a3a';
+  ctx.fillStyle = '#333';
   ctx.fill();
 
-  // Inner grass
+  // Inner cutout (grass island)
   ctx.beginPath();
   track.inner.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
   ctx.closePath();
-  ctx.fillStyle = '#2d5a27';
-  ctx.fill();
-  ctx.fillStyle = '#358030';
+  ctx.fillStyle = '#1e4d1a';
   ctx.fill();
 
-  // Track center line (dashed)
+  // Inner island lighter center
+  ctx.beginPath();
+  track.center.forEach((p, i) => {
+    const ip = track.inner[i];
+    const mx = (p.x + ip.x) / 2, my = (p.y + ip.y) / 2;
+    i === 0 ? ctx.moveTo(mx, my) : ctx.lineTo(mx, my);
+  });
+  ctx.closePath();
+  ctx.fillStyle = '#245a20';
+  ctx.fill();
+
+  // ─ Asphalt detail: rubber marks ─
+  ctx.globalAlpha = 0.08;
+  for (let i = 0; i < track.center.length; i += 8) {
+    const p = track.center[i];
+    ctx.fillStyle = '#111';
+    ctx.beginPath();
+    ctx.arc(p.x + (Math.sin(i) * 6), p.y + (Math.cos(i) * 6), 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // ─ Kerbs (red-white) on high-curvature sections ─
+  for (let i = 0; i < track.center.length; i++) {
+    if (Math.abs(track.curvature[i]) > 0.015) {
+      const o = track.outer[i];
+      const blockIdx = Math.floor(i / 4);
+      ctx.fillStyle = blockIdx % 2 === 0 ? '#cc2233' : '#fff';
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // ─ Tire barriers on sharp corners ─
+  for (let i = 0; i < track.center.length; i += 3) {
+    if (Math.abs(track.curvature[i]) > 0.025) {
+      const o = track.outer[i];
+      // Stack of tires
+      ctx.fillStyle = '#222';
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#444';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+
+  // ─ Track borders ─
+  ctx.beginPath();
+  track.outer.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.closePath();
+  ctx.strokeStyle = '#ccc';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.beginPath();
+  track.inner.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.closePath();
+  ctx.strokeStyle = '#ccc';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // ─ Center dashes ─
+  ctx.setLineDash([6, 10]);
   ctx.beginPath();
   track.center.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
   ctx.closePath();
-  ctx.setLineDash([8, 12]);
-  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
   ctx.lineWidth = 1;
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Borders
-  ctx.beginPath();
-  track.outer.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-  ctx.closePath();
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 2.5;
-  ctx.stroke();
-
-  ctx.beginPath();
-  track.inner.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-  ctx.closePath();
-  ctx.stroke();
-
-  // Curbs on outer
-  ctx.setLineDash([10, 10]);
-  ctx.beginPath();
-  track.outer.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-  ctx.closePath();
-  ctx.strokeStyle = '#e94560';
-  ctx.lineWidth = 5;
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Start/finish line
+  // ─ Start/finish ─
   const s0 = track.outer[0], s1 = track.inner[0];
-  ctx.beginPath();
-  ctx.moveTo(s0.x, s0.y); ctx.lineTo(s1.x, s1.y);
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 4;
-  ctx.setLineDash([6, 6]);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  // Checkerboard pattern
+  const sfDx = s1.x - s0.x, sfDy = s1.y - s0.y;
+  const sfLen = Math.hypot(sfDx, sfDy);
+  const sfNx = sfDx / sfLen, sfNy = sfDy / sfLen;
+  const squares = 8;
+  for (let row = 0; row < 2; row++) {
+    for (let col = 0; col < squares; col++) {
+      const t = col / squares;
+      const bx = s0.x + sfNx * sfLen * t;
+      const by = s0.y + sfNy * sfLen * t;
+      const sz = sfLen / squares;
+      ctx.fillStyle = (row + col) % 2 === 0 ? '#fff' : '#111';
+      ctx.save();
+      ctx.translate(bx, by);
+      ctx.rotate(Math.atan2(sfDy, sfDx));
+      ctx.fillRect(0, -3 + row * 3, sz, 3);
+      ctx.restore();
+    }
+  }
 
-  // Skid marks
+  // ─ Skid marks ─
   skidMarks.forEach(m => {
-    ctx.fillStyle = `rgba(30,30,30,${(1 - m.age / 120) * 0.35})`;
+    const a = 1 - m.age / 150;
+    ctx.fillStyle = `rgba(20,20,20,${a * 0.3})`;
     ctx.beginPath();
-    ctx.arc(m.x, m.y, 2.5, 0, Math.PI * 2);
+    ctx.arc(m.x, m.y, 2, 0, Math.PI * 2);
     ctx.fill();
   });
 
-  // Render all cars (sorted by Y for depth)
-  const sorted = [...allCars].sort((a, b) => a.y - b.y);
-  sorted.forEach(car => renderCar(car));
+  // ─ Cars (depth sorted) ─
+  [...allCars].sort((a, b) => a.y - b.y).forEach(renderCar);
 
   // Camera shake
-  if (player.speed > 4) {
-    const s = (player.speed - 4) * 0.3;
-    canvas.style.transform = `translate(${(Math.random() - 0.5) * s}px, ${(Math.random() - 0.5) * s}px)`;
-  } else {
-    canvas.style.transform = '';
-  }
+  if (player.speed > 4.5) {
+    const s = (player.speed - 4.5) * 0.25;
+    canvas.style.transform = `translate(${(Math.random() - 0.5) * s}px,${(Math.random() - 0.5) * s}px)`;
+  } else canvas.style.transform = '';
 
   // Mini-map
   renderMiniMap(w, h);
@@ -455,89 +483,126 @@ function renderCar(car) {
   ctx.translate(car.x, car.y);
   ctx.rotate(car.angle);
 
+  const W = car.w, H = car.h;
+
   // Shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.25)';
-  ctx.fillRect(-car.w / 2 + 2, -car.h / 2 + 2, car.w, car.h);
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  roundRect(ctx, -W / 2 + 1.5, -H / 2 + 1.5, W, H, 3);
+  ctx.fill();
 
   // Body
   ctx.fillStyle = car.color;
-  ctx.fillRect(-car.w / 2, -car.h / 2, car.w, car.h);
+  roundRect(ctx, -W / 2, -H / 2, W, H, 3);
+  ctx.fill();
+
+  // Racing stripe
+  ctx.fillStyle = car.stripe;
+  ctx.fillRect(-1.5, -H / 2 + 1, 3, H - 2);
 
   // Windshield
-  ctx.fillStyle = '#88ccff';
-  ctx.fillRect(-car.w / 2 + 2, -car.h / 2 + 2, car.w - 4, 5);
+  ctx.fillStyle = 'rgba(120,200,255,0.7)';
+  roundRect(ctx, -W / 2 + 2, -H / 2 + 2, W - 4, 5, 1.5);
+  ctx.fill();
 
-  // Stripe
-  ctx.fillStyle = 'rgba(255,255,255,0.6)';
-  ctx.fillRect(-1, -car.h / 2, 2, car.h);
+  // Rear lights
+  ctx.fillStyle = '#ff3333';
+  ctx.fillRect(-W / 2 + 1, H / 2 - 3, 3, 2);
+  ctx.fillRect(W / 2 - 4, H / 2 - 3, 3, 2);
 
-  // Exhaust for player
-  if (car.isPlayer && isGas() && car.speed > 1) {
-    ctx.fillStyle = `rgba(255,150,50,${0.3 + Math.random() * 0.4})`;
+  // Headlights glow
+  if (car.isPlayer && car.speed > 0.5) {
+    ctx.fillStyle = `rgba(255,240,200,${0.15 + Math.random() * 0.1})`;
     ctx.beginPath();
-    ctx.arc(0, car.h / 2 + 3 + Math.random() * 3, 2.5 + Math.random() * 2.5, 0, Math.PI * 2);
+    ctx.ellipse(0, -H / 2 - 8, 8, 12, 0, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // Name tag for AI
-  if (!car.isPlayer) {
-    ctx.rotate(-car.angle); // Un-rotate for text
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = '7px JetBrains Mono';
-    ctx.textAlign = 'center';
-    ctx.fillText(car.name, 0, -car.h / 2 - 6);
+  // Exhaust
+  if (car.speed > 1.5) {
+    ctx.fillStyle = `rgba(255,${100 + Math.random() * 80},30,${0.2 + Math.random() * 0.3})`;
+    ctx.beginPath();
+    ctx.arc(-2, H / 2 + 2 + Math.random() * 3, 2 + Math.random() * 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(2, H / 2 + 2 + Math.random() * 3, 2 + Math.random() * 2, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   ctx.restore();
+
+  // Name tag
+  if (!car.isPlayer) {
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = '600 7px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText(car.name, car.x, car.y - car.h / 2 - 8);
+  }
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
 }
 
 function renderMiniMap(w, h) {
-  const size = Math.min(110, w * 0.15);
-  const mx = w - size - 10, my = h - size - 10;
-  const pad = 8;
-
-  // Bounding box of track
+  const size = Math.min(120, w * 0.16);
+  const mx = w - size - 12, my = h - size - 12;
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   track.center.forEach(p => { minX = Math.min(minX, p.x); minY = Math.min(minY, p.y); maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y); });
   const tw = maxX - minX, th = maxY - minY;
-  const sc = (size - pad * 2) / Math.max(tw, th);
+  const sc = (size - 16) / Math.max(tw, th);
 
   ctx.save();
-  ctx.globalAlpha = 0.65;
-  ctx.fillStyle = 'rgba(0,0,0,0.5)';
-  ctx.fillRect(mx, my, size, size);
+  ctx.globalAlpha = 0.7;
 
-  // Track outline
+  // BG
+  roundRect(ctx, mx - 2, my - 2, size + 4, size + 4, 8);
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.fill();
+
+  // Track
   ctx.beginPath();
   track.center.forEach((p, i) => {
-    const px = mx + pad + (p.x - minX) * sc;
-    const py = my + pad + (p.y - minY) * sc;
+    const px = mx + 8 + (p.x - minX) * sc, py = my + 8 + (p.y - minY) * sc;
     i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
   });
   ctx.closePath();
-  ctx.strokeStyle = '#777';
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#666';
+  ctx.lineWidth = 3;
   ctx.stroke();
 
-  // All car dots
+  // Cars
   allCars.forEach(car => {
+    const cx = mx + 8 + (car.x - minX) * sc, cy = my + 8 + (car.y - minY) * sc;
     ctx.fillStyle = car.color;
     ctx.beginPath();
-    ctx.arc(mx + pad + (car.x - minX) * sc, my + pad + (car.y - minY) * sc, car.isPlayer ? 3.5 : 2.5, 0, Math.PI * 2);
+    ctx.arc(cx, cy, car.isPlayer ? 4 : 3, 0, Math.PI * 2);
     ctx.fill();
+    if (car.isPlayer) {
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
   });
 
   ctx.restore();
 }
 
-// ─── Game Loop ───
-function gameLoop() {
-  update();
-  render();
-  if (gameRunning) requestAnimationFrame(gameLoop);
-}
+/* ═══════════════════════════
+   GAME FLOW
+   ═══════════════════════════ */
 
-// ─── Countdown ───
+function gameLoop() { update(); render(); if (gameRunning) requestAnimationFrame(gameLoop); }
+
 function runCountdown() {
   return new Promise(resolve => {
     const el = document.getElementById('countdown');
@@ -546,49 +611,46 @@ function runCountdown() {
     function next() {
       if (i >= steps.length) { el.classList.remove('visible'); resolve(); return; }
       el.textContent = steps[i];
-      el.classList.remove('pop');
-      el.classList.add('visible');
+      el.classList.remove('pop'); el.classList.add('visible');
       setTimeout(() => { el.classList.add('pop'); i++; setTimeout(next, 300); }, 700);
     }
     next();
   });
 }
 
-// ─── Start Race ───
+function getTrackAngle(idx) {
+  const tc = track.center;
+  const i = ((idx % tc.length) + tc.length) % tc.length;
+  const n = tc[(i + 1) % tc.length], c = tc[i];
+  return Math.atan2(n.x - c.x, -(n.y - c.y));
+}
+
 async function startRace() {
   resizeCanvas();
   track = buildTrack(canvas.width, canvas.height);
 
-  // Create cars
-  player = new Car('#e94560', 'Apu', true);
-  aiCars = AI_COLORS.map((c, i) => new Car(c, AI_NAMES[i]));
+  player = new Car('#e94560', '#ff8a9e', 'Apu', true);
+  aiCars = AI_DEFS.map(d => new Car(d.color, d.stripe, d.name));
   allCars = [player, ...aiCars];
 
-  // Place on start grid (staggered)
-  const startPts = [0, 2, 4, 6].map(i => {
-    const idx = (track.center.length - i) % track.center.length;
-    return track.center[idx];
-  });
-
+  // Grid placement
+  const gridSpacing = 6;
   allCars.forEach((car, i) => {
-    const p = startPts[i];
-    car.x = p.x + (i % 2 === 0 ? -8 : 8);
+    const idx = (track.center.length - i * gridSpacing) % track.center.length;
+    const p = track.center[idx < 0 ? idx + track.center.length : idx];
+    car.x = p.x + (i % 2 === 0 ? -6 : 6);
     car.y = p.y;
-    car.angle = getTrackAngle(track.center.length - i * 2);
+    car.angle = getTrackAngle(idx);
     car.speed = 0;
-    car.lap = 0;
-    car.nextCP = 1;
-    car.cpPassed = 0;
+    car.lap = 0; car.nextCP = 1; car.cpPassed = 0;
     car.finished = false;
-    car.aiTarget = 10 + i * 3; // stagger AI targets
+    car.aiTarget = Math.min(20 + i * 5, track.center.length - 1);
   });
 
-  lapTimes = [];
-  skidMarks = [];
-
+  lapTimes = []; skidMarks = [];
   document.getElementById('hud-lap').textContent = `1 / ${TOTAL_LAPS}`;
   document.getElementById('hud-best').textContent = bestTime ? formatTime(parseFloat(bestTime)) : '--:--.-';
-  document.getElementById('hud-pos').textContent = '4. hely';
+  document.getElementById('hud-pos').textContent = `4/${allCars.length}`;
 
   showScreen('game');
   render();
@@ -599,45 +661,26 @@ async function startRace() {
   gameLoop();
 }
 
-function getTrackAngle(idx) {
-  const tc = track.center;
-  const i = ((idx % tc.length) + tc.length) % tc.length;
-  const next = tc[(i + 1) % tc.length];
-  const cur = tc[i];
-  return Math.atan2(next.x - cur.x, -(next.y - cur.y));
-}
-
-// ─── Finish ───
 function finishRace() {
   gameRunning = false;
   canvas.style.transform = '';
-  const totalTime = performance.now() - startTime;
-
-  if (!bestTime || totalTime < parseFloat(bestTime)) {
-    bestTime = totalTime;
-    localStorage.setItem('apu-gokart-best', totalTime.toString());
-  }
+  const total = performance.now() - startTime;
+  if (!bestTime || total < parseFloat(bestTime)) { bestTime = total; localStorage.setItem('apu-gokart-best', total.toString()); }
 
   const pos = positions.indexOf(player) + 1;
-  document.getElementById('finish-time').textContent = formatTime(totalTime);
-
-  const lapsEl = document.getElementById('finish-laps');
-  lapsEl.innerHTML = `
-    <div style="font-size:1.2rem; color:${pos === 1 ? '#f6ad55' : '#fff'}; margin-bottom:8px;">
-      ${pos}. helyezés ${pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : ''}
+  document.getElementById('finish-time').textContent = formatTime(total);
+  document.getElementById('finish-laps').innerHTML = `
+    <div style="font-size:1.3rem;color:${pos === 1 ? '#f6ad55' : '#fff'};margin-bottom:10px;">
+      ${pos}. helyezés ${['', '🥇', '🥈', '🥉', ''][pos]}
     </div>
     ${lapTimes.map((t, i) => `<div>Kör ${i + 1}: ${formatTime(t)}</div>`).join('')}
   `;
-
-  setTimeout(() => showScreen('finish'), 500);
+  setTimeout(() => showScreen('finish'), 400);
 }
 
-// ─── Helpers ───
 function formatTime(ms) {
-  const mins = Math.floor(ms / 60000);
-  const secs = Math.floor((ms % 60000) / 1000);
-  const tenths = Math.floor((ms % 1000) / 100);
-  return `${mins}:${secs.toString().padStart(2, '0')}.${tenths}`;
+  const m = Math.floor(ms / 60000), s = Math.floor((ms % 60000) / 1000), t = Math.floor((ms % 1000) / 100);
+  return `${m}:${s.toString().padStart(2, '0')}.${t}`;
 }
 
 // ─── Menu ───
