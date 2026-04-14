@@ -8,7 +8,7 @@ import { TRACKS, TRACK_LIST, buildTrackFromData, isOnTrack, findNearestIdx, dist
 import { initAudio, sfxBoost, sfxNitro, sfxCollision, sfxLap, sfxCountdown, sfxGo, sfxPowerup } from './src/audio.js';
 import { spawnDriftSmoke, spawnSparks, spawnNitroFlame, updateParticles } from './src/particles.js';
 import { isGas, isBrake, isLeft, isRight, keys } from './src/input.js';
-import { Car, AI_DEFS, SIZE_DEFS } from './src/car.js';
+import { Car, AI_DEFS, AI_PERSONALITIES, SIZE_DEFS } from './src/car.js';
 import { spawnPowerups, updatePowerups, usePowerup, hidePowerupHUD } from './src/powerups.js';
 import { render } from './src/render.js';
 
@@ -21,7 +21,7 @@ window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
 // ─── Screens ───
-const screens = { title: 'title-screen', howto: 'howto-screen', garage: 'garage-screen', game: 'game-screen', finish: 'finish-screen' };
+const screens = { title: 'title-screen', howto: 'howto-screen', garage: 'garage-screen', trackspin: 'trackspin-screen', finalize: 'finalize-screen', game: 'game-screen', finish: 'finish-screen' };
 function showScreen(n) {
   Object.values(screens).forEach(id => document.getElementById(id).classList.remove('active'));
   document.getElementById(screens[n]).classList.add('active');
@@ -227,9 +227,17 @@ function runCountdown() {
     const steps = ['3', '2', '1', 'RAJT!'];
     let i = 0;
     G.turboStartWindow = false; G.turboStartUsed = false;
+
+    function flashScreen() {
+      const flash = document.createElement('div');
+      flash.className = 'countdown-flash';
+      document.getElementById('game-screen').appendChild(flash);
+      setTimeout(() => flash.remove(), 300);
+    }
+
     function next() {
       if (i >= steps.length) {
-        el.classList.remove('visible');
+        el.classList.remove('visible', 'go-text');
         if (G.turboStartUsed) {
           G.player.speed = G.player.maxSpeed * 0.6; sfxBoost();
           for (let j = 0; j < 15; j++) spawnSparks(G.player.x, G.player.y);
@@ -237,9 +245,20 @@ function runCountdown() {
         }
         G.turboStartWindow = false; resolve(); return;
       }
-      el.textContent = steps[i]; el.classList.remove('pop'); el.classList.add('visible');
+
+      el.textContent = steps[i];
+      el.classList.remove('pop', 'go-text');
+      el.classList.add('visible');
+      if (i === 3) el.classList.add('go-text');
+
+      flashScreen();
       if (i < 3) sfxCountdown(); else { sfxGo(); G.turboStartWindow = true; }
-      setTimeout(() => { el.classList.add('pop'); i++; setTimeout(next, 300); }, 700);
+
+      setTimeout(() => {
+        el.classList.add('pop');
+        i++;
+        setTimeout(next, 350);
+      }, 750);
     }
     next();
   });
@@ -258,7 +277,17 @@ async function startRace() {
 
   const diffMult = { easy: 0.75, normal: 0.9, hard: 1.05 };
   const dm = diffMult[G.difficulty];
-  G.aiCars = AI_DEFS.map(d => { const c = new Car(d.color, d.stripe, d.name); c.maxSpeed *= dm; c.accel *= dm; return c; });
+  G.aiCars = AI_DEFS.map(d => {
+    const c = new Car(d.color, d.stripe, d.name);
+    c.maxSpeed *= dm;
+    c.accel *= dm;
+    // Apply personality
+    const pers = AI_PERSONALITIES[d.personality] || {};
+    c.maxSpeed *= pers.speedMult || 1;
+    c.turnSpeed *= pers.turnMult || 1;
+    c.personality = d.personality;
+    return c;
+  });
   G.allCars = [G.player, ...G.aiCars];
 
   G.allCars.forEach((car, i) => {
@@ -424,6 +453,163 @@ function populateTrackSelector() {
 }
 
 /* ═══════════════════════════
+   TRACK SPINNER
+   ═══════════════════════════ */
+
+function runTrackSpinner(randomize = false) {
+  return new Promise(resolve => {
+    if (!randomize) {
+      // Skip spinner, go straight to finalize with selected track
+      resolve(G.currentTrackId);
+      return;
+    }
+
+    showScreen('trackspin');
+    const wheel = document.getElementById('spin-wheel');
+    const selectedEl = document.getElementById('spin-selected');
+    selectedEl.textContent = '';
+
+    // Build wheel items (repeat list 6x for scrolling effect)
+    wheel.innerHTML = '';
+    const ids = [];
+    for (let rep = 0; rep < 8; rep++) {
+      TRACK_LIST.forEach(id => {
+        ids.push(id);
+        const item = document.createElement('div');
+        item.className = 'spin-item';
+        const t = TRACKS[id];
+        item.textContent = `${t.icon} ${t.name}`;
+        wheel.appendChild(item);
+      });
+    }
+
+    // Random target
+    const targetIdx = Math.floor(TRACK_LIST.length * 5 + Math.random() * TRACK_LIST.length);
+    const itemHeight = 41; // approximate height of each item
+    const targetScroll = targetIdx * itemHeight - 100; // center offset
+
+    // Animate scroll
+    let current = 0;
+    const duration = 3000;
+    const start = Date.now();
+
+    function tick() {
+      const elapsed = Date.now() - start;
+      const t = Math.min(1, elapsed / duration);
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - t, 3);
+      current = eased * targetScroll;
+      wheel.scrollTop = current;
+
+      // Highlight center item
+      const centerIdx = Math.floor((current + 120) / itemHeight);
+      wheel.querySelectorAll('.spin-item').forEach((el, i) => {
+        el.classList.toggle('center', i === centerIdx);
+      });
+
+      // Click sound on each new item
+      if (t < 0.9 && Math.floor(current / itemHeight) !== Math.floor((current - 5) / itemHeight)) {
+        sfxCountdown();
+      }
+
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        // Done
+        const resultId = ids[targetIdx] || TRACK_LIST[0];
+        G.currentTrackId = resultId;
+        const track = TRACKS[resultId];
+        selectedEl.innerHTML = `<div style="color:${track.color}; font-size:2rem; margin-bottom:4px;">${track.icon}</div><div>${track.name}</div>`;
+        sfxGo();
+
+        setTimeout(() => resolve(resultId), 1200);
+      }
+    }
+
+    requestAnimationFrame(tick);
+  });
+}
+
+/* ═══════════════════════════
+   FINALIZING PAGE
+   ═══════════════════════════ */
+
+function showFinalizePage() {
+  return new Promise(resolve => {
+    showScreen('finalize');
+
+    const trackDef = TRACKS[G.currentTrackId];
+
+    // Track card
+    document.getElementById('finalize-track').innerHTML = `
+      <div class="finalize-track-icon">${trackDef.icon}</div>
+      <div class="finalize-track-name" style="color:${trackDef.color};">${trackDef.name}</div>
+      <div class="finalize-track-desc">${trackDef.description}</div>
+      <div class="finalize-track-type">${trackDef.type.toUpperCase()} • ${G.reverseMode ? 'REVERSE' : 'NORMÁL'} • ${G.nightMode ? 'ÉJSZAKA' : 'NAPPAL'}</div>
+    `;
+
+    // Starting grid with all cars
+    const carsEl = document.getElementById('finalize-cars');
+    carsEl.innerHTML = '';
+
+    const allDrivers = [
+      { color: G.garageState.bodyColor, stripe: G.garageState.stripeColor, name: G.garageState.name, isPlayer: true },
+      ...AI_DEFS.map(d => ({ color: d.color, stripe: d.stripe, name: d.name, isPlayer: false, desc: d.desc }))
+    ];
+
+    // Shuffle grid positions
+    const gridOrder = allDrivers.sort(() => Math.random() - 0.5);
+    gridOrder.forEach((driver, i) => {
+      const card = document.createElement('div');
+      card.className = `finalize-car ${driver.isPlayer ? 'player' : ''}`;
+      card.style.animationDelay = `${i * 0.15}s`;
+      card.style.animation = 'fadeIn 0.4s ease forwards';
+      card.style.opacity = '0';
+      card.innerHTML = `
+        <div class="finalize-car-pos">P${i + 1}</div>
+        <div class="finalize-car-dot" style="background:${driver.color};">
+          <div style="width:3px;height:100%;background:${driver.stripe};margin:0 auto;border-radius:1px;"></div>
+        </div>
+        <div class="finalize-car-name">${driver.name}</div>
+        ${driver.desc ? `<div style="font-size:0.35rem;color:rgba(255,255,255,0.3);margin-top:2px;">${driver.desc}</div>` : ''}
+      `;
+      carsEl.appendChild(card);
+    });
+
+    // Countdown timer
+    let countdown = 4;
+    const timerEl = document.getElementById('finalize-timer');
+    timerEl.textContent = countdown;
+
+    const interval = setInterval(() => {
+      countdown--;
+      timerEl.textContent = countdown;
+      if (countdown <= 0) {
+        clearInterval(interval);
+        resolve();
+      }
+    }, 1000);
+  });
+}
+
+/* ═══════════════════════════
+   FULL RACE FLOW
+   ═══════════════════════════ */
+
+async function startRaceFlow(spinRandom = false) {
+  localStorage.setItem('apu-gokart-car', JSON.stringify(G.garageState));
+
+  // 1. Track spinner (if random)
+  await runTrackSpinner(spinRandom);
+
+  // 2. Finalizing page
+  await showFinalizePage();
+
+  // 3. Start actual race
+  await startRace();
+}
+
+/* ═══════════════════════════
    MENU BUTTONS
    ═══════════════════════════ */
 
@@ -431,6 +617,6 @@ document.getElementById('btn-garage').addEventListener('click', () => { populate
 document.getElementById('btn-howto').addEventListener('click', () => showScreen('howto'));
 document.getElementById('btn-howto-back').addEventListener('click', () => showScreen('title'));
 document.getElementById('btn-garage-back').addEventListener('click', () => showScreen('title'));
-document.getElementById('btn-race').addEventListener('click', () => { localStorage.setItem('apu-gokart-car', JSON.stringify(G.garageState)); startRace(); });
+document.getElementById('btn-race').addEventListener('click', () => startRaceFlow(false));
 document.getElementById('btn-retry').addEventListener('click', startRace);
 document.getElementById('btn-back-title').addEventListener('click', () => showScreen('title'));

@@ -22,10 +22,17 @@ export class Car {
 }
 
 export const AI_DEFS = [
-  { color: '#2563eb', stripe: '#60a5fa', name: 'Kék Villám' },
-  { color: '#16a34a', stripe: '#4ade80', name: 'Zöld Szörny' },
-  { color: '#9333ea', stripe: '#c084fc', name: 'Lila Rakéta' },
+  { color: '#2563eb', stripe: '#60a5fa', name: 'Kék Villám', personality: 'aggressive', desc: 'Agresszív — mindig a maximumon' },
+  { color: '#16a34a', stripe: '#4ade80', name: 'Zöld Szörny', personality: 'cautious', desc: 'Óvatos — ritkán hibázik' },
+  { color: '#9333ea', stripe: '#c084fc', name: 'Lila Rakéta', personality: 'drifter', desc: 'Drift király — kanyarokban a legjobb' },
 ];
+
+// AI personality modifiers
+export const AI_PERSONALITIES = {
+  aggressive: { speedMult: 1.1, turnMult: 0.9, brakeDist: 0.3 },
+  cautious: { speedMult: 0.85, turnMult: 1.1, brakeDist: 0.5 },
+  drifter: { speedMult: 0.95, turnMult: 1.2, brakeDist: 0.35 },
+};
 
 export const SIZE_DEFS = {
   small: { w: 10, h: 18, maxSpeed: 5.5, accel: 0.16, turnSpeed: 0.08, label: 'Gyors & agilis' },

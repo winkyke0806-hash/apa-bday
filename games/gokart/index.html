@@ -110,6 +110,33 @@
     </div>
   </div>
 
+  <!-- Track Selector (spinning) -->
+  <div id="trackspin-screen" class="screen">
+    <div class="spin-layout">
+      <h2 class="spin-title">🎰 PÁLYA VÁLASZTÁS</h2>
+      <div class="spin-wheel" id="spin-wheel"></div>
+      <div class="spin-indicator">▼</div>
+      <div class="spin-selected" id="spin-selected"></div>
+    </div>
+  </div>
+
+  <!-- Finalizing / Pre-race -->
+  <div id="finalize-screen" class="screen">
+    <div class="finalize-layout">
+      <div class="finalize-track-card" id="finalize-track">
+        <!-- Filled by JS -->
+      </div>
+      <div class="finalize-divider"></div>
+      <div class="finalize-grid" id="finalize-grid">
+        <h3 class="finalize-subtitle">🏁 RAJTRÁCS</h3>
+        <div class="finalize-cars" id="finalize-cars"></div>
+      </div>
+      <div class="finalize-countdown" id="finalize-countdown">
+        Verseny indul <span id="finalize-timer">3</span> másodperc múlva...
+      </div>
+    </div>
+  </div>
+
   <!-- Game screen -->
   <div id="game-screen" class="screen">
     <canvas id="game-canvas"></canvas>
