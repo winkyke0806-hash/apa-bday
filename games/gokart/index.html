@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🏎️ Apu Gokart GP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Title screen -->
+  <div id="title-screen" class="screen active">
+    <div class="title-art">
+      <div class="title-kart">🏎️</div>
+      <h1 class="title-name">APU GOKART<br><span class="title-gp">GRAND PRIX</span></h1>
+    </div>
+    <div class="title-menu">
+      <button class="menu-btn" id="btn-start">▶ RAJT</button>
+      <button class="menu-btn menu-btn--secondary" id="btn-howto">? IRÁNYÍTÁS</button>
+      <a href="../../index.html" class="menu-btn menu-btn--secondary menu-link">← VISSZA A HÁZBA</a>
+    </div>
+    <p class="title-footer">Boldog Szülinapot, Apu! 🎂</p>
+  </div>
+
+  <!-- How to play -->
+  <div id="howto-screen" class="screen">
+    <div class="howto-card">
+      <h2>🎮 Irányítás</h2>
+      <div class="howto-grid">
+        <div class="howto-item">
+          <div class="howto-key">W / ↑</div>
+          <div>Gáz</div>
+        </div>
+        <div class="howto-item">
+          <div class="howto-key">S / ↓</div>
+          <div>Fék</div>
+        </div>
+        <div class="howto-item">
+          <div class="howto-key">A / ←</div>
+          <div>Balra</div>
+        </div>
+        <div class="howto-item">
+          <div class="howto-key">D / →</div>
+          <div>Jobbra</div>
+        </div>
+      </div>
+      <p class="howto-tip">📱 Mobilon: érintsd a képernyő széleit!</p>
+      <button class="menu-btn" id="btn-howto-back">VISSZA</button>
+    </div>
+  </div>
+
+  <!-- Game screen -->
+  <div id="game-screen" class="screen">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- HUD -->
+    <div class="hud">
+      <div class="hud-item">
+        <span class="hud-label">KÖR</span>
+        <span class="hud-value" id="hud-lap">1 / 3</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">IDŐ</span>
+        <span class="hud-value" id="hud-time">0:00.0</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">LEGJOBB</span>
+        <span class="hud-value" id="hud-best">--:--.-</span>
+      </div>
+    </div>
+
+    <!-- Countdown overlay -->
+    <div class="countdown" id="countdown"></div>
+
+    <!-- Mobile touch controls -->
+    <div class="touch-controls" id="touch-controls">
+      <div class="touch-zone touch-zone--left" id="touch-left"></div>
+      <div class="touch-zone touch-zone--right" id="touch-right"></div>
+      <div class="touch-zone touch-zone--gas" id="touch-gas"></div>
+      <div class="touch-zone touch-zone--brake" id="touch-brake"></div>
+    </div>
+  </div>
+
+  <!-- Finish screen -->
+  <div id="finish-screen" class="screen">
+    <div class="finish-card">
+      <div class="finish-trophy">🏆</div>
+      <h2 class="finish-title">CÉL!</h2>
+      <div class="finish-time" id="finish-time">0:00.0</div>
+      <p class="finish-label">Összidő</p>
+      <div class="finish-laps" id="finish-laps"></div>
+      <div class="finish-btns">
+        <button class="menu-btn" id="btn-retry">🔄 ÚJRA</button>
+        <a href="../../index.html" class="menu-btn menu-btn--secondary menu-link">← HÁZBA</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

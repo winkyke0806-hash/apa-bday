@@ -83,6 +83,16 @@ export function renderContent(container, room) {
   container.innerHTML = `
     <h2 class="content-title" style="color:${room.color}">🏎️ Kalandorok Klubja</h2>
     <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:24px;">A legjobb közös kalandjaink</p>
+
+    <!-- Gokart game link -->
+    <a href="games/gokart/index.html" style="display:block; text-decoration:none; margin-bottom:20px;">
+      <div class="content-card" style="border-color:${room.color}; text-align:center; cursor:pointer; transition:all 0.3s;">
+        <div style="font-size:3rem; margin-bottom:8px;">🏎️</div>
+        <h3 style="color:${room.color}; font-family:var(--font-display);">Apu Gokart Grand Prix</h3>
+        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Nyomj egy kört a pályán! Kattints a játékhoz →</p>
+      </div>
+    </a>
+
     ${ADVENTURES.map(a => `
       <div class="content-card">
         <img src="${a.photo}" alt="${a.title}" style="width:100%; height:200px; object-fit:cover; border-radius:8px; margin-bottom:12px;" onerror="this.style.display='none'">
