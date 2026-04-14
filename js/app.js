@@ -28,12 +28,28 @@ const contentOverlay = document.getElementById('content-overlay');
 const contentContainer = document.getElementById('content-container');
 const blueprintHouse = document.getElementById('blueprint-house');
 
+let initialRender = true;
+
 function updateProgressBar() {
   const count = getUnlockedCount();
   const pct = Math.round((count / TOTAL_REGULAR) * 100);
   progressBar.style.width = pct + '%';
   progressGlow.style.width = pct + '%';
   progressText.textContent = `${count} / ${TOTAL_REGULAR} szoba felfedezve`;
+}
+
+// Style an unlocked room element
+function styleUnlockedRoom(el, room) {
+  const c = room.color;
+  el.style.setProperty('--room-color', c);
+  el.style.borderColor = c + '88';
+  el.style.background = `radial-gradient(ellipse at center, ${c}22 0%, ${c}08 50%, transparent 80%)`;
+  el.style.boxShadow = `0 0 15px ${c}33, 0 0 40px ${c}15, inset 0 0 25px ${c}0a`;
+  el.innerHTML = `
+    <div class="room__icon" style="filter:drop-shadow(0 0 8px ${c}88) drop-shadow(0 0 16px ${c}44);">${room.icon}</div>
+    <div class="room__name" style="color:${c}; text-shadow:0 0 10px ${c}55;">${room.name}</div>
+    <div class="room__status">✓ Felfedezve</div>
+  `;
 }
 
 function renderRooms() {
@@ -46,22 +62,19 @@ function renderRooms() {
     el.dataset.roomId = room.id;
 
     if (unlocked) {
-      const c = room.color;
-      el.style.setProperty('--room-color', c);
-      el.style.borderColor = c + '88';
-      el.style.background = `radial-gradient(ellipse at center, ${c}22 0%, ${c}08 50%, transparent 80%)`;
-      el.style.boxShadow = `0 0 15px ${c}33, 0 0 40px ${c}15, inset 0 0 25px ${c}0a`;
-      el.innerHTML = `
-        <div class="room__icon" style="filter:drop-shadow(0 0 8px ${c}88) drop-shadow(0 0 16px ${c}44);">${room.icon}</div>
-        <div class="room__name" style="color:${c}; text-shadow:0 0 10px ${c}55;">${room.name}</div>
-        <div class="room__status">✓ Felfedezve</div>
-      `;
+      styleUnlockedRoom(el, room);
     } else {
       el.innerHTML = `
         <div class="room__icon">🔒</div>
         <div class="room__name room__name--hidden">???</div>
         <div class="room__dimensions">${randomDimension()}</div>
       `;
+    }
+
+    // Only play entrance animation on first load
+    if (!initialRender) {
+      el.style.opacity = '1';
+      el.style.animation = 'none';
     }
 
     el.addEventListener('click', () => onRoomClick(room));
@@ -95,9 +108,15 @@ function renderRooms() {
       <div class="room__status room__status--locked">Fedezd fel az összes szobát!</div>
     `;
   }
-  grid.appendChild(szefEl);
 
+  if (!initialRender) {
+    szefEl.style.opacity = '1';
+    szefEl.style.animation = 'none';
+  }
+
+  grid.appendChild(szefEl);
   updateProgressBar();
+  initialRender = false;
 }
 
 function randomDimension() {
@@ -180,17 +199,21 @@ async function onRoomClick(room) {
       minigameContainer.innerHTML = '';
       mod.renderMinigame(minigameContainer, room, () => {
         unlockRoom(room.id);
+
+        // First go back to house view
         showView('house');
+
+        // Re-render rooms (without entrance animations)
         renderRooms();
 
-        // Find the newly unlocked room element and animate it
-        requestAnimationFrame(() => {
+        // THEN play unlock animation after a short delay so user sees it
+        setTimeout(() => {
           const roomEl = grid.querySelector(`[data-room-id="${room.id}"]`);
           if (roomEl) {
             roomEl.classList.add('room--just-unlocked');
             spawnUnlockEffect(roomEl, room.color);
           }
-        });
+        }, 100);
       });
       showView('minigame');
     }

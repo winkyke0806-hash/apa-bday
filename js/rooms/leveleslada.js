@@ -10,65 +10,128 @@ const MESSAGES = [
 ];
 
 export function renderMinigame(container, room, onSuccess) {
-  const totalPieces = GRID_SIZE * GRID_SIZE;
-  const pieces = shuffle(Array.from({ length: totalPieces }, (_, i) => i));
-  let selected = null;
+  // Sliding puzzle: one empty slot, slide tiles into the gap
+  const total = GRID_SIZE * GRID_SIZE;
+  const emptyIndex = total - 1;
+  // Generate solved state [0,1,2,...,8] then shuffle (keeping solvable)
+  let tiles = Array.from({ length: total }, (_, i) => i);
+  tiles = solvableShuffle(tiles, GRID_SIZE);
 
   container.innerHTML = `
     <h2 class="minigame-title">💌 Titkos Levelesláda</h2>
-    <p class="minigame-instructions">Rakd ki a képet! Kattints két darabra a cseréhez.</p>
+    <p class="minigame-instructions">Csúsztasd a darabokat a helyükre! Kattints egy szomszédos darabra az üres mező mellé.</p>
     <div id="puzzle-grid" style="
-      display:grid; grid-template-columns:repeat(${GRID_SIZE}, 1fr); gap:2px;
-      max-width:350px; margin:0 auto; aspect-ratio:1;
+      display:grid; grid-template-columns:repeat(${GRID_SIZE}, 1fr); gap:3px;
+      max-width:320px; margin:0 auto; aspect-ratio:1;
+      background:rgba(255,255,255,0.03); border-radius:8px; padding:3px;
     "></div>
+    <p id="move-count" style="text-align:center; color:rgba(255,255,255,0.3); font-size:0.75rem; margin-top:12px;">0 lépés</p>
   `;
 
   const gridEl = container.querySelector('#puzzle-grid');
+  const moveCountEl = container.querySelector('#move-count');
+  let moves = 0;
 
   function renderPuzzle() {
     gridEl.innerHTML = '';
-    pieces.forEach((pieceIndex, pos) => {
+    tiles.forEach((tileVal, pos) => {
       const el = document.createElement('div');
-      const row = Math.floor(pieceIndex / GRID_SIZE);
-      const col = pieceIndex % GRID_SIZE;
-      const isCorrect = pieceIndex === pos;
+      const isEmpty = tileVal === emptyIndex;
 
-      el.style.cssText = `
-        aspect-ratio:1; cursor:pointer; border-radius:4px;
-        background: url(${PUZZLE_IMAGE}) ${col * 50}% ${row * 50}% / 300%;
-        border: 2px solid ${selected === pos ? room.color : 'rgba(255,255,255,0.15)'};
-        display:flex; align-items:center; justify-content:center;
-        transition: border-color 0.2s;
-      `;
-      el.innerHTML = `<div style="
-        width:100%;height:100%;display:flex;align-items:center;justify-content:center;
-        font-size:1.2rem;color:rgba(255,255,255,0.4);font-weight:bold;
-        background:rgba(${isCorrect ? '104,211,145,0.15' : '255,255,255,0.03'});
-        border-radius:3px;
-      ">${pieceIndex + 1}</div>`;
+      if (isEmpty) {
+        el.style.cssText = `
+          aspect-ratio:1; border-radius:6px;
+          background:rgba(255,255,255,0.02);
+        `;
+      } else {
+        const row = Math.floor(tileVal / GRID_SIZE);
+        const col = tileVal % GRID_SIZE;
+        const isCorrect = tileVal === pos;
 
-      el.addEventListener('click', () => {
-        if (selected === null) {
-          selected = pos;
-          renderPuzzle();
-        } else {
-          [pieces[selected], pieces[pos]] = [pieces[pos], pieces[selected]];
-          selected = null;
-          renderPuzzle();
-          if (pieces.every((p, i) => p === i)) {
-            setTimeout(() => showSuccess(container, room, onSuccess, 'Kiraktad a képet!'), 500);
+        el.style.cssText = `
+          aspect-ratio:1; border-radius:6px; cursor:pointer;
+          background: url(${PUZZLE_IMAGE}) ${col * 50}% ${row * 50}% / 300%, rgba(255,255,255,0.06);
+          border: 2px solid ${isCorrect ? room.color + '88' : 'rgba(255,255,255,0.1)'};
+          display:flex; align-items:center; justify-content:center;
+          transition: transform 0.15s ease, border-color 0.3s;
+          position:relative;
+        `;
+        el.innerHTML = `<span style="
+          font-size:0.9rem; font-weight:bold;
+          color:${isCorrect ? room.color : 'rgba(255,255,255,0.25)'};
+          text-shadow:0 1px 3px rgba(0,0,0,0.8);
+          pointer-events:none;
+        ">${tileVal + 1}</span>`;
+
+        el.addEventListener('click', () => {
+          if (canSlide(pos, tiles.indexOf(emptyIndex), GRID_SIZE)) {
+            const emptyPos = tiles.indexOf(emptyIndex);
+            [tiles[pos], tiles[emptyPos]] = [tiles[emptyPos], tiles[pos]];
+            moves++;
+            moveCountEl.textContent = `${moves} lépés`;
+            renderPuzzle();
+
+            if (tiles.every((t, i) => t === i)) {
+              setTimeout(() => showSuccess(container, room, onSuccess, `Kiraktad ${moves} lépésből!`), 400);
+            }
+          } else {
+            el.style.transform = 'scale(0.95)';
+            setTimeout(() => el.style.transform = '', 150);
           }
-        }
-      });
+        });
+
+        el.addEventListener('mouseenter', () => {
+          if (canSlide(pos, tiles.indexOf(emptyIndex), GRID_SIZE)) {
+            el.style.borderColor = room.color;
+            el.style.transform = 'scale(1.03)';
+          }
+        });
+        el.addEventListener('mouseleave', () => {
+          el.style.borderColor = isCorrect ? room.color + '88' : 'rgba(255,255,255,0.1)';
+          el.style.transform = '';
+        });
+      }
+
       gridEl.appendChild(el);
     });
   }
 
   renderPuzzle();
   createHintSkip(container,
-    ['A számozott darabok sorrendbe kell kerüljenek (1-9)', 'Próbáld a sarkokból kezdeni'],
+    ['A számoknak sorrendben kell állniuk (1-8), az üres hely jobbra lent', 'Először a felső sort rakd ki'],
     () => showSuccess(container, room, onSuccess, 'Átugrottad — de a szoba a tiéd!')
   );
+}
+
+function canSlide(pos, emptyPos, size) {
+  const rowP = Math.floor(pos / size), colP = pos % size;
+  const rowE = Math.floor(emptyPos / size), colE = emptyPos % size;
+  return (Math.abs(rowP - rowE) + Math.abs(colP - colE)) === 1;
+}
+
+function solvableShuffle(tiles, size) {
+  // Fisher-Yates then check solvability
+  let arr = [...tiles];
+  do {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  } while (!isSolvable(arr, size) || arr.every((t, i) => t === i)); // ensure shuffled AND solvable
+  return arr;
+}
+
+function isSolvable(tiles, size) {
+  let inversions = 0;
+  const flat = tiles.filter(t => t !== size * size - 1);
+  for (let i = 0; i < flat.length; i++) {
+    for (let j = i + 1; j < flat.length; j++) {
+      if (flat[i] > flat[j]) inversions++;
+    }
+  }
+  if (size % 2 === 1) return inversions % 2 === 0;
+  const emptyRow = Math.floor(tiles.indexOf(size * size - 1) / size);
+  return (inversions + emptyRow) % 2 === 1;
 }
 
 export function renderContent(container, room) {
