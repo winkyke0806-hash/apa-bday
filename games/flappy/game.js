@@ -118,9 +118,9 @@ window.addEventListener('keydown', e => {
 // ─── Pipe generation ───
 function spawnPipe() {
   const w = canvas.width, h = canvas.height;
-  const diff = Math.min(score / 15, 1); // difficulty ramp 0-1
+  const diff = Math.min(score / 30, 1); // slower difficulty ramp
 
-  const gap = PIPE_GAP_BASE - diff * 40; // gap shrinks
+  const gap = PIPE_GAP_BASE - diff * 25; // gap shrinks less (min 145 instead of 130)
   const minTop = 60;
   const maxTop = h - gap - 60;
   const topH = minTop + Math.random() * (maxTop - minTop);
