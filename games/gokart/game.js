@@ -598,15 +598,21 @@ function renderDecorations(w, h) {
       // Tire barrier — stacked black tires
       ctx.fillStyle = '#1a1a1a';
       ctx.beginPath();
-      ctx.arc(px, py, 5, 0, Math.PI * 2);
+      ctx.arc(px, py, 9, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#333';
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 2;
       ctx.stroke();
-      // Tire highlight
-      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      // Inner ring
+      ctx.strokeStyle = '#282828';
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.arc(px - 1, py - 1, 2, 0, Math.PI * 2);
+      ctx.arc(px, py, 5, 0, Math.PI * 2);
+      ctx.stroke();
+      // Highlight
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.beginPath();
+      ctx.arc(px - 2, py - 2, 3, 0, Math.PI * 2);
       ctx.fill();
     }
 
