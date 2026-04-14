@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🎂 Flappy Cake</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --pixel: 'Press Start 2P', monospace;
+      --mono: 'JetBrains Mono', monospace;
+      --accent: #f6ad55;
+      --pink: #ec4899;
+      --bg: #0f172a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); overflow: hidden; height: 100vh; width: 100vw; font-family: var(--mono); }
+
+    canvas { display: block; width: 100vw; height: 100vh; cursor: pointer; }
+
+    /* Overlay screens */
+    .overlay {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; z-index: 10;
+      background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(8px);
+      transition: opacity 0.4s; pointer-events: all;
+    }
+    .overlay.hidden { opacity: 0; pointer-events: none; }
+
+    .title { font-family: var(--pixel); color: var(--accent); text-shadow: 3px 3px 0 rgba(0,0,0,0.5); text-align: center; }
+    .title-big { font-size: clamp(1.5rem, 5vw, 2.5rem); margin-bottom: 8px; }
+    .title-sub { font-size: 0.6rem; color: rgba(255,255,255,0.4); letter-spacing: 3px; margin-bottom: 32px; }
+
+    .btn {
+      font-family: var(--pixel); font-size: 0.7rem; padding: 14px 32px;
+      background: var(--pink); color: #fff; border: none; border-radius: 6px;
+      cursor: pointer; transition: all 0.2s; letter-spacing: 1px; margin: 6px;
+      text-decoration: none; display: inline-block;
+    }
+    .btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(236,72,153,0.4); }
+    .btn--secondary { background: transparent; border: 2px solid rgba(255,255,255,0.2); }
+    .btn--secondary:hover { border-color: rgba(255,255,255,0.5); box-shadow: none; }
+
+    .cake-bounce { font-size: 4rem; animation: cakeBounce 1.5s ease-in-out infinite; }
+    @keyframes cakeBounce { 0%,100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+
+    .score-display { font-family: var(--pixel); font-size: 0.9rem; margin: 12px 0; }
+    .high-score { font-size: 0.55rem; color: rgba(255,255,255,0.4); }
+
+    .death-msg { font-family: var(--pixel); font-size: 0.65rem; color: var(--accent); margin: 16px 0; max-width: 300px; text-align: center; line-height: 1.8; }
+
+    /* In-game HUD */
+    .hud-score {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      font-family: var(--pixel); font-size: 2rem; color: #fff; z-index: 5;
+      text-shadow: 2px 2px 0 rgba(0,0,0,0.5), 0 0 20px rgba(255,255,255,0.2);
+      pointer-events: none;
+    }
+    .hud-combo {
+      position: fixed; top: 52px; left: 50%; transform: translateX(-50%);
+      font-family: var(--pixel); font-size: 0.6rem; color: var(--accent); z-index: 5;
+      text-shadow: 0 0 10px rgba(246,173,85,0.5); pointer-events: none;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .hud-combo.visible { opacity: 1; }
+  </style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- HUD -->
+  <div class="hud-score" id="hud-score">0</div>
+  <div class="hud-combo" id="hud-combo"></div>
+
+  <!-- Title screen -->
+  <div class="overlay" id="title-screen">
+    <div class="cake-bounce">🎂</div>
+    <div class="title title-big">FLAPPY CAKE</div>
+    <div class="title-sub">SZÜLINAPI KIADÁS</div>
+    <button class="btn" id="btn-play">▶ JÁTÉK</button>
+    <a href="../../index.html" class="btn btn--secondary">← HÁZBA</a>
+  </div>
+
+  <!-- Death screen -->
+  <div class="overlay hidden" id="death-screen">
+    <div style="font-size:3rem; margin-bottom:12px;">💥</div>
+    <div class="title" style="font-size:1.2rem; margin-bottom:4px;">GAME OVER</div>
+    <div class="death-msg" id="death-msg"></div>
+    <div class="score-display">PONT: <span id="final-score" style="color:var(--accent);">0</span></div>
+    <div class="high-score">REKORD: <span id="high-score">0</span></div>
+    <div style="margin-top:4px; font-size:0.5rem; color:rgba(255,255,255,0.3);" id="combo-best"></div>
+    <div style="margin-top:16px;">
+      <button class="btn" id="btn-retry">🔄 ÚJRA</button>
+      <a href="../../index.html" class="btn btn--secondary">← HÁZBA</a>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

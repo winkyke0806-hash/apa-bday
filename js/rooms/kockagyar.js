@@ -91,6 +91,16 @@ export function renderMinigame(container, room, onSuccess) {
 export function renderContent(container, room) {
   container.innerHTML = `
     <h2 class="content-title" style="color:${room.color}">🧱 Kockagyár</h2>
+
+    <!-- Flappy Cake link -->
+    <a href="games/flappy/index.html" style="display:block; text-decoration:none; margin-bottom:20px;">
+      <div class="content-card" style="border-color:${room.color}; text-align:center; cursor:pointer;">
+        <div style="font-size:3rem; margin-bottom:8px;">🎂</div>
+        <h3 style="color:${room.color}; font-family:var(--font-display);">Flappy Cake</h3>
+        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Repítsd a tortát az akadályokon át! Kattints a játékhoz →</p>
+      </div>
+    </a>
+
     <div class="content-card" style="text-align:center;">
       <div style="font-size:4rem; margin-bottom:16px;">🏆</div>
       <h3 style="color:${room.color};">Mesterkonstruktőr!</h3>
