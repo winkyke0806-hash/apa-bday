@@ -55,8 +55,9 @@
       position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
       font-family: var(--pixel); font-size: 2rem; color: #fff; z-index: 5;
       text-shadow: 2px 2px 0 rgba(0,0,0,0.5), 0 0 20px rgba(255,255,255,0.2);
-      pointer-events: none;
+      pointer-events: none; transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
     }
+    .hud-score.bump { transform: translateX(-50%) scale(1.4); color: var(--accent); }
     .hud-combo {
       position: fixed; top: 52px; left: 50%; transform: translateX(-50%);
       font-family: var(--pixel); font-size: 0.6rem; color: var(--accent); z-index: 5;

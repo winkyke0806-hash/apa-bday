@@ -331,8 +331,13 @@ function update() {
   if (screenFlash > 0) screenFlash *= 0.85;
   if (milestoneTimer > 0) milestoneTimer--;
 
-  // HUD
-  document.getElementById('hud-score').textContent = score;
+  // HUD with bump
+  const hudEl = document.getElementById('hud-score');
+  if (hudEl.textContent !== String(score)) {
+    hudEl.textContent = score;
+    hudEl.classList.add('bump');
+    setTimeout(() => hudEl.classList.remove('bump'), 150);
+  }
 
   // Background scroll
   bgOffset -= pipeSpeed * 0.3;
@@ -541,6 +546,27 @@ function render() {
   }
   ctx.lineTo(w, h * 0.72); ctx.closePath(); ctx.fill();
 
+  // Background buildings/city silhouette
+  ctx.fillStyle = `rgba(${Math.max(0, r - 25)},${Math.max(0, g - 20)},${Math.max(0, b - 12)},0.35)`;
+  for (let i = 0; i < 12; i++) {
+    const bx = ((i * 120 + bgOffset * 0.15 + 50) % (w + 200)) - 100;
+    const bh = 30 + (i * 37) % 60;
+    const bw = 25 + (i * 13) % 30;
+    ctx.fillRect(bx, h * 0.68 - bh, bw, bh);
+    // Windows (little lit squares at night)
+    if (t > 0.4) {
+      for (let wy = 0; wy < bh - 8; wy += 10) {
+        for (let wx = 4; wx < bw - 4; wx += 8) {
+          if ((i + wy + wx) % 3 !== 0) { // some windows off
+            ctx.fillStyle = `rgba(255,220,100,${(t - 0.4) * 0.4})`;
+            ctx.fillRect(bx + wx, h * 0.68 - bh + 4 + wy, 4, 5);
+          }
+        }
+      }
+      ctx.fillStyle = `rgba(${Math.max(0, r - 25)},${Math.max(0, g - 20)},${Math.max(0, b - 12)},0.35)`;
+    }
+  }
+
   // Birds in background
   bgBirds.forEach(b => {
     const wing = Math.sin(b.wingPhase) * b.size;
@@ -645,6 +671,40 @@ function render() {
     ctx.fillStyle = 'rgba(255,255,255,0.06)';
     ctx.fillRect(p.x + 8, 0, 6, topH - 20);
     ctx.fillRect(p.x + 8, botY + 20, 6, h - botY - 20);
+
+    // Dark edge (3D shadow)
+    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+    ctx.fillRect(p.x + PIPE_WIDTH - 4, 0, 4, topH - 20);
+    ctx.fillRect(p.x + PIPE_WIDTH - 4, botY + 20, 4, h - botY - 20);
+
+    // Vines/moss on pipes (nature detail)
+    if (t < 0.5) {
+      ctx.strokeStyle = 'rgba(34,197,94,0.25)';
+      ctx.lineWidth = 1.5;
+      // Top pipe vine
+      for (let v = 0; v < 2; v++) {
+        const vx = p.x + 10 + v * (PIPE_WIDTH - 20);
+        ctx.beginPath();
+        ctx.moveTo(vx, topH - 20);
+        ctx.quadraticCurveTo(vx + Math.sin(frameCount * 0.02 + v) * 4, topH - 10, vx - 3, topH);
+        ctx.stroke();
+      }
+      // Bottom pipe vine growing up
+      for (let v = 0; v < 2; v++) {
+        const vx = p.x + 15 + v * (PIPE_WIDTH - 30);
+        ctx.beginPath();
+        ctx.moveTo(vx, botY + 20);
+        ctx.quadraticCurveTo(vx + Math.sin(frameCount * 0.02 + v + 1) * 4, botY + 10, vx + 3, botY);
+        ctx.stroke();
+      }
+    }
+
+    // Pipe cap rivets
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.beginPath(); ctx.arc(p.x + 4, topH - 10, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(p.x + PIPE_WIDTH + 4, topH - 10, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(p.x + 4, botY + 10, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(p.x + PIPE_WIDTH + 4, botY + 10, 2, 0, Math.PI * 2); ctx.fill();
 
     // Moving pipe — warning stripes
     if (p.moving) {
@@ -849,6 +909,32 @@ function render() {
     ctx.beginPath();
     ctx.roundRect(-s / 2 - 4, s * 0.32 - 2, s + 8, 5, 2);
     ctx.fill();
+
+    // Candle spark particles (continuous)
+    if (gameActive && frameCount % 4 === 0) {
+      particles.push({
+        x: cake.x + (Math.random() - 0.5) * 3,
+        y: cake.y - s / 3 - 16 - Math.random() * 5,
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: -0.5 - Math.random() * 0.8,
+        life: 8 + Math.random() * 6, maxLife: 14,
+        size: 1 + Math.random() * 1.5,
+        color: '#fbbf24',
+      });
+    }
+
+    // Speed lines when falling fast
+    if (cake.vy > 4) {
+      ctx.strokeStyle = `rgba(255,255,255,${Math.min(0.2, (cake.vy - 4) * 0.04)})`;
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 3; i++) {
+        const lx = -s / 2 + Math.random() * s;
+        ctx.beginPath();
+        ctx.moveTo(lx, -s / 2 - 5);
+        ctx.lineTo(lx, -s / 2 - 15 - cake.vy * 2);
+        ctx.stroke();
+      }
+    }
 
     // Reset shadow
     ctx.shadowColor = 'transparent';
