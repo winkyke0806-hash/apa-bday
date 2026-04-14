@@ -229,15 +229,175 @@ function showView(view) {
 document.getElementById('back-to-house').addEventListener('click', () => showView('house'));
 document.getElementById('back-from-content').addEventListener('click', () => showView('house'));
 
-// Loading sequence
-const loadingScreen = document.getElementById('loading-screen');
+// ══════════════════════════════
+// LOADING → CUTSCENE → TUTORIAL → HOUSE
+// ══════════════════════════════
 
-function startLoadingSequence() {
-  setTimeout(() => {
-    loadingScreen.classList.add('hide');
-    setTimeout(() => loadingScreen.style.display = 'none', 1000);
-  }, 2000);
+const loadingScreen = document.getElementById('loading-screen');
+const loadingBar = document.getElementById('loading-bar');
+const loadingPercent = document.getElementById('loading-percent');
+const introCutscene = document.getElementById('intro-cutscene');
+const tutorialOverlay = document.getElementById('tutorial-overlay');
+const tutorialStep = document.getElementById('tutorial-step');
+const tutorialDots = document.getElementById('tutorial-dots');
+const tutorialNextBtn = document.getElementById('tutorial-next');
+
+const TUTORIAL_STEPS = [
+  { icon: '🏠', title: 'A Tervrajz', text: 'Ez a ház tervrajza. Minden szoba egy meglepetést rejt — de előbb fel kell oldanod őket!' },
+  { icon: '🔒', title: 'Zárt szobák', text: 'Kattints egy zárt szobára. Egy kis minijátékot kell megnyerned, hogy kinyisd az ajtót.' },
+  { icon: '🎮', title: 'Minijátékok', text: 'Kvízek, puzzle-ök, memóriajátékok és mások várnak. Ha elakadsz, a Segítség gomb tippet ad!' },
+  { icon: '🎁', title: 'Meglepetések', text: 'Feloldott szobákra újra rákattintva megtekintheted a meglepetést: fotók, videók, üzenetek és még sok más.' },
+  { icon: '🔐', title: 'A Széf', text: 'Ha mind a 11 szobát feloldod, megnyílik A Széf — a végső nagy meglepetés!' },
+];
+
+let tutorialIndex = 0;
+
+// 1. Animated loading bar
+function runLoadingBar() {
+  return new Promise(resolve => {
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 1 + Math.random() * 3;
+      if (progress > 100) progress = 100;
+      loadingBar.style.width = progress + '%';
+      loadingPercent.textContent = Math.floor(progress) + '%';
+      if (progress >= 100) {
+        clearInterval(interval);
+        setTimeout(resolve, 400);
+      }
+    }, 60);
+  });
 }
 
+// 2. Cutscene
+function runCutscene() {
+  return new Promise(resolve => {
+    loadingScreen.classList.add('hide');
+    setTimeout(() => loadingScreen.style.display = 'none', 1200);
+
+    setTimeout(() => {
+      introCutscene.style.display = 'flex';
+
+      // Animate lines one by one
+      const lines = introCutscene.querySelectorAll('.cutscene__line');
+      let lastDelay = 0;
+      lines.forEach(line => {
+        const delay = parseInt(line.dataset.delay);
+        lastDelay = Math.max(lastDelay, delay);
+        setTimeout(() => line.classList.add('visible'), delay);
+      });
+
+      // Skip button or auto-advance
+      const skipBtn = document.getElementById('skip-cutscene');
+      const finish = () => {
+        introCutscene.classList.add('hide');
+        setTimeout(() => {
+          introCutscene.style.display = 'none';
+          resolve();
+        }, 1500);
+      };
+
+      skipBtn.addEventListener('click', finish);
+
+      // Auto-advance after last line + 3s
+      setTimeout(finish, lastDelay + 3000);
+    }, 800);
+  });
+}
+
+// 3. Tutorial
+function runTutorial() {
+  return new Promise(resolve => {
+    // Check if already seen
+    if (localStorage.getItem('apu-bday-tutorial-done')) {
+      resolve();
+      return;
+    }
+
+    tutorialOverlay.style.display = 'flex';
+    renderTutorialStep();
+
+    tutorialNextBtn.addEventListener('click', () => {
+      tutorialIndex++;
+      if (tutorialIndex >= TUTORIAL_STEPS.length) {
+        localStorage.setItem('apu-bday-tutorial-done', 'true');
+        tutorialOverlay.classList.add('hide');
+        setTimeout(() => {
+          tutorialOverlay.style.display = 'none';
+          resolve();
+        }, 600);
+      } else {
+        renderTutorialStep();
+      }
+    });
+  });
+}
+
+function renderTutorialStep() {
+  const step = TUTORIAL_STEPS[tutorialIndex];
+  tutorialStep.innerHTML = `
+    <div class="tutorial__step-icon">${step.icon}</div>
+    <div class="tutorial__step-title">${step.title}</div>
+    <div class="tutorial__step-text">${step.text}</div>
+  `;
+  tutorialStep.classList.add('fade-in');
+
+  // Dots
+  tutorialDots.innerHTML = '';
+  TUTORIAL_STEPS.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = `tutorial__dot ${i === tutorialIndex ? 'tutorial__dot--active' : ''}`;
+    tutorialDots.appendChild(dot);
+  });
+
+  tutorialNextBtn.textContent = tutorialIndex === TUTORIAL_STEPS.length - 1 ? 'Kezdjük! 🎂' : 'Tovább →';
+}
+
+// 4. Floating blueprint annotations in background
+function spawnAnnotations() {
+  const container = document.getElementById('bp-annotations');
+  const texts = [
+    'SZOBA 01 — 4.2m × 3.1m', 'AJTÓ SZ-420', 'FALVASTAGSÁG: 25cm',
+    'TEHERHORDÓ FAL', 'NYÍLÁSZÁRÓ 90×210', 'PADLÓSZINT ±0.00',
+    'MENNYEZET H: 2.80m', 'VILLAMOS VEZETÉK', 'VÍZVEZETÉK Ø32',
+    'REV.1 — JÓVÁHAGYVA', 'LÉPCSŐ FEL ↑', 'ERKÉLY 1.2×4.0m',
+  ];
+
+  function spawn() {
+    const el = document.createElement('div');
+    el.className = 'bp-annotation';
+    el.textContent = texts[Math.floor(Math.random() * texts.length)];
+    el.style.setProperty('--y', (10 + Math.random() * 80) + 'vh');
+    el.style.setProperty('--start-x', '-200px');
+    el.style.setProperty('--end-x', '110vw');
+    el.style.setProperty('--dur', (25 + Math.random() * 35) + 's');
+    el.style.animationDelay = Math.random() * 5 + 's';
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 65000);
+  }
+
+  // Initial burst
+  for (let i = 0; i < 4; i++) setTimeout(spawn, i * 3000);
+  // Ongoing
+  setInterval(spawn, 8000);
+}
+
+// 5. Show the house
+function showHouse() {
+  blueprintHouse.style.display = 'block';
+  blueprintHouse.classList.add('active');
+}
+
+// ══════════════════════════════
+// BOOT SEQUENCE
+// ══════════════════════════════
+
 renderRooms();
-startLoadingSequence();
+spawnAnnotations();
+
+(async () => {
+  await runLoadingBar();
+  await runCutscene();
+  await runTutorial();
+  showHouse();
+})();

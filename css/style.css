@@ -96,18 +96,54 @@ body::before {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  transition: opacity 1s ease, filter 0.8s ease;
+  gap: 20px;
+  transition: opacity 1.2s ease, filter 1s ease;
 }
 
 .loading-screen.hide {
   opacity: 0;
-  filter: blur(10px);
+  filter: blur(12px);
   pointer-events: none;
 }
 
-.loading-svg {
-  opacity: 0.8;
+.loading-svg { opacity: 0.9; }
+
+/* SVG draw-in animation */
+.svg-draw {
+  stroke-dasharray: var(--len, 200);
+  stroke-dashoffset: var(--len, 200);
+  animation: svgDraw 1.5s ease forwards;
+}
+
+.svg-fade {
+  opacity: 0;
+  animation: fadeIn 0.8s ease forwards;
+}
+
+/* Loading progress bar */
+.loading-bar-track {
+  width: 200px;
+  height: 3px;
+  background: rgba(120, 180, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.loading-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--bp-accent), #f97316);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.loading-percent {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 300;
+  color: var(--bp-text);
+  letter-spacing: 3px;
 }
 
 .loading-room {
@@ -700,6 +736,193 @@ body::before {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.12);
   transform: translateY(-2px);
+}
+
+/* ══════════════════════════════
+   INTRO CUTSCENE
+   ══════════════════════════════ */
+
+.cutscene {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: var(--bp-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 1.5s ease;
+}
+
+.cutscene.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cutscene__content {
+  text-align: center;
+  max-width: 600px;
+  padding: 40px;
+  position: relative;
+}
+
+.cutscene__line {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.8;
+  margin-bottom: 4px;
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.cutscene__line.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cutscene__line--accent {
+  color: var(--bp-accent);
+  font-weight: 700;
+}
+
+.cutscene__line--big {
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  margin-top: 16px;
+  color: var(--bp-accent);
+  font-weight: 700;
+}
+
+.cutscene__skip {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.5);
+  padding: 10px 28px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  opacity: 0;
+  animation: fadeIn 0.5s ease 2s forwards;
+}
+
+.cutscene__skip:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ══════════════════════════════
+   TUTORIAL
+   ══════════════════════════════ */
+
+.tutorial {
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  background: rgba(7, 21, 38, 0.92);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.6s ease;
+}
+
+.tutorial.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tutorial__card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 440px;
+  width: 90%;
+  text-align: center;
+  animation: fadeIn 0.5s ease;
+}
+
+.tutorial__step-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.tutorial__step-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--bp-accent);
+  margin-bottom: 12px;
+}
+
+.tutorial__step-text {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.7;
+}
+
+.tutorial__nav {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.tutorial__dots {
+  display: flex;
+  gap: 8px;
+}
+
+.tutorial__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transition: all 0.3s;
+}
+
+.tutorial__dot--active {
+  background: var(--bp-accent);
+  box-shadow: 0 0 8px rgba(246, 173, 85, 0.4);
+  transform: scale(1.2);
+}
+
+/* ══════════════════════════════
+   FLOATING BLUEPRINT ANNOTATIONS
+   ══════════════════════════════ */
+
+.bp-annotations {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.bp-annotation {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  color: rgba(100, 170, 255, 0.08);
+  letter-spacing: 2px;
+  white-space: nowrap;
+  animation: annotationFloat var(--dur, 30s) linear infinite;
+}
+
+@keyframes annotationFloat {
+  0%   { transform: translateX(var(--start-x, -200px)) translateY(var(--y, 50vh)); opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { transform: translateX(var(--end-x, 110vw)) translateY(var(--y, 50vh)); opacity: 0; }
 }
 
 /* ══════════════════════════════
