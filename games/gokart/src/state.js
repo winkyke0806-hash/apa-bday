@@ -62,9 +62,32 @@ export const G = {
 
   // Best time
   bestTime: null,
+
+  // Weather
+  weather: 'clear', // 'clear' | 'rain'
+  raindrops: [],
+
+  // Commentary
+  commentQueue: [],
+  commentTimer: 0,
+
+  // Championship
+  championship: null, // { races: [], currentRace: 0, points: {} }
+
+  // Victory
+  donutMode: false,
+  donutTimer: 0,
+
+  // Per-track records
+  trackRecords: {},
+
+  // Camera flyover
+  flyoverActive: false,
+  flyoverIdx: 0,
 };
 
 // Load persisted data
 try { const s = JSON.parse(localStorage.getItem('apu-gokart-car')); if (s) Object.assign(G.garageState, s); } catch {}
 try { G.achievements = JSON.parse(localStorage.getItem('apu-gokart-achievements') || '{}'); } catch {}
+try { G.trackRecords = JSON.parse(localStorage.getItem('apu-gokart-records') || '{}'); } catch {}
 G.bestTime = localStorage.getItem('apu-gokart-best') || null;

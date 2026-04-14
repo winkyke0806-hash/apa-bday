@@ -3,6 +3,7 @@
 import { G } from './state.js';
 import { isGas, isBrake, isLeft, isRight } from './input.js';
 import { renderParticles } from './particles.js';
+import { renderRain } from './effects.js';
 import { TRACKS } from './tracks.js';
 
 export function roundRect(ctx, x, y, w, h, r) {
@@ -173,6 +174,9 @@ export function render() {
     }
     ctx.restore();
   }
+
+  // Rain (screen space)
+  renderRain(ctx, w, h);
 
   // Camera shake
   if (player.speed > 4.5) {

@@ -11,6 +11,7 @@ import { isGas, isBrake, isLeft, isRight, keys } from './src/input.js';
 import { Car, AI_DEFS, AI_PERSONALITIES, SIZE_DEFS } from './src/car.js';
 import { spawnPowerups, updatePowerups, usePowerup, hidePowerupHUD } from './src/powerups.js';
 import { render } from './src/render.js';
+import { initRain, updateRain, renderRain, addComment, updateCommentary, runFlyover, startVictoryDonuts, updateVictoryDonuts } from './src/effects.js';
 
 // ─── DOM ───
 G.canvas = document.getElementById('game-canvas');
@@ -213,6 +214,32 @@ function update() {
   // Ghost recording
   if (G.ghostData.length < 100000) G.ghostData.push({ x: G.player.x, y: G.player.y, angle: G.player.angle });
 
+  // Weather
+  updateRain(G.canvas.width, G.canvas.height);
+
+  // Rain makes track slippery
+  if (G.weather === 'rain') {
+    G.player.friction = 0.96; // more slippery
+    G.player.turnSpeed = G.player.isPlayer ? 0.055 : G.player.turnSpeed; // harder to steer
+  }
+
+  // Commentary triggers
+  updateCommentary();
+  // Drift comment
+  if (G.player.driftScore > 100 && G.player.driftScore < 105) addComment('drift');
+  // Collision comment
+  if (G.player.collisions > 0 && G.player.collisions !== G._lastCollCount) {
+    addComment('collision');
+    G._lastCollCount = G.player.collisions;
+  }
+  // Position change → overtake
+  if (curPos < G.lastPosition && curPos <= 2) addComment('overtake');
+  // Lead
+  if (curPos === 1 && G.lastPosition !== 1) addComment('lead');
+
+  // Victory donuts
+  updateVictoryDonuts();
+
   G.skidMarks.forEach(m => m.age++);
   G.skidMarks = G.skidMarks.filter(m => m.age < 150);
 }
@@ -307,12 +334,26 @@ async function startRace() {
   try { G.ghostPlayback = JSON.parse(localStorage.getItem('apu-gokart-ghost') || '[]'); } catch { G.ghostPlayback = []; }
 
   G.camera.x = G.player.x; G.camera.y = G.player.y; G.camera.zoom = 2.2;
+  G._lastCollCount = 0;
+  G.donutMode = false;
+
+  // Init weather
+  if (G.weather === 'rain') initRain(G.canvas.width, G.canvas.height);
 
   document.getElementById('hud-lap').textContent = `1 / ${G.TOTAL_LAPS}`;
   document.getElementById('hud-best').textContent = G.bestTime ? formatTime(parseFloat(G.bestTime)) : '--:--.-';
   document.getElementById('hud-pos').textContent = `4/${G.allCars.length}`;
 
-  showScreen('game'); render();
+  showScreen('game');
+
+  // Store render fn for flyover
+  G._renderFn = { render };
+
+  // Camera flyover intro
+  await runFlyover();
+
+  // Then countdown
+  render();
   await runCountdown();
 
   G.startTime = performance.now(); G.gameRunning = true;
@@ -321,12 +362,28 @@ async function startRace() {
 
 // ─── Finish ───
 function finishRace() {
-  G.gameRunning = false; G.canvas.style.transform = '';
+  G.canvas.style.transform = '';
   const total = performance.now() - G.startTime;
+  const pos = G.positions.indexOf(G.player) + 1;
+
+  // Victory donuts if 1st place
+  if (pos === 1) {
+    startVictoryDonuts();
+    // Keep running game loop for donuts, then stop
+    setTimeout(() => { G.gameRunning = false; }, 3000);
+  } else {
+    G.gameRunning = false;
+  }
   if (!G.bestTime || total < parseFloat(G.bestTime)) { G.bestTime = total; localStorage.setItem('apu-gokart-best', total.toString()); }
   try { localStorage.setItem('apu-gokart-ghost', JSON.stringify(G.ghostData)); } catch {}
 
-  const pos = G.positions.indexOf(G.player) + 1;
+  // Save track record
+  const trackId = G.currentTrackId;
+  if (!G.trackRecords[trackId] || total < G.trackRecords[trackId]) {
+    G.trackRecords[trackId] = total;
+    localStorage.setItem('apu-gokart-records', JSON.stringify(G.trackRecords));
+  }
+
   document.getElementById('finish-trophy').textContent = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : '🏁';
   document.getElementById('finish-title').textContent = pos === 1 ? 'GYŐZELEM!' : pos === 2 ? 'SZÉP VOLT!' : pos === 3 ? 'DOBOGÓ!' : 'CÉL!';
   document.getElementById('finish-time').textContent = formatTime(total);
@@ -406,6 +463,16 @@ function initGarage() {
     revBtn.textContent = G.reverseMode ? '🔄 Reverse' : '↔️ Normál';
     revBtn.addEventListener('click', () => { G.reverseMode = !G.reverseMode; revBtn.classList.toggle('active', G.reverseMode); revBtn.textContent = G.reverseMode ? '🔄 Reverse' : '↔️ Normál'; });
   }
+
+  // Weather buttons
+  document.querySelectorAll('.weather-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.weather === G.weather);
+    btn.addEventListener('click', () => {
+      G.weather = btn.dataset.weather;
+      document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
 
   const nameInput = document.getElementById('car-name');
   nameInput.value = G.garageState.name;
@@ -610,6 +677,70 @@ async function startRaceFlow(spinRandom = false) {
 }
 
 /* ═══════════════════════════
+   CHAMPIONSHIP MODE
+   ═══════════════════════════ */
+
+async function startChampionship() {
+  localStorage.setItem('apu-gokart-car', JSON.stringify(G.garageState));
+
+  const tracks = [...TRACK_LIST].sort(() => Math.random() - 0.5).slice(0, 3);
+  const points = { player: 0 };
+  AI_DEFS.forEach(d => points[d.name] = 0);
+  const POINT_TABLE = [25, 18, 15, 12]; // points per position
+
+  for (let race = 0; race < 3; race++) {
+    G.currentTrackId = tracks[race];
+
+    // Show spinner for this track
+    await runTrackSpinner(true);
+    await showFinalizePage();
+    await startRace();
+
+    // Wait for race to finish
+    await new Promise(resolve => {
+      const check = setInterval(() => {
+        if (!G.gameRunning && !G.donutMode) {
+          clearInterval(check);
+          // Award points
+          G.positions.forEach((car, idx) => {
+            const name = car.isPlayer ? 'player' : car.name;
+            points[name] = (points[name] || 0) + (POINT_TABLE[idx] || 10);
+          });
+          resolve();
+        }
+      }, 500);
+    });
+
+    // Show finish screen, wait for user to click retry/continue
+    if (race < 2) {
+      // Change retry button text
+      document.getElementById('btn-retry').textContent = `🏁 ${race + 2}/${3} VERSENY →`;
+      await new Promise(resolve => {
+        const handler = () => { document.getElementById('btn-retry').removeEventListener('click', handler); resolve(); };
+        document.getElementById('btn-retry').addEventListener('click', handler);
+      });
+    }
+  }
+
+  // Championship results
+  document.getElementById('btn-retry').textContent = '🔄 ÚJRA';
+  const sorted = Object.entries(points).sort((a, b) => b[1] - a[1]);
+  const playerPos = sorted.findIndex(e => e[0] === 'player') + 1;
+
+  document.getElementById('finish-trophy').textContent = playerPos === 1 ? '👑' : '🏆';
+  document.getElementById('finish-title').textContent = playerPos === 1 ? 'BAJNOK!' : `${playerPos}. hely a bajnokságban`;
+  document.getElementById('finish-time').textContent = `${points.player} pont`;
+  document.getElementById('finish-stats').innerHTML = sorted.map((entry, i) => {
+    const [name, pts] = entry;
+    const displayName = name === 'player' ? G.garageState.name : name;
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+    return `<div class="finish-stat"><div class="finish-stat-value">${medal} ${pts}</div><div class="finish-stat-label">${displayName}</div></div>`;
+  }).join('');
+  document.getElementById('finish-laps').innerHTML = tracks.map((t, i) => `<div>${TRACKS[t].icon} ${TRACKS[t].name}</div>`).join('');
+  showScreen('finish');
+}
+
+/* ═══════════════════════════
    MENU BUTTONS
    ═══════════════════════════ */
 
@@ -618,5 +749,6 @@ document.getElementById('btn-howto').addEventListener('click', () => showScreen(
 document.getElementById('btn-howto-back').addEventListener('click', () => showScreen('title'));
 document.getElementById('btn-garage-back').addEventListener('click', () => showScreen('title'));
 document.getElementById('btn-race').addEventListener('click', () => startRaceFlow(false));
+document.getElementById('btn-championship').addEventListener('click', () => startChampionship());
 document.getElementById('btn-retry').addEventListener('click', startRace);
 document.getElementById('btn-back-title').addEventListener('click', () => showScreen('title'));

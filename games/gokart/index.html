@@ -96,6 +96,8 @@
           <button class="mode-btn active" data-mode="day">☀️ Nappal</button>
           <button class="mode-btn" data-mode="night">🌙 Éjszaka</button>
           <button class="reverse-btn" data-rev="false">↔️ Normál</button>
+          <button class="weather-btn" data-weather="clear">☀️ Száraz</button>
+          <button class="weather-btn" data-weather="rain">🌧️ Esős</button>
         </div>
       </div>
       <div class="garage-section">
@@ -105,6 +107,7 @@
 
       <div class="garage-btns">
         <button class="menu-btn" id="btn-race">🏁 VERSENY!</button>
+        <button class="menu-btn" id="btn-championship" style="background:#f6ad55;">🏆 BAJNOKSÁG</button>
         <button class="menu-btn menu-btn--secondary" id="btn-garage-back">← VISSZA</button>
       </div>
     </div>
@@ -180,6 +183,9 @@
       <span id="powerup-icon"></span>
       <span id="powerup-name"></span>
     </div>
+
+    <!-- Commentary popup -->
+    <div class="commentary-popup" id="commentary-popup"></div>
 
     <!-- Countdown overlay -->
     <div class="countdown" id="countdown"></div>
