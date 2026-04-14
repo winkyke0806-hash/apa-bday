@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pálya rajzoló</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1a1a2e; color: #fff; font-family: monospace; display: flex; flex-direction: column; height: 100vh; }
+    .toolbar { display: flex; gap: 12px; padding: 12px; align-items: center; background: #111; flex-wrap: wrap; }
+    .toolbar button { font-family: monospace; padding: 8px 16px; border: 1px solid #555; background: #333; color: #fff; border-radius: 4px; cursor: pointer; }
+    .toolbar button:hover { background: #555; }
+    .toolbar button.active { background: #e94560; border-color: #e94560; }
+    .toolbar span { font-size: 0.8rem; color: #888; }
+    canvas { flex: 1; cursor: crosshair; }
+    .output { padding: 12px; background: #0a0a1a; font-size: 0.7rem; color: #4ade80; max-height: 150px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+    .info { padding: 8px 12px; background: #222; font-size: 0.75rem; color: #f6ad55; }
+  </style>
+</head>
+<body>
+  <div class="info">
+    🖱️ <b>Kattints</b> a pályára pontokat tenni (a pálya KÖZÉPVONALÁT rajzold). <b>Zárd be</b> a start pontnál! Az irány az óramutató járása szerint legyen.
+  </div>
+  <div class="toolbar">
+    <button id="btn-undo">↩ Visszavonás</button>
+    <button id="btn-clear">🗑 Törlés</button>
+    <button id="btn-close">⭕ Zárd be a kört</button>
+    <button id="btn-export" class="active">📋 Exportálás (másold ki!)</button>
+    <span id="point-count">0 pont</span>
+  </div>
+  <canvas id="canvas"></canvas>
+  <div class="output" id="output">Ide kerülnek a pontok...</div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const output = document.getElementById('output');
+    const countEl = document.getElementById('point-count');
+
+    let points = [];
+    let closed = false;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      draw();
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    canvas.addEventListener('click', (e) => {
+      if (closed) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      points.push({ x, y });
+      countEl.textContent = points.length + ' pont';
+      draw();
+    });
+
+    document.getElementById('btn-undo').addEventListener('click', () => {
+      points.pop();
+      closed = false;
+      countEl.textContent = points.length + ' pont';
+      draw();
+    });
+
+    document.getElementById('btn-clear').addEventListener('click', () => {
+      points = [];
+      closed = false;
+      countEl.textContent = '0 pont';
+      output.textContent = 'Ide kerülnek a pontok...';
+      draw();
+    });
+
+    document.getElementById('btn-close').addEventListener('click', () => {
+      if (points.length < 3) return;
+      closed = true;
+      draw();
+    });
+
+    document.getElementById('btn-export').addEventListener('click', () => {
+      if (points.length < 3) { output.textContent = 'Legalább 3 pont kell!'; return; }
+      const w = canvas.width, h = canvas.height;
+      const normalized = points.map(p => [
+        +(p.x / w).toFixed(3),
+        +(p.y / h).toFixed(3)
+      ]);
+      const code = 'const TRACK_RAW = [\n' +
+        normalized.map(p => `  [${p[0]}, ${p[1]}],`).join('\n') +
+        '\n];';
+      output.textContent = code;
+
+      // Copy to clipboard
+      navigator.clipboard.writeText(code).then(() => {
+        output.textContent += '\n\n✅ VÁGÓLAPRA MÁSOLVA! Küldd el nekem ezt a kódot.';
+      }).catch(() => {
+        output.textContent += '\n\n⚠️ Jelöld ki és másold manuálisan (Ctrl+C)';
+      });
+    });
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Grid
+      ctx.strokeStyle = 'rgba(100,170,255,0.06)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 50) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 50) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+      }
+
+      if (points.length === 0) return;
+
+      // Track line
+      ctx.beginPath();
+      points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+      if (closed) ctx.closePath();
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Track width preview
+      if (points.length > 2) {
+        ctx.beginPath();
+        points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+        if (closed) ctx.closePath();
+        ctx.strokeStyle = 'rgba(59,130,246,0.15)';
+        ctx.lineWidth = 30;
+        ctx.stroke();
+      }
+
+      // Points
+      points.forEach((p, i) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = i === 0 ? '#4ade80' : '#e94560';
+        ctx.fill();
+
+        // Number
+        ctx.fillStyle = '#fff';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(i + 1, p.x, p.y - 10);
+      });
+
+      // Direction arrows
+      for (let i = 0; i < points.length - 1; i++) {
+        const a = points[i], b = points[i + 1];
+        const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+        const angle = Math.atan2(b.y - a.y, b.x - a.x);
+        ctx.save();
+        ctx.translate(mx, my);
+        ctx.rotate(angle);
+        ctx.fillStyle = 'rgba(246,173,85,0.5)';
+        ctx.beginPath();
+        ctx.moveTo(6, 0);
+        ctx.lineTo(-4, -4);
+        ctx.lineTo(-4, 4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Start label
+      if (points.length > 0) {
+        ctx.fillStyle = '#4ade80';
+        ctx.font = 'bold 12px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('START', points[0].x + 10, points[0].y + 4);
+      }
+    }
+  </script>
+</body>
+</html>
