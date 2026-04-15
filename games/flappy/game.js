@@ -128,11 +128,11 @@ function spawnPipe() {
 
   const gap = PIPE_GAP_BASE - diff * 30; // gap shrinks (min ~160)
 
-  // Keep gap centered — constrain to middle 50% of screen
-  const center = h * 0.5;
-  const spread = h * 0.22; // max deviation from center
+  // Keep gap in center band — never near top/bottom edges
+  const center = h * 0.45;
+  const spread = h * 0.15; // tight band around center
   const gapCenter = center + (Math.random() - 0.5) * 2 * spread;
-  const topH = Math.max(50, Math.min(h - gap - 50, gapCenter - gap / 2));
+  const topH = Math.max(80, Math.min(h * 0.55, gapCenter - gap / 2));
 
   const moving = score > 8 && Math.random() < 0.3; // moving pipes after score 8
   const moveRange = 30 + Math.random() * 30;
@@ -682,54 +682,51 @@ function render() {
   const gStartX = camX - 100;
   const gEndX = camX + w / ZOOM + 100; // visible right edge
 
-  // Ground
+  // Ground — asphalt road
   const groundH = 40;
-  const groundY = h / ZOOM - groundH; // ground position in world coords
-  ctx.fillStyle = t > 0.5 ? '#1a3a1a' : '#4ade80';
+  const groundY = h / ZOOM - groundH;
+
+  // Asphalt base
+  ctx.fillStyle = t > 0.5 ? '#1a1a1a' : '#3a3a3a';
   ctx.fillRect(gStartX, groundY, gEndX - gStartX, groundH + 200);
-  ctx.fillStyle = t > 0.5 ? '#0f2a0f' : '#22c55e';
-  ctx.fillRect(gStartX, groundY, gEndX - gStartX, 4);
-  // Ground pattern
-  ctx.fillStyle = t > 0.5 ? '#153015' : '#16a34a';
-  for (let i = 0; i < (gEndX - gStartX) / 20 + 1; i++) {
-    const gx = gStartX + ((i * 20 + bgOffset) % (w + 20));
-    ctx.fillRect(gx, groundY + 8, 10, 3);
-  }
-  // Grass blades
-  ctx.strokeStyle = t > 0.5 ? '#1a4a1a' : '#22c55e';
-  ctx.lineWidth = 1.5;
-  for (let i = 0; i < (gEndX - gStartX) / 8; i++) {
-    const gx = gStartX + ((i * 8 + bgOffset * 0.8) % (w + 16));
-    const sway = Math.sin(frameCount * 0.04 + i * 0.5) * 2;
-    ctx.beginPath();
-    ctx.moveTo(gx, groundY);
-    ctx.quadraticCurveTo(gx + sway, groundY - 6 - (i % 3) * 2, gx + sway * 1.5, groundY - 10 - (i % 4) * 2);
-    ctx.stroke();
-  }
-  // Flowers
-  if (t < 0.5) {
-    const flowerColors = ['#ec4899', '#f6ad55', '#a855f7', '#e94560', '#fbbf24'];
-    for (let i = 0; i < (gEndX - gStartX) / 60; i++) {
-      const fx = gStartX + ((i * 60 + 30 + bgOffset * 0.9) % (w + 60));
-      const fy = groundY - 2;
-      ctx.fillStyle = flowerColors[i % flowerColors.length];
-      ctx.beginPath(); ctx.arc(fx, fy, 3, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#fbbf24';
-      ctx.beginPath(); ctx.arc(fx, fy, 1.5, 0, Math.PI * 2); ctx.fill();
-    }
+
+  // Curb (white-red stripe on top edge)
+  for (let i = 0; i < (gEndX - gStartX) / 12; i++) {
+    const cx = gStartX + i * 12;
+    ctx.fillStyle = i % 2 === 0 ? '#fff' : '#e94560';
+    ctx.fillRect(cx, groundY, 12, 4);
   }
 
-  // Underground layer
-  ctx.fillStyle = t > 0.5 ? '#2a1a0a' : '#8B6914';
-  ctx.fillRect(gStartX, groundY + 15, gEndX - gStartX, 8);
-  ctx.fillStyle = t > 0.5 ? '#1a0f05' : '#6B4F12';
-  ctx.fillRect(gStartX, groundY + 23, gEndX - gStartX, 200);
-  // Rocks
-  ctx.fillStyle = t > 0.5 ? '#333' : '#999';
-  for (let i = 0; i < (gEndX - gStartX) / 45; i++) {
-    const rx = gStartX + (i * 45 + 15 + bgOffset * 0.3) % (w + 20);
-    ctx.beginPath(); ctx.arc(rx, groundY + 30 + (i % 3) * 4, 2 + (i % 2), 0, Math.PI * 2); ctx.fill();
+  // Road center dashes (yellow)
+  ctx.fillStyle = '#fbbf24';
+  for (let i = 0; i < (gEndX - gStartX) / 30 + 1; i++) {
+    const dx = gStartX + ((i * 30 + bgOffset) % (w + 30));
+    ctx.fillRect(dx, groundY + 18, 16, 3);
   }
+
+  // Road texture (subtle cracks/patches)
+  ctx.fillStyle = t > 0.5 ? '#151515' : '#333';
+  for (let i = 0; i < (gEndX - gStartX) / 50; i++) {
+    const px = gStartX + (i * 50 + 20 + bgOffset * 0.5) % (w + 50);
+    ctx.fillRect(px, groundY + 8 + (i % 3) * 8, 8 + (i % 4) * 3, 2);
+  }
+
+  // Manholes
+  ctx.fillStyle = t > 0.5 ? '#111' : '#2a2a2a';
+  for (let i = 0; i < (gEndX - gStartX) / 200; i++) {
+    const mx = gStartX + ((i * 200 + 100 + bgOffset * 0.7) % (w + 200));
+    ctx.beginPath(); ctx.arc(mx, groundY + 24, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = t > 0.5 ? '#222' : '#444';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+  // Sidewalk edge (lighter strip)
+  ctx.fillStyle = t > 0.5 ? '#222' : '#555';
+  ctx.fillRect(gStartX, groundY - 3, gEndX - gStartX, 3);
+
+  // Under-road layer (dirt/concrete)
+  ctx.fillStyle = t > 0.5 ? '#0f0f0f' : '#2a2a2a';
+  ctx.fillRect(gStartX, groundY + groundH, gEndX - gStartX, 200);
 
   // Pipes
   pipes.forEach(p => {
