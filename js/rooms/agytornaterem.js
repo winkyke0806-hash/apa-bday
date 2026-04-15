@@ -69,6 +69,15 @@ export function renderMinigame(container, room, onSuccess) {
 export function renderContent(container, room) {
   container.innerHTML = `
     <h2 class="content-title" style="color:${room.color}">🧠 Agytornaterem</h2>
+
+    <a href="games/breakout/index.html" style="display:block; text-decoration:none; margin-bottom:20px;">
+      <div class="content-card" style="border-color:${room.color}; text-align:center; cursor:pointer;">
+        <div style="font-size:3rem; margin-bottom:8px;">🧱</div>
+        <h3 style="color:${room.color}; font-family:var(--font-display);">Birthday Breakout</h3>
+        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Törd szét a szülinapi téglákat! Kattints a játékhoz →</p>
+      </div>
+    </a>
+
     <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:24px;">Tudtad-e? — Fun Facts Apuról</p>
     ${FUN_FACTS.map(fact => `
       <div class="content-card"><p style="font-size:1rem;">💡 ${fact}</p></div>

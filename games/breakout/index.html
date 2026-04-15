@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🧱 Birthday Breakout</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --pixel: 'Press Start 2P', monospace; --mono: 'JetBrains Mono', monospace; --accent: #f6ad55; --pink: #ec4899; --bg: #0f172a; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); overflow:hidden; height:100vh; font-family:var(--mono); }
+    canvas { display:block; width:100vw; height:100vh; cursor:none; }
+
+    .overlay { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:10; background:rgba(15,23,42,0.92); backdrop-filter:blur(8px); transition:opacity 0.4s; }
+    .overlay.hidden { opacity:0; pointer-events:none; }
+
+    .title { font-family:var(--pixel); color:var(--accent); text-shadow:3px 3px 0 rgba(0,0,0,0.5); text-align:center; }
+    .btn { font-family:var(--pixel); font-size:0.7rem; padding:14px 32px; background:var(--pink); color:#fff; border:none; border-radius:6px; cursor:pointer; transition:all 0.2s; letter-spacing:1px; margin:6px; text-decoration:none; display:inline-block; }
+    .btn:hover { transform:scale(1.05); box-shadow:0 0 20px rgba(236,72,153,0.4); }
+    .btn--secondary { background:transparent; border:2px solid rgba(255,255,255,0.2); }
+
+    .hud { position:fixed; top:12px; left:50%; transform:translateX(-50%); display:flex; gap:24px; z-index:5; pointer-events:none; }
+    .hud-item { text-align:center; }
+    .hud-label { display:block; font-family:var(--pixel); font-size:0.4rem; color:rgba(255,255,255,0.4); letter-spacing:2px; }
+    .hud-value { font-family:var(--pixel); font-size:0.8rem; color:var(--accent); }
+
+    .combo-popup { position:fixed; top:20%; left:50%; transform:translateX(-50%) scale(0.8); font-family:var(--pixel); font-size:1.2rem; color:#fff; text-shadow:0 0 20px var(--accent); z-index:15; pointer-events:none; opacity:0; transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+    .combo-popup.visible { opacity:1; transform:translateX(-50%) scale(1); }
+
+    .level-popup { position:fixed; top:40%; left:50%; transform:translateX(-50%); font-family:var(--pixel); font-size:1.5rem; color:var(--accent); text-shadow:0 0 30px rgba(246,173,85,0.6); z-index:15; pointer-events:none; opacity:0; transition:opacity 0.5s; }
+    .level-popup.visible { opacity:1; }
+  </style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div class="hud">
+    <div class="hud-item"><span class="hud-label">PONT</span><span class="hud-value" id="hud-score">0</span></div>
+    <div class="hud-item"><span class="hud-label">SZINT</span><span class="hud-value" id="hud-level">1</span></div>
+    <div class="hud-item"><span class="hud-label">ÉLET</span><span class="hud-value" id="hud-lives">❤️❤️❤️</span></div>
+  </div>
+
+  <div class="combo-popup" id="combo-popup"></div>
+  <div class="level-popup" id="level-popup"></div>
+
+  <!-- Title -->
+  <div class="overlay" id="title-screen">
+    <div style="font-size:4rem; margin-bottom:12px; animation:bounce 1.5s ease-in-out infinite;">🧱</div>
+    <div class="title" style="font-size:clamp(1.2rem,4vw,2rem); margin-bottom:4px;">BIRTHDAY</div>
+    <div class="title" style="font-size:clamp(0.8rem,3vw,1.5rem); color:#ec4899; margin-bottom:24px;">BREAKOUT</div>
+    <button class="btn" id="btn-play">▶ JÁTÉK</button>
+    <a href="../../index.html" class="btn btn--secondary">← HÁZBA</a>
+  </div>
+
+  <!-- Game Over -->
+  <div class="overlay hidden" id="gameover-screen">
+    <div style="font-size:3rem; margin-bottom:12px;">💥</div>
+    <div class="title" style="font-size:1.2rem; margin-bottom:16px;">GAME OVER</div>
+    <div style="font-family:var(--pixel); font-size:0.9rem; margin-bottom:4px;">PONT: <span id="final-score" style="color:var(--accent);">0</span></div>
+    <div style="font-family:var(--pixel); font-size:0.55rem; color:rgba(255,255,255,0.4); margin-bottom:4px;">SZINT: <span id="final-level">1</span></div>
+    <div style="font-family:var(--pixel); font-size:0.55rem; color:rgba(255,255,255,0.4); margin-bottom:16px;">REKORD: <span id="high-score">0</span></div>
+    <button class="btn" id="btn-retry">🔄 ÚJRA</button>
+    <a href="../../index.html" class="btn btn--secondary">← HÁZBA</a>
+  </div>
+
+  <!-- Win -->
+  <div class="overlay hidden" id="win-screen">
+    <div style="font-size:4rem; margin-bottom:12px;">🏆</div>
+    <div class="title" style="font-size:1.5rem; margin-bottom:8px;">GYŐZELEM!</div>
+    <div style="font-family:var(--pixel); font-size:0.7rem; color:rgba(255,255,255,0.6); margin-bottom:16px;">Minden szintet teljesítettél!</div>
+    <div style="font-family:var(--pixel); font-size:0.9rem; margin-bottom:16px;">PONT: <span id="win-score" style="color:var(--accent);">0</span></div>
+    <button class="btn" id="btn-win-retry">🔄 ÚJRA</button>
+    <a href="../../index.html" class="btn btn--secondary">← HÁZBA</a>
+  </div>
+
+  <script src="game.js"></script>
+  <style>@keyframes bounce { 0%,100% { transform:translateY(0) rotate(-3deg); } 50% { transform:translateY(-15px) rotate(3deg); } }</style>
+</body>
+</html>
