@@ -669,6 +669,14 @@ function render() {
     ctx.restore();
   });
 
+  // ─── GAME ZOOM CAMERA ───
+  const ZOOM = 1.35;
+  const camX = cake.x - w / (2 * ZOOM) + w * 0.1; // slightly ahead of cake
+  const camY = cake.y - h / (2 * ZOOM);
+  ctx.save();
+  ctx.scale(ZOOM, ZOOM);
+  ctx.translate(-camX, -camY);
+
   // Ground
   const groundH = 40;
   ctx.fillStyle = t > 0.5 ? '#1a3a1a' : '#4ade80';
@@ -785,24 +793,6 @@ function render() {
     ctx.beginPath(); ctx.arc(p.x + PIPE_WIDTH + 4, topH - 10, 2, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(p.x + 4, botY + 10, 2, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(p.x + PIPE_WIDTH + 4, botY + 10, 2, 0, Math.PI * 2); ctx.fill();
-
-    // Birthday flag on top of some pipes
-    if (Math.floor(p.x) % 3 === 0) {
-      const flagX = p.x + PIPE_WIDTH / 2;
-      // Pole
-      ctx.strokeStyle = '#888';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(flagX, topH - 20); ctx.lineTo(flagX, topH - 42); ctx.stroke();
-      // Flag (triangle, waving)
-      const wave = Math.sin(frameCount * 0.04 + p.x * 0.01) * 2;
-      const flagColors = ['#e94560', '#f6ad55', '#3b82f6', '#ec4899'];
-      ctx.fillStyle = flagColors[Math.floor(p.x) % flagColors.length];
-      ctx.beginPath();
-      ctx.moveTo(flagX, topH - 42);
-      ctx.lineTo(flagX + 14 + wave, topH - 36);
-      ctx.lineTo(flagX, topH - 30);
-      ctx.closePath(); ctx.fill();
-    }
 
     // Bats at night in the pipe gap
     if (t > 0.5 && !p.scored && Math.floor(p.x * 0.1) % 4 === 0) {
@@ -1067,7 +1057,10 @@ function render() {
 
   if (screenShake > 0.5) ctx.restore();
 
-  // Floating texts
+  // ─── END GAME ZOOM ───
+  ctx.restore();
+
+  // Floating texts (screen space)
   floatingTexts.forEach(ft => {
     const alpha = ft.life / ft.maxLife;
     const scale = ft.big ? 1.5 : 1;
