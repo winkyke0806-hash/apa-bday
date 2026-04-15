@@ -96,8 +96,8 @@ export function renderContent(container, room) {
     <a href="games/spotdiff/index.html" style="display:block; text-decoration:none; margin-bottom:20px;">
       <div class="content-card" style="border-color:${room.color}; text-align:center; cursor:pointer;">
         <div style="font-size:3rem; margin-bottom:8px;">🔍</div>
-        <h3 style="color:${room.color}; font-family:var(--font-display);">Keresd a Különbséget</h3>
-        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Találd meg az 5 különbséget! →</p>
+        <h3 style="color:${room.color}; font-family:var(--font-display);">Rejtett Eltérések</h3>
+        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Szúrd ki az apró eltéréseket az emoji rácsban! →</p>
       </div>
     </a>
     <h2 class="content-title" style="color:${room.color}">📸 Emlékek Kamrája</h2>

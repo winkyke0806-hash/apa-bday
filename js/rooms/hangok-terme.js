@@ -85,8 +85,8 @@ export function renderContent(container, room) {
     <a href="games/rhythm/index.html" style="display:block; text-decoration:none; margin-bottom:20px;">
       <div class="content-card" style="border-color:${room.color}; text-align:center; cursor:pointer;">
         <div style="font-size:3rem; margin-bottom:8px;">🎵</div>
-        <h3 style="color:${room.color}; font-family:var(--font-display);">Birthday Beats</h3>
-        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Ritmusjáték — nyomd a gombot a zenére! →</p>
+        <h3 style="color:${room.color}; font-family:var(--font-display);">Ritmus Mester</h3>
+        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Kapd el a ritmust — üsd a billentyűt időben! →</p>
       </div>
     </a>
     <h2 class="content-title" style="color:${room.color}">🎵 Hangok Terme</h2>

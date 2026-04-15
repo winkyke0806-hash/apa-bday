@@ -128,8 +128,8 @@ export function renderContent(container, room) {
     <a href="games/tetris/index.html" style="display:block; text-decoration:none; margin-bottom:20px;">
       <div class="content-card" style="border-color:${room.color}; text-align:center; cursor:pointer;">
         <div style="font-size:3rem; margin-bottom:8px;">🎂</div>
-        <h3 style="color:${room.color}; font-family:var(--font-display);">Birthday Tetris</h3>
-        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Szülinapi Tetris torta darabokkal! Kattints a játékhoz →</p>
+        <h3 style="color:${room.color}; font-family:var(--font-display);">Szülinapi Zuhanás</h3>
+        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Pakold össze a szülinapi darabokat! Kattints a játékhoz →</p>
       </div>
     </a>
 

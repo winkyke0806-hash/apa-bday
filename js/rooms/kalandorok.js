@@ -88,8 +88,8 @@ export function renderContent(container, room) {
     <a href="games/gokart/index.html" style="display:block; text-decoration:none; margin-bottom:20px;">
       <div class="content-card" style="border-color:${room.color}; text-align:center; cursor:pointer; transition:all 0.3s;">
         <div style="font-size:3rem; margin-bottom:8px;">🏎️</div>
-        <h3 style="color:${room.color}; font-family:var(--font-display);">Apu Gokart Grand Prix</h3>
-        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Nyomj egy kört a pályán! Kattints a játékhoz →</p>
+        <h3 style="color:${room.color}; font-family:var(--font-display);">Villám Verseny GP</h3>
+        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Száguldj végig a versenypályán! Kattints a játékhoz →</p>
       </div>
     </a>
 

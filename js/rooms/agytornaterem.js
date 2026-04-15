@@ -67,14 +67,13 @@ export function renderMinigame(container, room, onSuccess) {
 
 // Placeholder — a user cseréli saját családi rekordokra
 const FAMILY_RECORDS = [
-  { emoji: '🍽️', category: 'Leggyorsabb evő', winner: 'Apu — 3 perc alatt eltűnik a pörkölt' },
-  { emoji: '😴', category: 'Legtöbbet alvó', winner: 'Placeholder — írd át!' },
-  { emoji: '📺', category: 'Legtöbb sorozatot néző', winner: 'Placeholder — írd át!' },
-  { emoji: '🎮', category: 'Legjobb játékos', winner: 'Placeholder — írd át!' },
-  { emoji: '🗣️', category: 'Leghangosabb', winner: 'Placeholder — írd át!' },
-  { emoji: '🧁', category: 'Legjobb szakács', winner: 'Placeholder — írd át!' },
-  { emoji: '😂', category: 'Legviccesebb', winner: 'Placeholder — írd át!' },
-  { emoji: '💪', category: 'Legerősebb', winner: 'Placeholder — írd át!' },
+  { emoji: '🍽️', category: 'Leggyorsabb evő', winner: 'Apa - Rekord idő alatt pusztítja magába a kaját ha éhes.' },
+  { emoji: '😴', category: 'Legtöbbet alvó', winner: 'Apu - ÉBRESZTŐ??? Mi az neki?' },
+  { emoji: '📺', category: 'Legtöbb sorozatot néző', winner: 'Teri nagyi - Hihetetlen mennyiségű sorozatot látott, szerintem a streaming szolgáltatások nem tudnak olyat kihozni, amit ő már nem látott volna!' },
+  { emoji: '🎮', category: 'Legjobb játékos', winner: 'Dávid - Túl sokat játszik, ha odafigyel, szinte verhetetlen!' },
+  { emoji: '🗣️', category: 'Leghangosabb', winner: 'Teri nagyi - Bocsánat nagyi!' },
+  { emoji: '🧁', category: 'Legjobb szakács', winner: 'Apu - Nem ő fél a receptektől, a receptek félnek tőle, hogy túl jóra sikerül a kaja amit csinál.' },
+  { emoji: '💪', category: 'Legerősebb', winner: 'Apa - Claudiának köszönhetően bika szintű ereje van.' },
 ];
 
 export function renderContent(container, room) {
@@ -84,8 +83,8 @@ export function renderContent(container, room) {
     <a href="games/breakout/index.html" style="display:block; text-decoration:none; margin-bottom:20px;">
       <div class="content-card" style="border-color:${room.color}; text-align:center; cursor:pointer;">
         <div style="font-size:3rem; margin-bottom:8px;">🧱</div>
-        <h3 style="color:${room.color}; font-family:var(--font-display);">Birthday Breakout</h3>
-        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Törd szét a szülinapi téglákat! Kattints a játékhoz →</p>
+        <h3 style="color:${room.color}; font-family:var(--font-display);">Torta Romboló</h3>
+        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Zúzd porrá az ünnepi falat labdával! Kattints a játékhoz →</p>
       </div>
     </a>
 
