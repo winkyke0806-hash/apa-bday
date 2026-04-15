@@ -671,41 +671,44 @@ function render() {
 
   // ─── GAME ZOOM CAMERA ───
   const ZOOM = 1.35;
-  const camX = cake.x - w / (2 * ZOOM) + w * 0.1; // slightly ahead of cake
-  const camY = cake.y - h / (2 * ZOOM);
+  const camX = cake.x - w / (2 * ZOOM) + w * 0.1;
   ctx.save();
   ctx.scale(ZOOM, ZOOM);
-  ctx.translate(-camX, -camY);
+  ctx.translate(-camX, 0); // only translate X, ground stays at bottom
+
+  const gStartX = camX - 100;
+  const gEndX = camX + w / ZOOM + 100; // visible right edge
 
   // Ground
   const groundH = 40;
+  const groundY = h / ZOOM - groundH; // ground position in world coords
   ctx.fillStyle = t > 0.5 ? '#1a3a1a' : '#4ade80';
-  ctx.fillRect(0, h - groundH, w, groundH);
+  ctx.fillRect(gStartX, groundY, gEndX - gStartX, groundH + 200);
   ctx.fillStyle = t > 0.5 ? '#0f2a0f' : '#22c55e';
-  ctx.fillRect(0, h - groundH, w, 4);
-  // Ground pattern — detailed
+  ctx.fillRect(gStartX, groundY, gEndX - gStartX, 4);
+  // Ground pattern
   ctx.fillStyle = t > 0.5 ? '#153015' : '#16a34a';
-  for (let i = 0; i < w / 20 + 1; i++) {
-    const gx = ((i * 20 + bgOffset) % (w + 20)) - 10;
-    ctx.fillRect(gx, h - groundH + 8, 10, 3);
+  for (let i = 0; i < (gEndX - gStartX) / 20 + 1; i++) {
+    const gx = gStartX + ((i * 20 + bgOffset) % (w + 20));
+    ctx.fillRect(gx, groundY + 8, 10, 3);
   }
   // Grass blades
   ctx.strokeStyle = t > 0.5 ? '#1a4a1a' : '#22c55e';
   ctx.lineWidth = 1.5;
-  for (let i = 0; i < w / 8; i++) {
-    const gx = ((i * 8 + bgOffset * 0.8) % (w + 16)) - 8;
+  for (let i = 0; i < (gEndX - gStartX) / 8; i++) {
+    const gx = gStartX + ((i * 8 + bgOffset * 0.8) % (w + 16));
     const sway = Math.sin(frameCount * 0.04 + i * 0.5) * 2;
     ctx.beginPath();
-    ctx.moveTo(gx, h - groundH);
-    ctx.quadraticCurveTo(gx + sway, h - groundH - 6 - (i % 3) * 2, gx + sway * 1.5, h - groundH - 10 - (i % 4) * 2);
+    ctx.moveTo(gx, groundY);
+    ctx.quadraticCurveTo(gx + sway, groundY - 6 - (i % 3) * 2, gx + sway * 1.5, groundY - 10 - (i % 4) * 2);
     ctx.stroke();
   }
   // Flowers
   if (t < 0.5) {
     const flowerColors = ['#ec4899', '#f6ad55', '#a855f7', '#e94560', '#fbbf24'];
-    for (let i = 0; i < w / 60; i++) {
-      const fx = ((i * 60 + 30 + bgOffset * 0.9) % (w + 60)) - 30;
-      const fy = h - groundH - 2;
+    for (let i = 0; i < (gEndX - gStartX) / 60; i++) {
+      const fx = gStartX + ((i * 60 + 30 + bgOffset * 0.9) % (w + 60));
+      const fy = groundY - 2;
       ctx.fillStyle = flowerColors[i % flowerColors.length];
       ctx.beginPath(); ctx.arc(fx, fy, 3, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#fbbf24';
@@ -715,14 +718,14 @@ function render() {
 
   // Underground layer
   ctx.fillStyle = t > 0.5 ? '#2a1a0a' : '#8B6914';
-  ctx.fillRect(0, h - groundH + 15, w, 8);
+  ctx.fillRect(gStartX, groundY + 15, gEndX - gStartX, 8);
   ctx.fillStyle = t > 0.5 ? '#1a0f05' : '#6B4F12';
-  ctx.fillRect(0, h - groundH + 23, w, h);
+  ctx.fillRect(gStartX, groundY + 23, gEndX - gStartX, 200);
   // Rocks
   ctx.fillStyle = t > 0.5 ? '#333' : '#999';
-  for (let i = 0; i < w / 45; i++) {
-    const rx = (i * 45 + 15 + bgOffset * 0.3) % (w + 20) - 10;
-    ctx.beginPath(); ctx.arc(rx, h - groundH + 30 + (i % 3) * 4, 2 + (i % 2), 0, Math.PI * 2); ctx.fill();
+  for (let i = 0; i < (gEndX - gStartX) / 45; i++) {
+    const rx = gStartX + (i * 45 + 15 + bgOffset * 0.3) % (w + 20);
+    ctx.beginPath(); ctx.arc(rx, groundY + 30 + (i % 3) * 4, 2 + (i % 2), 0, Math.PI * 2); ctx.fill();
   }
 
   // Pipes
