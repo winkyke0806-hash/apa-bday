@@ -1,17 +1,16 @@
 import { showSuccess, createHintSkip, shuffle } from '../minigame-base.js';
 
 const QUESTIONS = [
-  { q: 'Mi Apu kedvenc étele?', options: ['Pörkölt', 'Gulyás', 'Rántott hús', 'Pizza'], correct: 'Pörkölt', hint: 'Magyar konyha klasszikus' },
+  { q: 'Mi Dávid kedvenc étele?', options: ['Pörkölt', 'Pizza', 'Rántott hús', 'Tikka Massala'], correct: 'Pizza', hint: 'Olasz konyha klasszikus' },
   { q: 'Hány éves korában tanult meg biciklizni?', options: ['4', '5', '6', '7'], correct: '5', hint: 'Óvodás volt még' },
-  { q: 'Mi Apu kedvenc filmje?', options: ['Terminator', 'Die Hard', 'Star Wars', 'Indiana Jones'], correct: 'Die Hard', hint: 'Bruce Willis a főszereplő' },
-  { q: 'Melyik zenekar a kedvence?', options: ['Queen', 'AC/DC', 'Metallica', 'Beatles'], correct: 'Queen', hint: 'Freddie Mercury' },
-  { q: 'Hol született Apu?', options: ['Budapest', 'Debrecen', 'Szeged', 'Győr'], correct: 'Budapest', hint: 'A fővárosban' },
+  { q: 'Mi Teri nagyi kedvenc sorozata?', options: ['Xo Kitty', 'Gentlemans', 'Blacklist', 'Ozark'], correct: 'Blacklist', hint: 'A lista' },
+  { q: 'Melyik zenekar Zoli kedvence?', options: ['Queen', 'AC/DC', 'Metallica', 'Beatles'], correct: 'Queen', hint: 'Freddie Mercury' },
+  { q: 'Hol született Gyuri nagyapa?', options: ['Budapest', 'Debrecen', 'Szeged', 'Balatonalmádi'], correct: 'Balatonalmádi', hint: 'Ebben nem segítek, ezt tudnod KELL' },
 ];
 
 const FUN_FACTS = [
-  'Apu 3 éves korában már LEGO-zott!',
-  'A legtöbb nyaralásunkon Apu volt a sofőr — összesen kb. 50,000 km-t vezetett miattunk.',
-  'Apu kedvenc napszaka a reggel, mert akkor a legcsendesebb.',
+  'A legjobb reggelek azok, amikor hétvégén hagysz aludni, és amikor fölkelek, akkor friss reggelit készítesz nekem.',
+  'A nyaralásainkon Te voltál a sofőr — összesen szerintem több mint 50,000 km-t vezettél miattunk.',
 ];
 
 export function renderMinigame(container, room, onSuccess) {
@@ -21,8 +20,8 @@ export function renderMinigame(container, room, onSuccess) {
 
   function renderQuestion() {
     if (currentQ >= questions.length) {
-      const rating = score === questions.length ? 'Tökéletes! Te aztán ismered Aput!' :
-                     score >= 2 ? 'Szép eredmény!' : 'Hát... gyakorolj még! 😄';
+      const rating = score === questions.length ? 'Tökéletes!' :
+                     score >= 2 ? 'Szép eredmény!' : 'Hát... van még mit gyakorolni!';
       showSuccess(container, room, onSuccess, `${score}/${questions.length} — ${rating}`);
       return;
     }
@@ -66,6 +65,18 @@ export function renderMinigame(container, room, onSuccess) {
   renderQuestion();
 }
 
+// Placeholder — a user cseréli saját családi rekordokra
+const FAMILY_RECORDS = [
+  { emoji: '🍽️', category: 'Leggyorsabb evő', winner: 'Apu — 3 perc alatt eltűnik a pörkölt' },
+  { emoji: '😴', category: 'Legtöbbet alvó', winner: 'Placeholder — írd át!' },
+  { emoji: '📺', category: 'Legtöbb sorozatot néző', winner: 'Placeholder — írd át!' },
+  { emoji: '🎮', category: 'Legjobb játékos', winner: 'Placeholder — írd át!' },
+  { emoji: '🗣️', category: 'Leghangosabb', winner: 'Placeholder — írd át!' },
+  { emoji: '🧁', category: 'Legjobb szakács', winner: 'Placeholder — írd át!' },
+  { emoji: '😂', category: 'Legviccesebb', winner: 'Placeholder — írd át!' },
+  { emoji: '💪', category: 'Legerősebb', winner: 'Placeholder — írd át!' },
+];
+
 export function renderContent(container, room) {
   container.innerHTML = `
     <h2 class="content-title" style="color:${room.color}">🧠 Agytornaterem</h2>
@@ -82,5 +93,16 @@ export function renderContent(container, room) {
     ${FUN_FACTS.map(fact => `
       <div class="content-card"><p style="font-size:1rem;">💡 ${fact}</p></div>
     `).join('')}
+
+    <h3 style="color:${room.color}; text-align:center; margin:28px 0 16px; font-family:var(--font-display);">🏅 Családi Rekordok</h3>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:10px;">
+      ${FAMILY_RECORDS.map(r => `
+        <div class="content-card" style="text-align:center; padding:14px;">
+          <div style="font-size:1.8rem; margin-bottom:6px;">${r.emoji}</div>
+          <div style="font-size:0.75rem; color:${room.color}; font-weight:bold; margin-bottom:4px;">${r.category}</div>
+          <div style="font-size:0.9rem;">${r.winner}</div>
+        </div>
+      `).join('')}
+    </div>
   `;
 }

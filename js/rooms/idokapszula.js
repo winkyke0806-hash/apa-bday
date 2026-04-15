@@ -4,7 +4,7 @@ const EVENTS = [
   { year: 1975, text: 'Apu megszületik', icon: '👶' },
   { year: 1981, text: 'Első iskolai nap', icon: '🏫' },
   { year: 1993, text: 'Egyetemi diploma', icon: '🎓' },
-  { year: 1998, text: 'Összeházasodik Anyuval', icon: '💒' },
+  { year: 1998, text: 'Első saját lakás', icon: '🏠' },
   { year: 2002, text: 'Megszületek én', icon: '🍼' },
   { year: 2010, text: 'Első közös nyaralás', icon: '🏖️' },
   { year: 2020, text: 'Közös Lego projekt', icon: '🧱' },
