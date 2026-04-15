@@ -129,6 +129,13 @@ export function renderMinigame(container, room, onSuccess) {
 
 export function renderContent(container, room) {
   container.innerHTML = `
+    <a href="games/slots/index.html" style="display:block; text-decoration:none; margin-bottom:20px;">
+      <div class="content-card" style="border-color:${room.color}; text-align:center; cursor:pointer;">
+        <div style="font-size:3rem; margin-bottom:8px;">🎰</div>
+        <h3 style="color:${room.color}; font-family:var(--font-display);">Birthday Slots</h3>
+        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Pörgesd meg a nyerőgépet! →</p>
+      </div>
+    </a>
     <h2 class="content-title" style="color:${room.color}">🎁 Ajándékraktár</h2>
     <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:24px;">Kuponok — bármikor beválthatóak!</p>
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px;">

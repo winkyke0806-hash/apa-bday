@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>🔤 Szókereső</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}body{background:#0f172a;color:#fff;font-family:'JetBrains Mono',monospace;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:16px;}
+    h1{font-family:'Press Start 2P',monospace;font-size:0.9rem;color:#f6ad55;margin:16px 0 8px;}
+    .sub{font-size:0.7rem;color:rgba(255,255,255,0.4);margin-bottom:12px;}
+    .grid{display:inline-grid;gap:2px;background:rgba(255,255,255,0.05);padding:6px;border-radius:8px;}
+    .grid-cell{width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:bold;cursor:pointer;border-radius:4px;background:rgba(255,255,255,0.03);transition:all 0.15s;user-select:none;}
+    .grid-cell:hover{background:rgba(255,255,255,0.08);}
+    .grid-cell.selected{background:rgba(246,173,85,0.3);color:#f6ad55;}
+    .grid-cell.found{background:rgba(74,222,128,0.2);color:#4ade80;}
+    .words{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;justify-content:center;}
+    .word{font-family:'Press Start 2P',monospace;font-size:0.45rem;padding:6px 10px;background:rgba(255,255,255,0.05);border-radius:4px;letter-spacing:2px;}
+    .word.done{text-decoration:line-through;color:#4ade80;background:rgba(74,222,128,0.1);}
+    .btn{font-family:'Press Start 2P',monospace;font-size:0.6rem;padding:10px 24px;background:#ec4899;color:#fff;border:none;border-radius:6px;cursor:pointer;margin:6px;text-decoration:none;display:inline-block;}
+  </style>
+</head>
+<body>
+  <h1>🔤 Szókereső</h1>
+  <p class="sub">Keresd meg a szavakat! Kattints a betűkre sorban.</p>
+  <div class="words" id="word-list"></div>
+  <div class="grid" id="grid"></div>
+  <div style="margin-top:12px;"><a href="../../index.html" class="btn">← HÁZBA</a><button class="btn" id="btn-new">🔄 ÚJ</button></div>
+  <script>
+    const WORDS=['SZULINAP','TORTA','AJANDEK','SZERETET','CSALAD','BOLDOG','APUKA','EMLEKEK'];
+    const SIZE=10;
+    const DIRS=[[0,1],[1,0],[1,1],[0,-1],[-1,0]];
+    let grid=[],placed=[],foundWords=[],selectedCells=[];
+
+    function generate(){
+      grid=Array.from({length:SIZE},()=>Array(SIZE).fill(''));
+      placed=[];foundWords=[];selectedCells=[];
+
+      const toPlace=WORDS.sort(()=>Math.random()-0.5).slice(0,5);
+      toPlace.forEach(word=>{
+        let tries=0,ok=false;
+        while(tries<200&&!ok){
+          const dir=DIRS[Math.floor(Math.random()*DIRS.length)];
+          const r=Math.floor(Math.random()*SIZE),c=Math.floor(Math.random()*SIZE);
+          ok=canPlace(word,r,c,dir);
+          if(ok){placeWord(word,r,c,dir);placed.push({word,r,c,dir});}
+          tries++;
+        }
+      });
+      // Fill empty
+      const ALPHA='AÁBCDEÉFGHIÍJKLMNOÓÖŐPQRSTUÚÜŰVWXYZ'.toUpperCase();
+      for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++)if(!grid[r][c])grid[r][c]=ALPHA[Math.floor(Math.random()*ALPHA.length)];
+      renderGrid();renderWords();
+    }
+
+    function canPlace(word,r,c,dir){
+      for(let i=0;i<word.length;i++){
+        const nr=r+dir[0]*i,nc=c+dir[1]*i;
+        if(nr<0||nr>=SIZE||nc<0||nc>=SIZE)return false;
+        if(grid[nr][nc]&&grid[nr][nc]!==word[i])return false;
+      }return true;
+    }
+
+    function placeWord(word,r,c,dir){
+      for(let i=0;i<word.length;i++)grid[r+dir[0]*i][c+dir[1]*i]=word[i];
+    }
+
+    function renderGrid(){
+      const el=document.getElementById('grid');
+      el.style.gridTemplateColumns=`repeat(${SIZE},36px)`;
+      el.innerHTML='';
+      for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){
+        const cell=document.createElement('div');
+        cell.className='grid-cell';cell.textContent=grid[r][c];
+        cell.dataset.r=r;cell.dataset.c=c;
+        cell.addEventListener('click',()=>selectCell(r,c,cell));
+        el.appendChild(cell);
+      }
+    }
+
+    function renderWords(){
+      const el=document.getElementById('word-list');
+      el.innerHTML=placed.map(p=>`<div class="word" id="w-${p.word}">${p.word}</div>`).join('');
+    }
+
+    function selectCell(r,c,el){
+      if(el.classList.contains('found'))return;
+      selectedCells.push({r,c,el});el.classList.add('selected');
+      // Check if any word matches
+      const selected=selectedCells.map(s=>grid[s.r][s.c]).join('');
+      const match=placed.find(p=>p.word===selected&&!foundWords.includes(p.word));
+      if(match){
+        foundWords.push(match.word);
+        selectedCells.forEach(s=>s.el.classList.add('found'));
+        selectedCells.forEach(s=>s.el.classList.remove('selected'));
+        selectedCells=[];
+        document.getElementById('w-'+match.word).classList.add('done');
+        if(foundWords.length===placed.length)setTimeout(()=>alert('🏆 Mind megtaláltad!'),300);
+      }else if(selected.length>8){
+        selectedCells.forEach(s=>s.el.classList.remove('selected'));
+        selectedCells=[];
+      }
+    }
+
+    document.getElementById('btn-new').addEventListener('click',generate);
+    generate();
+  </script>
+</body>
+</html>

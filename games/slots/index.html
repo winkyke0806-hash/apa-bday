@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>🎰 Birthday Slots</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}body{background:#0f172a;color:#fff;font-family:'JetBrains Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;}
+    h1{font-family:'Press Start 2P',monospace;font-size:1rem;color:#f6ad55;margin-bottom:16px;}
+    .machine{background:linear-gradient(135deg,#1e293b,#0f172a);border:3px solid #f6ad55;border-radius:20px;padding:24px;text-align:center;max-width:380px;width:90%;}
+    .reels{display:flex;justify-content:center;gap:8px;margin:20px 0;}
+    .reel{width:80px;height:90px;background:#0a0f1a;border:2px solid rgba(255,255,255,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:3rem;overflow:hidden;position:relative;}
+    .reel.spinning .reel-inner{animation:spin 0.15s linear infinite;}
+    @keyframes spin{0%{transform:translateY(0);}100%{transform:translateY(-60px);}}
+    .reel-inner{transition:transform 0.1s;}
+    .credits{font-family:'Press Start 2P',monospace;font-size:0.7rem;color:#f6ad55;margin:8px 0;}
+    .result{font-family:'Press Start 2P',monospace;font-size:0.6rem;min-height:20px;margin:8px 0;color:#4ade80;}
+    .btn{font-family:'Press Start 2P',monospace;font-size:0.7rem;padding:14px 40px;background:#ec4899;color:#fff;border:none;border-radius:8px;cursor:pointer;transition:all 0.2s;margin:6px;text-decoration:none;display:inline-block;}
+    .btn:hover{transform:scale(1.05);box-shadow:0 0 20px rgba(236,72,153,0.4);}
+    .btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+    .btn--s{background:transparent;border:2px solid rgba(255,255,255,0.2);padding:10px 20px;font-size:0.5rem;}
+    .paytable{font-size:0.5rem;color:rgba(255,255,255,0.4);margin-top:12px;line-height:1.8;}
+  </style>
+</head>
+<body>
+  <h1>🎰 Birthday Slots</h1>
+  <div class="machine">
+    <div class="credits">KREDIT: <span id="credits">100</span> 🪙</div>
+    <div class="reels">
+      <div class="reel" id="reel0"><div class="reel-inner">🎂</div></div>
+      <div class="reel" id="reel1"><div class="reel-inner">🎁</div></div>
+      <div class="reel" id="reel2"><div class="reel-inner">⭐</div></div>
+    </div>
+    <div class="result" id="result"></div>
+    <button class="btn" id="btn-spin">🎰 PÖRGETÉS (-10)</button>
+    <div class="paytable">
+      🎂🎂🎂 = 100 | ⭐⭐⭐ = 200<br>
+      🎁🎁🎁 = 80 | 🎈🎈🎈 = 60<br>
+      2 egyforma = 20 | 🕯️ bármelyik = +10
+    </div>
+  </div>
+  <div style="margin-top:12px;"><a href="../../index.html" class="btn btn--s">← HÁZBA</a></div>
+
+  <script>
+    const SYMBOLS=['🎂','🎁','⭐','🎈','🕯️','🧁','🍬','🎀'];
+    let credits=100,spinning=false;
+    const reels=[0,1,2].map(i=>document.getElementById('reel'+i));
+    const resultEl=document.getElementById('result');
+    const creditsEl=document.getElementById('credits');
+    const spinBtn=document.getElementById('btn-spin');
+
+    let audioCtx;
+    function beep(f,d){
+      if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+      const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+      o.type='sine';o.frequency.value=f;g.gain.value=0.06;
+      g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+d);
+      o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+d);
+    }
+
+    spinBtn.addEventListener('click',()=>{
+      if(spinning||credits<10)return;
+      spinning=true;credits-=10;creditsEl.textContent=credits;
+      resultEl.textContent='';spinBtn.disabled=true;
+
+      reels.forEach(r=>r.classList.add('spinning'));
+
+      const results=reels.map(()=>SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)]);
+
+      // Stop reels sequentially
+      reels.forEach((reel,i)=>{
+        setTimeout(()=>{
+          reel.classList.remove('spinning');
+          reel.querySelector('.reel-inner').textContent=results[i];
+          beep(400+i*100,0.1);
+
+          if(i===2){
+            // Evaluate
+            setTimeout(()=>{
+              let win=0,msg='';
+              if(results[0]===results[1]&&results[1]===results[2]){
+                const triple=results[0];
+                win=triple==='⭐'?200:triple==='🎂'?100:triple==='🎁'?80:60;
+                msg=`🎉 JACKPOT! +${win}`;
+              }else if(results[0]===results[1]||results[1]===results[2]||results[0]===results[2]){
+                win=20;msg=`✨ Pár! +${win}`;
+              }
+              if(results.includes('🕯️')){win+=10;msg+=(msg?' | ':'')+'🕯️ Gyertya bónusz +10';}
+              if(!win)msg='Nincs nyeremény...';
+              credits+=win;creditsEl.textContent=credits;
+              resultEl.textContent=msg;resultEl.style.color=win>0?'#4ade80':'rgba(255,255,255,0.4)';
+              if(win>50){[523,659,784].forEach((f,i)=>setTimeout(()=>beep(f,0.12),i*80));}
+              spinning=false;spinBtn.disabled=credits<10;
+              if(credits<=0){resultEl.textContent='💸 Elfogyott a kredit! Frissíts az újraindításhoz.';resultEl.style.color='#e94560';}
+            },300);
+          }
+        },500+i*400);
+      });
+    });
+  </script>
+</body>
+</html>

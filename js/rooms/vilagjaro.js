@@ -64,6 +64,13 @@ function getDecoys(correct) {
 
 export function renderContent(container, room) {
   container.innerHTML = `
+    <a href="games/geoguesser/index.html" style="display:block; text-decoration:none; margin-bottom:20px;">
+      <div class="content-card" style="border-color:${room.color}; text-align:center; cursor:pointer;">
+        <div style="font-size:3rem; margin-bottom:8px;">🗺️</div>
+        <h3 style="color:${room.color}; font-family:var(--font-display);">Hol Voltunk?</h3>
+        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Emlékszel hol nyaraltunk? →</p>
+      </div>
+    </a>
     <h2 class="content-title" style="color:${room.color}">🗺️ A Nagy Világjáró</h2>
     <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:24px;">Közös utazásaink térképe</p>
     <div id="travel-map" style="height:400px; border-radius:12px; border:2px solid rgba(255,255,255,0.1); margin-bottom:24px;"></div>

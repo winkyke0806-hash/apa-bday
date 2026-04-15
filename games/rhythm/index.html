@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🎵 Birthday Beats</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--pixel:'Press Start 2P',monospace;--mono:'JetBrains Mono',monospace;--accent:#f6ad55;--bg:#0f172a;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);overflow:hidden;height:100vh;font-family:var(--mono);}
+    canvas{display:block;width:100vw;height:100vh;}
+    .overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;background:rgba(15,23,42,0.92);backdrop-filter:blur(8px);transition:opacity 0.4s;}
+    .overlay.hidden{opacity:0;pointer-events:none;}
+    .btn{font-family:var(--pixel);font-size:0.7rem;padding:14px 32px;background:#ec4899;color:#fff;border:none;border-radius:6px;cursor:pointer;transition:all 0.2s;margin:6px;text-decoration:none;display:inline-block;}
+    .btn:hover{transform:scale(1.05);}
+    .btn--s{background:transparent;border:2px solid rgba(255,255,255,0.2);}
+    .hud{position:fixed;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:20px;z-index:5;pointer-events:none;background:rgba(0,0,0,0.5);padding:6px 16px;border-radius:8px;}
+    .hud span{font-family:var(--pixel);font-size:0.6rem;color:var(--accent);}
+    .hit-text{position:fixed;left:50%;transform:translateX(-50%);top:40%;font-family:var(--pixel);font-size:1.5rem;z-index:15;pointer-events:none;opacity:0;transition:all 0.2s;}
+    .hit-text.show{opacity:1;}
+    @keyframes bounce{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-15px) rotate(3deg);}}
+  </style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div class="hud"><span id="hud-score">0</span><span>|</span><span id="hud-combo">0x</span><span>|</span><span id="hud-streak">🔥 0</span></div>
+  <div class="hit-text" id="hit-text"></div>
+
+  <div class="overlay" id="title-screen">
+    <div style="font-size:4rem;margin-bottom:12px;animation:bounce 1.5s ease-in-out infinite;">🎵</div>
+    <div style="font-family:var(--pixel);font-size:clamp(1rem,4vw,1.8rem);color:var(--accent);text-shadow:3px 3px 0 rgba(0,0,0,0.5);margin-bottom:24px;">BIRTHDAY BEATS</div>
+    <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);margin-bottom:20px;font-family:var(--pixel);text-align:center;line-height:2.5;">
+      D F J K — nyomd a billentyűt<br>amikor a note eléri a vonalat!
+    </div>
+    <button class="btn" id="btn-play">▶ JÁTÉK</button>
+    <a href="../../index.html" class="btn btn--s">← HÁZBA</a>
+  </div>
+
+  <div class="overlay hidden" id="end-screen">
+    <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
+    <div style="font-family:var(--pixel);font-size:1rem;color:var(--accent);margin-bottom:16px;">VÉGE!</div>
+    <div style="font-family:var(--pixel);font-size:0.8rem;margin-bottom:4px;">PONT: <span id="final-score" style="color:var(--accent);">0</span></div>
+    <div style="font-family:var(--pixel);font-size:0.5rem;color:rgba(255,255,255,0.4);margin-bottom:4px;">MAX COMBO: <span id="final-combo">0</span></div>
+    <div style="font-family:var(--pixel);font-size:0.5rem;color:rgba(255,255,255,0.4);margin-bottom:16px;">REKORD: <span id="final-high">0</span></div>
+    <button class="btn" id="btn-retry">🔄 ÚJRA</button>
+    <a href="../../index.html" class="btn btn--s">← HÁZBA</a>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
