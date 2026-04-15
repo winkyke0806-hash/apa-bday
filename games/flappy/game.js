@@ -32,9 +32,9 @@ function sfxPowerup() { beep(440, 0.1, 'sine', 0.08); setTimeout(() => beep(660,
 const GRAVITY = 0.55;
 const JUMP_FORCE = -8.5;
 const PIPE_SPEED_BASE = 4.5;
-const PIPE_GAP_BASE = 170;
-const PIPE_WIDTH = 80;
-const PIPE_SPACING = 220;
+const PIPE_GAP_BASE = 190;
+const PIPE_WIDTH = 90;
+const PIPE_SPACING = 240;
 const CAKE_SIZE = 28;
 
 // ─── Game state ───
@@ -126,10 +126,13 @@ function spawnPipe() {
   const w = canvas.width, h = canvas.height;
   const diff = Math.min(score / 30, 1); // slower difficulty ramp
 
-  const gap = PIPE_GAP_BASE - diff * 25; // gap shrinks less (min 145 instead of 130)
-  const minTop = 60;
-  const maxTop = h - gap - 60;
-  const topH = minTop + Math.random() * (maxTop - minTop);
+  const gap = PIPE_GAP_BASE - diff * 30; // gap shrinks (min ~160)
+
+  // Keep gap centered — constrain to middle 50% of screen
+  const center = h * 0.5;
+  const spread = h * 0.22; // max deviation from center
+  const gapCenter = center + (Math.random() - 0.5) * 2 * spread;
+  const topH = Math.max(50, Math.min(h - gap - 50, gapCenter - gap / 2));
 
   const moving = score > 8 && Math.random() < 0.3; // moving pipes after score 8
   const moveRange = 30 + Math.random() * 30;
