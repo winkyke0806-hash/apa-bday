@@ -100,11 +100,10 @@ export function renderMinigame(container, room, onSuccess) {
 }
 
 export function renderContent(container, room) {
-  const sorted = [...EVENTS].sort((a, b) => a.year - b.year);
   container.innerHTML = `
     <h2 class="content-title" style="color:${room.color}">⏳ Időkapszula</h2>
 
-    <a href="games/flappy/index.html" style="display:block; text-decoration:none; margin-bottom:20px;">
+    <a href="games/flappy/index.html" style="display:block; text-decoration:none; margin-bottom:14px;">
       <div class="content-card" style="border-color:${room.color}; text-align:center; cursor:pointer;">
         <div style="font-size:3rem; margin-bottom:8px;">🎂</div>
         <h3 style="color:${room.color}; font-family:var(--font-display);">Repülő Tortácska</h3>
@@ -112,21 +111,12 @@ export function renderContent(container, room) {
       </div>
     </a>
 
-    <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:24px;">Apu életének mérföldkövei</p>
-    <div style="position:relative; max-width:450px; margin:0 auto; padding-left:40px;">
-      <div style="position:absolute; left:18px; top:0; bottom:0; width:2px; background:${room.color}; opacity:0.3;"></div>
-      ${sorted.map(e => `
-        <div style="position:relative; margin-bottom:24px;" class="fade-in">
-          <div style="position:absolute; left:-32px; width:24px; height:24px; border-radius:50%;
-            background:${room.color}; display:flex; align-items:center; justify-content:center; font-size:0.7rem;">
-            ${e.icon}
-          </div>
-          <div class="content-card">
-            <div style="font-size:0.7rem; color:${room.color}; font-weight:bold;">${e.year}</div>
-            <div style="margin-top:4px;">${e.text}</div>
-          </div>
-        </div>
-      `).join('')}
-    </div>
+    <a href="games/asteroid/index.html" style="display:block; text-decoration:none; margin-bottom:14px;">
+      <div class="content-card" style="border-color:${room.color}; text-align:center; cursor:pointer;">
+        <div style="font-size:3rem; margin-bottom:8px;">🚀</div>
+        <h3 style="color:${room.color}; font-family:var(--font-display);">Csillagvadász</h3>
+        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Lődd szét a szülinapi aszteroidákat! →</p>
+      </div>
+    </a>
   `;
 }
