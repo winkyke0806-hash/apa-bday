@@ -3,7 +3,7 @@ import { showSuccess, createHintSkip } from '../minigame-base.js';
 const COUPONS = [
   { title: 'Mosogatás', description: 'Egy teljes nap mosogatást vállalok!', emoji: '🍽️' },
   { title: 'Főzés', description: 'Főzök amit csak kérsz!', emoji: '👨‍🍳' },
-  { title: 'Masszázs', description: 'Egy 15 perces vállmasszázs', emoji: '💆' },
+  { title: 'Gokart', description: 'Menjünk el 3 körre a Flashcartba - én állom', emoji: '🏎️' },
   { title: 'Filmnap', description: 'Te választod a filmet, én hozom a popcornt!', emoji: '🍿' },
   { title: 'Autómosás', description: 'Megmosom az autót kívül-belül', emoji: '🚗' },
   { title: 'Szabadnap', description: 'Egy nap amikor mindent én intézek', emoji: '😴' },
@@ -11,7 +11,7 @@ const COUPONS = [
 
 export function renderMinigame(container, room, onSuccess) {
   let revealed = 0;
-  const targetReveals = 3;
+  const targetReveals = COUPONS.length;
 
   container.innerHTML = `
     <h2 class="minigame-title">🎁 Ajándékraktár</h2>
@@ -21,7 +21,7 @@ export function renderMinigame(container, room, onSuccess) {
 
   const cardsEl = container.querySelector('#scratch-cards');
 
-  COUPONS.slice(0, targetReveals).forEach(coupon => {
+  COUPONS.forEach(coupon => {
     const card = document.createElement('div');
     card.style.cssText = 'position:relative; aspect-ratio:3/4; border-radius:12px; overflow:hidden;';
 
