@@ -69,7 +69,25 @@ export const ROOM_MAPPING = {
   'Nappali': 'agytornaterem',
   'Dolgozó': 'leveleslada',
   'Fürdőszoba': 'moziterem',
-  'Dávid szobája': 'idokapszula',
+  'Dávid szobája': 'idokapszula',  // + kockagyar tartalom is ide kerül
   'Apa szobája': 'kalandorok',
   'Gardrób': 'ajandekraktar',
 };
+
+// Szoba kattintási zónák (bounding box-ok a label pozíciók alapján)
+// Ezek a normalizált koordináták alapján generálódnak
+export const ROOM_ZONES = {
+  'Wc':               { x1: 0.434, y1: 0.105, x2: 0.5, y2: 0.263 },
+  'Nagy Fürdőszoba':  { x1: 0.5, y1: 0.105, x2: 0.618, y2: 0.421 },
+  'Mosókonyha':       { x1: 0.434, y1: 0.263, x2: 0.5, y2: 0.421 },
+  'Konyha':           { x1: 0.329, y1: 0.105, x2: 0.434, y2: 0.421 },
+  'Nappali':          { x1: 0.329, y1: 0.5, x2: 0.461, y2: 0.789 },
+  'Dolgozó':          { x1: 0.25, y1: 0.5, x2: 0.329, y2: 0.684 },
+  'Fürdőszoba':       { x1: 0.25, y1: 0.105, x2: 0.329, y2: 0.421 },
+  'Dávid szobája':    { x1: 0.461, y1: 0.5, x2: 0.618, y2: 0.789 },
+  'Apa szobája':      { x1: 0.145, y1: 0.368, x2: 0.25, y2: 0.684 },
+  'Gardrób':          { x1: 0.145, y1: 0.105, x2: 0.25, y2: 0.368 },
+};
+
+// Bejárati ajtó = A Széf
+export const ENTRANCE_DOOR = { x: 0.408, y: 0.105 };

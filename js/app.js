@@ -1,4 +1,5 @@
 import { isRoomUnlocked, unlockRoom, getUnlockedCount, areAllRoomsUnlocked } from './progress.js';
+import { HOUSE_LAYOUT, ROOM_MAPPING, ROOM_ZONES, ENTRANCE_DOOR } from './house-layout.js';
 
 const ROOMS = [
   { id: 'hangok-terme',    name: 'Hangok Terme',       icon: '🎵', color: '#f6ad55', module: './rooms/hangok-terme.js' },
@@ -382,6 +383,186 @@ function spawnAnnotations() {
   setInterval(spawn, 8000);
 }
 
+/* ══════════════════════════════
+   HOUSE CANVAS — valódi lakás alaprajz
+   ══════════════════════════════ */
+
+function initHouseCanvas() {
+  const hCanvas = document.getElementById('house-canvas');
+  if (!hCanvas) return;
+
+  // Hide old grid, show canvas
+  grid.style.display = 'none';
+  hCanvas.style.display = 'block';
+
+  // Size
+  const containerW = Math.min(700, window.innerWidth - 32);
+  const aspectRatio = 0.85;
+  hCanvas.width = containerW * 2; // retina
+  hCanvas.height = containerW * aspectRatio * 2;
+  hCanvas.style.width = containerW + 'px';
+  hCanvas.style.height = (containerW * aspectRatio) + 'px';
+
+  drawHouse(hCanvas);
+
+  // Click handler
+  hCanvas.addEventListener('click', (e) => {
+    const rect = hCanvas.getBoundingClientRect();
+    const nx = (e.clientX - rect.left) / rect.width;
+    const ny = (e.clientY - rect.top) / rect.height;
+
+    // Check room zones
+    for (const [roomName, zone] of Object.entries(ROOM_ZONES)) {
+      if (nx >= zone.x1 && nx <= zone.x2 && ny >= zone.y1 && ny <= zone.y2) {
+        const roomId = ROOM_MAPPING[roomName];
+        if (!roomId) return;
+        const room = ROOMS.find(r => r.id === roomId);
+        if (room) onRoomClick(room);
+        return;
+      }
+    }
+
+    // Check entrance door (Széf)
+    const dx = nx - ENTRANCE_DOOR.x, dy = ny - ENTRANCE_DOOR.y;
+    if (Math.hypot(dx, dy) < 0.04) {
+      const szef = ROOMS.find(r => r.isSecret);
+      if (szef && areAllRoomsUnlocked(TOTAL_REGULAR)) onRoomClick(szef);
+    }
+  });
+}
+
+function drawHouse(hCanvas) {
+  const ctx = hCanvas.getContext('2d');
+  const w = hCanvas.width, h = hCanvas.height;
+
+  // Clear
+  ctx.fillStyle = '#0a1628';
+  ctx.fillRect(0, 0, w, h);
+
+  // Blueprint grid
+  ctx.strokeStyle = 'rgba(65,140,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < w; x += 30) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+  for (let y = 0; y < h; y += 30) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+
+  // Draw walls
+  HOUSE_LAYOUT.forEach(el => {
+    if (el.type === 'wall') {
+      ctx.strokeStyle = 'rgba(100,170,255,0.5)';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(el.x1 * w, el.y1 * h);
+      ctx.lineTo(el.x2 * w, el.y2 * h);
+      ctx.stroke();
+      // Thicker line for wall body
+      ctx.strokeStyle = 'rgba(100,170,255,0.2)';
+      ctx.lineWidth = 12;
+      ctx.beginPath();
+      ctx.moveTo(el.x1 * w, el.y1 * h);
+      ctx.lineTo(el.x2 * w, el.y2 * h);
+      ctx.stroke();
+    }
+  });
+
+  // Draw doors
+  HOUSE_LAYOUT.forEach(el => {
+    if (el.type === 'door') {
+      const dx = el.x * w, dy = el.y * h;
+      // Clear wall behind door
+      ctx.fillStyle = '#0a1628';
+      ctx.fillRect(dx - 12, dy - 12, 24, 24);
+      // Door arc
+      ctx.strokeStyle = '#f6ad55';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(dx, dy, 14, -Math.PI / 2, 0);
+      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(dx + 14, dy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(dx, dy - 14); ctx.stroke();
+    }
+  });
+
+  // Draw room fills (colored if unlocked)
+  Object.entries(ROOM_ZONES).forEach(([roomName, zone]) => {
+    const roomId = ROOM_MAPPING[roomName];
+    const room = ROOMS.find(r => r.id === roomId);
+    if (!room) return;
+
+    const unlocked = isRoomUnlocked(roomId);
+    const zx = zone.x1 * w, zy = zone.y1 * h;
+    const zw = (zone.x2 - zone.x1) * w, zh = (zone.y2 - zone.y1) * h;
+    const cx = zx + zw / 2, cy = zy + zh / 2;
+
+    if (unlocked) {
+      // Colored glow fill
+      ctx.fillStyle = room.color + '15';
+      ctx.fillRect(zx + 4, zy + 4, zw - 8, zh - 8);
+      // Border glow
+      ctx.strokeStyle = room.color + '44';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(zx + 4, zy + 4, zw - 8, zh - 8);
+    }
+
+    // Icon
+    ctx.font = unlocked ? '24px sans-serif' : '18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.globalAlpha = unlocked ? 1 : 0.3;
+    ctx.fillText(unlocked ? room.icon : '🔒', cx, cy - 4);
+    ctx.globalAlpha = 1;
+
+    // Room name
+    ctx.font = unlocked ? 'bold 11px JetBrains Mono' : '9px JetBrains Mono';
+    ctx.fillStyle = unlocked ? room.color : 'rgba(255,255,255,0.2)';
+    ctx.fillText(unlocked ? roomName : '???', cx, cy + 16);
+
+    // Status
+    if (unlocked) {
+      ctx.font = '8px JetBrains Mono';
+      ctx.fillStyle = '#68d391';
+      ctx.fillText('✓', cx, cy + 28);
+    }
+  });
+
+  // Entrance door / Széf
+  const ex = ENTRANCE_DOOR.x * w, ey = ENTRANCE_DOOR.y * h;
+  const allDone = areAllRoomsUnlocked(TOTAL_REGULAR);
+
+  if (allDone) {
+    ctx.fillStyle = 'rgba(214,158,46,0.15)';
+    ctx.beginPath(); ctx.arc(ex, ey - 20, 25, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#d69e2e';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(ex, ey - 20, 22, 0, Math.PI * 2); ctx.stroke();
+    ctx.font = '20px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('🔓', ex, ey - 14);
+    ctx.font = 'bold 8px JetBrains Mono';
+    ctx.fillStyle = '#d69e2e';
+    ctx.fillText('A SZÉF', ex, ey - 32);
+  } else {
+    ctx.font = '16px sans-serif'; ctx.textAlign = 'center';
+    ctx.globalAlpha = 0.3;
+    ctx.fillText('🔐', ex, ey - 14);
+    ctx.globalAlpha = 1;
+    ctx.font = '7px JetBrains Mono';
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.fillText('A SZÉF', ex, ey - 28);
+  }
+
+  // Title
+  ctx.font = '8px JetBrains Mono';
+  ctx.fillStyle = 'rgba(100,170,255,0.2)';
+  ctx.textAlign = 'left';
+  ctx.fillText('ALAPRAJZ — SZÜLINAPI MEGLEPETÉS HÁZ', 10, 16);
+}
+
+// Re-draw after unlock
+const _origRenderRooms = renderRooms;
+renderRooms = function() {
+  _origRenderRooms();
+  const hCanvas = document.getElementById('house-canvas');
+  if (hCanvas) drawHouse(hCanvas);
+};
+
 // 5. Show the house
 function showHouse() {
   blueprintHouse.style.display = 'block';
@@ -393,6 +574,7 @@ function showHouse() {
 // ══════════════════════════════
 
 renderRooms();
+initHouseCanvas();
 spawnAnnotations();
 
 (async () => {
