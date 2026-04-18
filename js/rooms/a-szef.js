@@ -66,11 +66,11 @@ async function runFinale(stage, container, room) {
       ">
         <p style="color:rgba(255,255,255,0.8); font-size:1rem; line-height:2; font-family:'Playfair Display',Georgia,serif;">
           Kedves Apu,<br><br>
-          Ez a ház neked készült, minden szobájával, minden meglepetésével.<br><br>
+          Ez a lakás neked készült, minden szobájával, minden meglepetésével.<br><br>
           Köszönöm, hogy mindig mellettem állsz. Hogy megtanítottál türelmesnek lenni,
-          hogy együtt építettünk LEGO-ból, gokartoztunk, szabadulószobáztunk,
-          és annyi helyre elvittél minket.<br><br>
-          Te vagy a legjobb Apu a világon. ❤️<br><br>
+          hogy együtt építettünk, gokartoztunk, szabadulószobáztunk, vidámparkoztunk,
+          és annyi helyre elvittél, és annyi dologra megtanítottál.<br><br>
+          Te vagy a legjobb Apa a világon. ❤️<br><br>
           <span style="color:rgba(255,255,255,0.5); font-style:italic;">Nagyon szeretlek!</span>
         </p>
       </div>
@@ -112,7 +112,7 @@ async function runFinale(stage, container, room) {
         color:rgba(255,255,255,0.25); font-size:0.75rem;
         letter-spacing:2px; opacity:0; transition:opacity 0.8s 0.7s;
       ">
-        SZERETETTEL KÉSZÍTETTEM NEKED 💛
+        SZERETETTEL, NEKED 💛
       </p>
     </div>
   `;
