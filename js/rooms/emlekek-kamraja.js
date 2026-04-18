@@ -101,16 +101,6 @@ export function renderContent(container, room) {
       </div>
     </a>
     <h2 class="content-title" style="color:${room.color}">📸 Emlékek Kamrája</h2>
-    <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:24px;">A legszebb közös emlékeink</p>
-    <div class="content-gallery">
-      ${GALLERY_PHOTOS.map(p => `
-        <div style="text-align:center;">
-          <img src="${p.src}" alt="${p.caption}"
-            style="width:100%; border-radius:8px; border:2px solid rgba(255,255,255,0.1);"
-            onerror="this.style.background='rgba(255,255,255,0.05)'; this.style.minHeight='150px';">
-          <p style="font-size:0.8rem; color:rgba(255,255,255,0.5); margin-top:6px;">${p.caption}</p>
-        </div>
-      `).join('')}
     </div>
   `;
 }

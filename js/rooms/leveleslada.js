@@ -4,9 +4,9 @@ const PUZZLE_IMAGE = 'assets/photos/puzzle.jpg';
 const GRID_SIZE = 3;
 
 const MESSAGES = [
-  { from: 'Tőlem', text: 'Boldog szülinapot Apu! Nagyon szeretlek és hálás vagyok mindenért amit értem teszel. ❤️' },
-  { from: 'Családtag 1', text: 'Isten éltessen sokáig! Minden jót kívánunk neked!' },
-  { from: 'Családtag 2', text: 'Boldog születésnapot! Remélem szép napod lesz!' },
+  { from: 'Tőlem', text: 'Boldog szülinapot Apu! Nagyon szeretlek és hálás vagyok mindenért amit értem teszel, és szeretném ha tudnád, hogy nálad jobb apukát nem is kívánhattam volna. ❤️' },
+  { from: 'Teri nagyi', text: 'Boldogságos Szülinapot Bogyókám! Minden Jót kívánok, teljesüljön minden kívánságod! Szeretlek, Mami' },
+  { from: 'Gyuri Nagyapa', text: 'Drága Zsoltikám! Te vagy a 3 generációnk közepe, az origó, Tőled tanul(t)unk sok mindent, hogy eligazodjunk a világban. Középkorú vagy, de ez felelősséget is jelent öregekért és az utánad jövőkért is. Köszönönöm, hogy büszkék lehetünk Rád, szerethetünk és általad szeretve is vagyunk. Mindig számíthatunk Rád. Érezd jól magad, maradj egészséges és elégedett, sikeres és boldog! Szeretünk és minden jót kívánunk Neked drága Bogyónk, Ági nevében is Apa' },
 ];
 
 export function renderMinigame(container, room, onSuccess) {

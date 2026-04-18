@@ -95,7 +95,6 @@ export function renderContent(container, room) {
 
     ${ADVENTURES.map(a => `
       <div class="content-card">
-        <img src="${a.photo}" alt="${a.title}" style="width:100%; height:200px; object-fit:cover; border-radius:8px; margin-bottom:12px;" onerror="this.style.display='none'">
         <h3 style="color:${room.color};">${a.title}</h3>
         <p style="color:rgba(255,255,255,0.6); margin-top:8px; line-height:1.6;">${a.story}</p>
       </div>

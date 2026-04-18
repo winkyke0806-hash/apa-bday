@@ -169,15 +169,5 @@ export function renderContent(container, room) {
       </div>
     </a>
     <h2 class="content-title" style="color:${room.color}">🎬 Moziterem</h2>
-    <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:24px;">Videó üzenetek neked, Apu!</p>
-    ${VIDEOS.map(v => `
-      <div class="content-card" style="text-align:center;">
-        <h3 style="color:${room.color}; margin-bottom:12px;">${v.title}</h3>
-        <video controls style="width:100%; border-radius:8px; max-height:400px;" poster="${v.poster}" preload="none">
-          <source src="${v.src}" type="video/mp4">
-          A böngésző nem támogatja a videó lejátszást.
-        </video>
-      </div>
-    `).join('')}
   `;
 }

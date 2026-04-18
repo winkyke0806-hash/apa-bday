@@ -2,12 +2,10 @@ import { showSuccess, createHintSkip, shuffle } from '../minigame-base.js';
 
 // Dalszöveg kiegészítés — a user cseréli saját dalokra
 const LYRICS_QUIZ = [
-  { lyric: '"Be vagyok zárva ____"', answer: 'Magyarországra', options: ['Magyarországra', 'Angliába', 'Már a szobámba', 'Amerikába'], song: 'Queen — We Will Rock You', hint: 'Stadion himnusz' },
-  { lyric: '"Írok rá valami ____"', answer: 'szívbemarkolót', options: ['nagyon jót', 'szívbemarkolót', 'kedveset', 'hasonlót'], song: 'Queen — Bohemian Rhapsody', hint: 'Freddie Mercury 6 perces remekműve' },
-  { lyric: '"Imagine all the people, living life in ___"', answer: 'peace', options: ['peace', 'love', 'harmony', 'joy'], song: 'John Lennon — Imagine', hint: 'Képzeld el...' },
-  { lyric: '"Yesterday, all my ___ seemed so far away"', answer: 'troubles', options: ['troubles', 'dreams', 'friends', 'worries'], song: 'The Beatles — Yesterday', hint: 'Tegnap még minden más volt' },
-  { lyric: '"I will always ___ you"', answer: 'love', options: ['love', 'miss', 'need', 'want'], song: 'Whitney Houston — I Will Always Love You', hint: 'Whitney Houston klasszikusa' },
-  { lyric: '"Don\'t stop me now, I\'m having such a good ___"', answer: 'time', options: ['time', 'day', 'life', 'ride'], song: 'Queen — Don\'t Stop Me Now', hint: 'Freddie nem áll meg' },
+  { lyric: '"Be vagyok zárva ____"', answer: 'Magyarországra', options: ['Magyarországra', 'Angliába', 'Már a szobámba', 'Amerikába'] },
+  { lyric: '"Írok rá valami ____"', answer: 'szívbemarkolót', options: ['nagyon jót', 'szívbemarkolót', 'kedveset', 'hasonlót'] },
+  { lyric: '"Feldobom a követ, az ráesik a _____"', answer: 'fejemre', options: ['fotóra', 'giorgora', 'kezemre', 'fejemre'] },
+  { lyric: '"Egy ____ vagyok nem értem miért nem vagy ott"', answer: 'féreg', options: ['lényeg', 'élet', 'féreg', 'német'] },
 ];
 
 
