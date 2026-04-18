@@ -425,10 +425,12 @@ function initHouseCanvas() {
   grid.style.display = 'none';
   hCanvas.style.display = 'block';
 
-  // A canvas a blueprint-frame méretét veszi (flex: 1 kitölti a maradékot)
-  const frame = hCanvas.parentElement;
-  const containerW = frame.offsetWidth;
-  const containerH = frame.offsetHeight;
+  // Méret: teljes szélesség, maradék magasság a header+progress után
+  const containerW = window.innerWidth;
+  const headerH = document.querySelector('.house-header')?.offsetHeight || 60;
+  const progressH = document.querySelector('.progress-section')?.offsetHeight || 30;
+  const containerH = window.innerHeight - headerH - progressH - 5;
+  if (containerH < 100) return; // safety
   hCanvas.width = containerW * 2;
   hCanvas.height = containerH * 2;
   hCanvas.style.width = containerW + 'px';
@@ -602,8 +604,10 @@ renderRooms = function() {
 
 // 5. Show the house
 function showHouse() {
-  blueprintHouse.style.display = 'block';
+  blueprintHouse.style.display = 'flex';
   blueprintHouse.classList.add('active');
+  // Init canvas after layout is ready
+  requestAnimationFrame(() => requestAnimationFrame(() => initHouseCanvas()));
 }
 
 // ══════════════════════════════
@@ -611,7 +615,6 @@ function showHouse() {
 // ══════════════════════════════
 
 renderRooms();
-initHouseCanvas();
 spawnAnnotations();
 
 (async () => {
