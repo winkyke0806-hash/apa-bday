@@ -1,13 +1,13 @@
 import { showSuccess, createHintSkip, shuffle } from '../minigame-base.js';
 
+// Placeholder — a user cseréli saját eseményekre
 const EVENTS = [
-  { year: 1975, text: 'Apu megszületik', icon: '👶' },
-  { year: 1981, text: 'Első iskolai nap', icon: '🏫' },
-  { year: 1993, text: 'Egyetemi diploma', icon: '🎓' },
-  { year: 1998, text: 'Első saját lakás', icon: '🏠' },
-  { year: 2002, text: 'Megszületek én', icon: '🍼' },
-  { year: 2010, text: 'Első közös nyaralás', icon: '🏖️' },
-  { year: 2020, text: 'Közös Lego projekt', icon: '🧱' },
+  { year: 1978, text: 'Apu megszületik', icon: '👶' },
+  { year: 1984, text: 'Első iskolai nap', icon: '🏫' },
+  { year: 1996, text: 'Egyetemi diploma', icon: '🎓' },
+  { year: 2000, text: 'Első saját lakás', icon: '🏠' },
+  { year: 2005, text: 'Megszületek én', icon: '🍼' },
+  { year: 2012, text: 'Első közös nyaralás', icon: '🏖️' },
 ];
 
 export function renderMinigame(container, room, onSuccess) {
@@ -63,18 +63,11 @@ export function renderMinigame(container, room, onSuccess) {
         renderItems();
       });
 
-      // Hover effekt
       el.addEventListener('mouseenter', () => {
-        if (!isSelected) {
-          el.style.borderColor = 'rgba(255,255,255,0.2)';
-          el.style.background = 'rgba(255,255,255,0.05)';
-        }
+        if (!isSelected) { el.style.borderColor = 'rgba(255,255,255,0.2)'; el.style.background = 'rgba(255,255,255,0.05)'; }
       });
       el.addEventListener('mouseleave', () => {
-        if (!isSelected) {
-          el.style.borderColor = 'rgba(255,255,255,0.1)';
-          el.style.background = 'rgba(255,255,255,0.03)';
-        }
+        if (!isSelected) { el.style.borderColor = 'rgba(255,255,255,0.1)'; el.style.background = 'rgba(255,255,255,0.03)'; }
       });
 
       listEl.appendChild(el);
@@ -88,11 +81,9 @@ export function renderMinigame(container, room, onSuccess) {
     } else {
       attempts++;
       hintSkip.recordAttempt();
-
-      // Jelöld pirossal a rossz pozíciókat
       const cards = listEl.children;
+      const sorted = [...EVENTS].sort((a, b) => a.year - b.year);
       for (let i = 0; i < items.length; i++) {
-        const sorted = [...EVENTS].sort((a, b) => a.year - b.year);
         if (items[i].year !== sorted[i].year) {
           cards[i].style.borderColor = '#fc8181';
           cards[i].style.background = 'rgba(252, 129, 129, 0.08)';
@@ -101,19 +92,7 @@ export function renderMinigame(container, room, onSuccess) {
           cards[i].style.background = 'rgba(104, 211, 145, 0.08)';
         }
       }
-
-      // Shake animáció a rosszakon
-      [...cards].forEach(c => {
-        if (c.style.borderColor === 'rgb(252, 129, 129)') {
-          c.style.animation = 'lockShake 0.5s ease';
-          setTimeout(() => c.style.animation = '', 500);
-        }
-      });
-
-      setTimeout(() => {
-        selected = null;
-        renderItems();
-      }, 2000);
+      setTimeout(() => { selected = null; renderItems(); }, 2000);
     }
   });
 
@@ -132,15 +111,6 @@ export function renderContent(container, room) {
         <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Navigáld a süteményt a csövek között! →</p>
       </div>
     </a>
-
-    <div class="content-card" style="text-align:center; margin-bottom:20px;">
-      <div style="font-size:3rem; margin-bottom:8px;">🧱</div>
-      <h3 style="color:${room.color};">LEGO emlékek</h3>
-      <p style="color:rgba(255,255,255,0.6); margin-top:8px; line-height:1.6;">
-        A közös LEGO építéseink mindig a legjobb programok voltak.
-        Köszönöm hogy megtanítottál türelmesen építeni! 🧱❤️
-      </p>
-    </div>
 
     <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:24px;">Apu életének mérföldkövei</p>
     <div style="position:relative; max-width:450px; margin:0 auto; padding-left:40px;">
