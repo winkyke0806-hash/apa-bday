@@ -402,12 +402,20 @@ const hPad = 0.04;
 hBounds.x1 -= hPad; hBounds.y1 -= hPad; hBounds.x2 += hPad; hBounds.y2 += hPad;
 const hW = hBounds.x2 - hBounds.x1, hH = hBounds.y2 - hBounds.y1;
 
-// Transform normalized coords to canvas coords
+// Transform normalized coords to canvas coords — uniform scale, centered
 function toCanvas(nx, ny, w, h) {
-  return { x: ((nx - hBounds.x1) / hW) * w, y: ((ny - hBounds.y1) / hH) * h };
+  const scaleX = w / hW, scaleY = h / hH;
+  const scale = Math.min(scaleX, scaleY); // uniform
+  const offsetX = (w - hW * scale) / 2;
+  const offsetY = (h - hH * scale) / 2;
+  return { x: (nx - hBounds.x1) * scale + offsetX, y: (ny - hBounds.y1) * scale + offsetY };
 }
 function fromCanvas(cx, cy, w, h) {
-  return { x: (cx / w) * hW + hBounds.x1, y: (cy / h) * hH + hBounds.y1 };
+  const scaleX = w / hW, scaleY = h / hH;
+  const scale = Math.min(scaleX, scaleY);
+  const offsetX = (w - hW * scale) / 2;
+  const offsetY = (h - hH * scale) / 2;
+  return { x: (cx - offsetX) / scale + hBounds.x1, y: (cy - offsetY) / scale + hBounds.y1 };
 }
 
 function initHouseCanvas() {
