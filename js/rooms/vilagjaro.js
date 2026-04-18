@@ -71,9 +71,14 @@ export function renderContent(container, room) {
       </div>
     </a>
 
-    <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:16px;">Közös utazásaink térképe</p>
-    <div id="travel-map" style="height:400px; border-radius:12px; border:2px solid rgba(255,255,255,0.1);"></div>
+    <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:16px;">Közös utazásaink térképe — kattints a térképre új hely hozzáadásához!</p>
+    <div id="travel-map" style="height:400px; border-radius:12px; border:2px solid rgba(255,255,255,0.1); margin-bottom:16px;"></div>
+    <div id="trip-list"></div>
   `;
+
+  // Load saved trips
+  const savedTrips = JSON.parse(localStorage.getItem('apu-bday-trips') || '[]');
+  const allTrips = [...TRIPS, ...savedTrips];
 
   setTimeout(() => {
     const map = L.map('travel-map').setView([47, 15], 5);
@@ -81,9 +86,39 @@ export function renderContent(container, room) {
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    TRIPS.forEach(trip => {
+    function addMarker(trip) {
       L.marker([trip.lat, trip.lng]).addTo(map)
-        .bindPopup(`<strong>${trip.place} (${trip.year})</strong><br><em>${trip.story}</em>`);
+        .bindPopup('<strong>' + trip.place + '</strong><br><em>' + trip.story + '</em>');
+    }
+
+    allTrips.forEach(addMarker);
+
+    // Click to add new trip
+    map.on('click', (e) => {
+      const place = prompt('Hely neve:');
+      if (!place) return;
+      const story = prompt('Rövid sztori / emlék:') || '';
+      const newTrip = { place, lat: e.latlng.lat, lng: e.latlng.lng, story };
+      savedTrips.push(newTrip);
+      localStorage.setItem('apu-bday-trips', JSON.stringify(savedTrips));
+      addMarker(newTrip);
+      renderTripList();
     });
+
+    function renderTripList() {
+      const listEl = container.querySelector('#trip-list');
+      const all = [...TRIPS, ...savedTrips];
+      listEl.innerHTML = all.map(t => `
+        <div class="content-card" style="display:flex; gap:12px; align-items:center;">
+          <div style="font-size:1.2rem;">📍</div>
+          <div>
+            <strong>${t.place}</strong>
+            ${t.story ? '<p style="font-size:0.8rem; color:rgba(255,255,255,0.5); margin-top:2px;">' + t.story + '</p>' : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    renderTripList();
   }, 100);
 }
