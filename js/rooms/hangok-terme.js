@@ -2,21 +2,14 @@ import { showSuccess, createHintSkip, shuffle } from '../minigame-base.js';
 
 // Dalszöveg kiegészítés — a user cseréli saját dalokra
 const LYRICS_QUIZ = [
-  { lyric: '"We will, we will ___ you!"', answer: 'rock', options: ['rock', 'love', 'miss', 'find'], song: 'Queen — We Will Rock You', hint: 'Stadion himnusz' },
-  { lyric: '"Is this the real life? Is this just ___?"', answer: 'fantasy', options: ['fantasy', 'a dream', 'illusion', 'reality'], song: 'Queen — Bohemian Rhapsody', hint: 'Freddie Mercury 6 perces remekműve' },
+  { lyric: '"Be vagyok zárva ____"', answer: 'Magyarországra', options: ['Magyarországra', 'Angliába', 'Már a szobámba', 'Amerikába'], song: 'Queen — We Will Rock You', hint: 'Stadion himnusz' },
+  { lyric: '"Írok rá valami ____"', answer: 'szívbemarkolót', options: ['nagyon jót', 'szívbemarkolót', 'kedveset', 'hasonlót'], song: 'Queen — Bohemian Rhapsody', hint: 'Freddie Mercury 6 perces remekműve' },
   { lyric: '"Imagine all the people, living life in ___"', answer: 'peace', options: ['peace', 'love', 'harmony', 'joy'], song: 'John Lennon — Imagine', hint: 'Képzeld el...' },
   { lyric: '"Yesterday, all my ___ seemed so far away"', answer: 'troubles', options: ['troubles', 'dreams', 'friends', 'worries'], song: 'The Beatles — Yesterday', hint: 'Tegnap még minden más volt' },
   { lyric: '"I will always ___ you"', answer: 'love', options: ['love', 'miss', 'need', 'want'], song: 'Whitney Houston — I Will Always Love You', hint: 'Whitney Houston klasszikusa' },
   { lyric: '"Don\'t stop me now, I\'m having such a good ___"', answer: 'time', options: ['time', 'day', 'life', 'ride'], song: 'Queen — Don\'t Stop Me Now', hint: 'Freddie nem áll meg' },
 ];
 
-const PLAYLIST = [
-  { title: 'Kedvenc dal 1', artist: 'Előadó 1' },
-  { title: 'Kedvenc dal 2', artist: 'Előadó 2' },
-  { title: 'Kedvenc dal 3', artist: 'Előadó 3' },
-  { title: 'Kedvenc dal 4', artist: 'Előadó 4' },
-  { title: 'Kedvenc dal 5', artist: 'Előadó 5' },
-];
 
 export function renderMinigame(container, room, onSuccess) {
   let currentRound = 0;
@@ -88,7 +81,7 @@ export function renderMinigame(container, room, onSuccess) {
     });
 
     const hintSkip = createHintSkip(container,
-      [q.hint, `Dal: ${q.song}`],
+      ['Gondolkodj... melyik szó illik oda?'],
       () => { showSuccess(container, room, onSuccess, 'Átugrottad — de a szoba a tiéd!'); }
     );
   }
@@ -106,17 +99,9 @@ export function renderContent(container, room) {
       </div>
     </a>
     <h2 class="content-title" style="color:${room.color}">🎵 Hangok Terme</h2>
-    <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:24px;">A közös kedvenc dalaink gyűjteménye</p>
-    <div class="playlist">
-      ${PLAYLIST.map((s, i) => `
-        <div class="content-card" style="display:flex; align-items:center; gap:16px;">
-          <span style="font-size:1.5rem; color:${room.color};">${i + 1}</span>
-          <div>
-            <strong>${s.title}</strong>
-            <div style="font-size:0.8rem; color:rgba(255,255,255,0.5);">${s.artist}</div>
-          </div>
-        </div>
-      `).join('')}
+    <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:16px;">Hallgasd meg a közös kedvenc dalainkat!</p>
+    <div style="border-radius:12px; overflow:hidden; max-width:500px; margin:0 auto;">
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZEVXbhAtTATl29nO?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
     </div>
   `;
 }
