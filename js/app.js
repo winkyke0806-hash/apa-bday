@@ -243,7 +243,7 @@ const tutorialDots = document.getElementById('tutorial-dots');
 const tutorialNextBtn = document.getElementById('tutorial-next');
 
 const TUTORIAL_STEPS = [
-  { icon: '🏠', title: 'A Tervrajz', text: 'Ez a ház tervrajza. Minden szoba egy meglepetést rejt — de előbb fel kell oldanod őket!' },
+  { icon: '🏠', title: 'A Tervrajz', text: 'Ez a lakás tervrajza. Minden szoba egy meglepetést rejt — de előbb fel kell oldanod őket!' },
   { icon: '🔒', title: 'Zárt szobák', text: 'Kattints egy zárt szobára. Egy kis minijátékot kell megnyerned, hogy kinyisd az ajtót.' },
   { icon: '🎮', title: 'Minijátékok', text: 'Kvízek, puzzle-ök, memóriajátékok és mások várnak. Ha elakadsz, a Segítség gomb tippet ad!' },
   { icon: '🎁', title: 'Meglepetések', text: 'Feloldott szobákra újra rákattintva megtekintheted a meglepetést: fotók, videók, üzenetek és még sok más.' },
@@ -425,13 +425,14 @@ function initHouseCanvas() {
   grid.style.display = 'none';
   hCanvas.style.display = 'block';
 
-  // Square canvas — uniform, no stretching
-  const containerW = Math.min(700, window.innerWidth - 20);
-  hCanvas.width = containerW * 2;
-  hCanvas.height = containerW * 2;
-  hCanvas.style.width = containerW + 'px';
-  hCanvas.style.height = containerW + 'px';
-  hCanvas.style.maxWidth = '100%';
+  // Fullscreen canvas — kitölti a rendelkezésre álló helyet
+  const containerW = window.innerWidth - 16;
+  const containerH = window.innerHeight - 200; // header + progress hely
+  const canvasSize = Math.min(containerW, containerH);
+  hCanvas.width = canvasSize * 2; // retina
+  hCanvas.height = canvasSize * 2;
+  hCanvas.style.width = canvasSize + 'px';
+  hCanvas.style.height = canvasSize + 'px';
 
   drawHouse(hCanvas);
 
@@ -586,7 +587,7 @@ function drawHouse(hCanvas) {
   ctx.font = '14px JetBrains Mono';
   ctx.fillStyle = 'rgba(100,170,255,0.25)';
   ctx.textAlign = 'left';
-  ctx.fillText('ALAPRAJZ — SZÜLINAPI MEGLEPETÉS HÁZ', 16, 28);
+  ctx.fillText('ALAPRAJZ — SZÜLINAPI MEGLEPETÉS LAKÁS', 16, 28);
 }
 
 // Re-draw after unlock
