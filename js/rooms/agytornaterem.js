@@ -1,16 +1,10 @@
 import { showSuccess, createHintSkip, shuffle } from '../minigame-base.js';
 
 const QUESTIONS = [
-  { q: 'Mi Dávid kedvenc étele?', options: ['Pörkölt', 'Pizza', 'Rántott hús', 'Tikka Massala'], correct: 'Pizza', hint: 'Olasz konyha klasszikus' },
-  { q: 'Hány éves korában tanult meg biciklizni?', options: ['4', '5', '6', '7'], correct: '5', hint: 'Óvodás volt még' },
+  { q: 'Mi Dávid kedvenc étele?', options: ['Pörkölt', 'Pizza', 'Rántott hús', 'Tikka Massala'], correct: 'Pizza', hint: 'Olasz konyhai klasszikus' },
   { q: 'Mi Teri nagyi kedvenc sorozata?', options: ['Xo Kitty', 'Gentlemans', 'Blacklist', 'Ozark'], correct: 'Blacklist', hint: 'A lista' },
-  { q: 'Melyik zenekar Zoli kedvence?', options: ['Queen', 'AC/DC', 'Metallica', 'Beatles'], correct: 'Queen', hint: 'Freddie Mercury' },
+  { q: 'Melyik zenekar Zoli kedvence?', options: ['Imagine Dragons', 'AC/DC', 'Beatles', 'Queen'], correct: 'Imagine Dragons', hint: 'Láttük őket élőben a szigeten - Its where my demons hide' },
   { q: 'Hol született Gyuri nagyapa?', options: ['Budapest', 'Debrecen', 'Szeged', 'Balatonalmádi'], correct: 'Balatonalmádi', hint: 'Ebben nem segítek, ezt tudnod KELL' },
-];
-
-const FUN_FACTS = [
-  'A legjobb reggelek azok, amikor hétvégén hagysz aludni, és amikor fölkelek, akkor friss reggelit készítesz nekem.',
-  'A nyaralásainkon Te voltál a sofőr — összesen szerintem több mint 50,000 km-t vezettél miattunk.',
 ];
 
 export function renderMinigame(container, room, onSuccess) {
@@ -69,8 +63,8 @@ export function renderMinigame(container, room, onSuccess) {
 const FAMILY_RECORDS = [
   { emoji: '🍽️', category: 'Leggyorsabb evő', winner: 'Apa - Rekord idő alatt pusztítja magába a kaját ha éhes.' },
   { emoji: '😴', category: 'Legtöbbet alvó', winner: 'Apu - ÉBRESZTŐ??? Mi az neki?' },
-  { emoji: '📺', category: 'Legtöbb sorozatot néző', winner: 'Teri nagyi - Hihetetlen mennyiségű sorozatot látott, szerintem a streaming szolgáltatások nem tudnak olyat kihozni, amit ő már nem látott volna!' },
-  { emoji: '🎮', category: 'Legjobb játékos', winner: 'Dávid - Túl sokat játszik, ha odafigyel, szinte verhetetlen!' },
+  { emoji: '📺', category: 'Legtöbb sorozatot néző', winner: 'Teri nagyi - Hihetetlen mennyiségű sorozatot nézett meg, szerintem a streaming szolgáltatások nem tudnak olyat kihozni, amit ő már nem látott volna.' },
+  { emoji: '🎮', category: 'Legjobb játékos', winner: 'Dávid - Túl sokat játszik, és ha odafigyel, szinte verhetetlen.' },
   { emoji: '🗣️', category: 'Leghangosabb', winner: 'Teri nagyi - Bocsánat nagyi!' },
   { emoji: '🧁', category: 'Legjobb szakács', winner: 'Apu - Nem ő fél a receptektől, a receptek félnek tőle, hogy túl jóra sikerül a kaja amit csinál.' },
   { emoji: '💪', category: 'Legerősebb', winner: 'Apa - Claudiának köszönhetően bika szintű ereje van.' },
@@ -88,13 +82,8 @@ export function renderContent(container, room) {
       </div>
     </a>
 
-    <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:24px;">Tudtad-e? — Fun Facts Apuról</p>
-    ${FUN_FACTS.map(fact => `
-      <div class="content-card"><p style="font-size:1rem;">💡 ${fact}</p></div>
-    `).join('')}
-
-    <h3 style="color:${room.color}; text-align:center; margin:28px 0 16px; font-family:var(--font-display);">🏅 Családi Rekordok</h3>
-    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:10px;">
+    <h3 style="color:${room.color}; text-align:center; margin:20px 0 16px; font-family:var(--font-display);">🏅 Családi Rekordok</h3>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:12px; max-width:900px; margin:0 auto;">
       ${FAMILY_RECORDS.map(r => `
         <div class="content-card" style="text-align:center; padding:14px;">
           <div style="font-size:1.8rem; margin-bottom:6px;">${r.emoji}</div>
