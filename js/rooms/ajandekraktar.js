@@ -6,7 +6,6 @@ const COUPONS = [
   { title: 'Gokart', description: 'Menjünk el 3 körre a Flashcartba - én állom', emoji: '🏎️' },
   { title: 'Filmnap', description: 'Te választod a filmet, én hozom a popcornt!', emoji: '🍿' },
   { title: 'Autómosás', description: 'Megmosom az autót kívül-belül', emoji: '🚗' },
-  { title: 'Szabadnap', description: 'Egy nap amikor mindent én intézek', emoji: '😴' },
 ];
 
 export function renderMinigame(container, room, onSuccess) {
@@ -138,14 +137,56 @@ export function renderContent(container, room) {
     </a>
     <h2 class="content-title" style="color:${room.color}">🎁 Ajándékraktár</h2>
     <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:24px;">Kuponok — bármikor beválthatóak!</p>
-    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px;">
-      ${COUPONS.map(c => `
-        <div class="content-card" style="text-align:center; border-color:${room.color};">
-          <div style="font-size:2.5rem;">${c.emoji}</div>
-          <div style="font-weight:bold; color:${room.color}; margin-top:8px;">${c.title}</div>
-          <div style="font-size:0.8rem; color:rgba(255,255,255,0.5); margin-top:4px;">${c.description}</div>
-        </div>
-      `).join('')}
-    </div>
+    <div id="coupon-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px;"></div>
   `;
+
+  const couponGrid = container.querySelector('#coupon-grid');
+  const redeemed = JSON.parse(localStorage.getItem('apu-bday-coupons') || '{}');
+
+  COUPONS.forEach((c, i) => {
+    const isRedeemed = redeemed[i];
+    const card = document.createElement('div');
+    card.className = 'content-card';
+    card.style.textAlign = 'center';
+    card.style.borderColor = isRedeemed ? 'rgba(74,222,128,0.3)' : room.color;
+    if (isRedeemed) card.style.opacity = '0.5';
+
+    const emojiDiv = document.createElement('div');
+    emojiDiv.style.fontSize = '2.5rem';
+    emojiDiv.textContent = c.emoji;
+
+    const titleDiv = document.createElement('div');
+    titleDiv.style.cssText = 'font-weight:bold; margin-top:8px;';
+    titleDiv.style.color = isRedeemed ? '#68d391' : room.color;
+    titleDiv.textContent = c.title;
+
+    const descDiv = document.createElement('div');
+    descDiv.style.cssText = 'font-size:0.8rem; color:rgba(255,255,255,0.5); margin-top:4px;';
+    descDiv.textContent = c.description;
+
+    const btn = document.createElement('button');
+    btn.className = isRedeemed ? 'minigame-btn minigame-btn--secondary' : 'minigame-btn';
+    btn.style.cssText = 'margin-top:10px; font-size:0.65rem; padding:8px 16px;';
+    btn.textContent = isRedeemed ? '✅ Beváltva' : '🎟️ Beváltom!';
+
+    card.appendChild(emojiDiv);
+    card.appendChild(titleDiv);
+    card.appendChild(descDiv);
+    card.appendChild(btn);
+
+    if (!isRedeemed) {
+      btn.addEventListener('click', () => {
+        redeemed[i] = Date.now();
+        localStorage.setItem('apu-bday-coupons', JSON.stringify(redeemed));
+        btn.textContent = '✅ Beváltva';
+        btn.className = 'minigame-btn minigame-btn--secondary';
+        btn.style.cssText += 'pointer-events:none;';
+        card.style.opacity = '0.5';
+        card.style.borderColor = 'rgba(74,222,128,0.3)';
+        card.querySelector('div[style*="font-weight"]').style.color = '#68d391';
+      });
+    }
+
+    couponGrid.appendChild(card);
+  });
 }
