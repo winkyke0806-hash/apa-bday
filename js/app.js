@@ -426,13 +426,12 @@ function initHouseCanvas() {
   grid.style.display = 'none';
   hCanvas.style.display = 'block';
 
-  // Make it BIG — full width, taller
-  const containerW = Math.min(900, window.innerWidth - 20);
-  const aspectRatio = hH / hW; // match house proportions
+  // Square canvas — uniform, no stretching
+  const containerW = Math.min(700, window.innerWidth - 20);
   hCanvas.width = containerW * 2;
-  hCanvas.height = containerW * aspectRatio * 2;
+  hCanvas.height = containerW * 2;
   hCanvas.style.width = containerW + 'px';
-  hCanvas.style.height = (containerW * aspectRatio) + 'px';
+  hCanvas.style.height = containerW + 'px';
   hCanvas.style.maxWidth = '100%';
 
   drawHouse(hCanvas);
