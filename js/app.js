@@ -425,9 +425,10 @@ function initHouseCanvas() {
   grid.style.display = 'none';
   hCanvas.style.display = 'block';
 
-  // Széles landscape — a lakás vékonyabb de kitölti az oldalt
+  // Fullscreen — kitölti az összes helyet a header/progress alatt
   const containerW = window.innerWidth;
-  const containerH = Math.min(window.innerHeight * 0.65, window.innerWidth * 0.45);
+  const usedH = (document.querySelector('.house-header')?.offsetHeight || 0) + (document.querySelector('.progress-section')?.offsetHeight || 0);
+  const containerH = window.innerHeight - usedH;
   hCanvas.width = containerW * 2;
   hCanvas.height = containerH * 2;
   hCanvas.style.width = containerW + 'px';
