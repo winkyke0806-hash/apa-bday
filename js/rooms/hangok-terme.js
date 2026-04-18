@@ -101,7 +101,7 @@ export function renderContent(container, room) {
     <h2 class="content-title" style="color:${room.color}">🎵 Hangok Terme</h2>
     <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:16px;">Hallgasd meg a közös kedvenc dalainkat!</p>
     <div style="border-radius:12px; overflow:hidden; max-width:500px; margin:0 auto;">
-      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZEVXbhAtTATl29nO?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/3fOLDZYzFl7p6X4OMCWHFL?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
     </div>
   `;
 }
