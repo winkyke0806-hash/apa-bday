@@ -1,12 +1,13 @@
 import { showSuccess, createHintSkip, shuffle } from '../minigame-base.js';
 
-// Placeholder — a user cseréli saját dalokra
-const SONGS = [
-  { title: 'Bohemian Rhapsody', artist: 'Queen', lyric: '"Is this the real life? Is this just fantasy..."', hint: 'Freddie Mercury klasszikusa' },
-  { title: 'Hotel California', artist: 'Eagles', lyric: '"On a dark desert highway, cool wind in my hair..."', hint: 'Kaliforniai szálloda' },
-  { title: 'Imagine', artist: 'John Lennon', lyric: '"Imagine there\'s no heaven, it\'s easy if you try..."', hint: 'Képzeld el...' },
-  { title: 'Smells Like Teen Spirit', artist: 'Nirvana', lyric: '"Load up on guns, bring your friends..."', hint: '90-es évek grunge himnusza' },
-  { title: 'Yesterday', artist: 'The Beatles', lyric: '"Yesterday, all my troubles seemed so far away..."', hint: 'Tegnap még minden más volt' },
+// Dalszöveg kiegészítés — a user cseréli saját dalokra
+const LYRICS_QUIZ = [
+  { lyric: '"We will, we will ___ you!"', answer: 'rock', options: ['rock', 'love', 'miss', 'find'], song: 'Queen — We Will Rock You', hint: 'Stadion himnusz' },
+  { lyric: '"Is this the real life? Is this just ___?"', answer: 'fantasy', options: ['fantasy', 'a dream', 'illusion', 'reality'], song: 'Queen — Bohemian Rhapsody', hint: 'Freddie Mercury 6 perces remekműve' },
+  { lyric: '"Imagine all the people, living life in ___"', answer: 'peace', options: ['peace', 'love', 'harmony', 'joy'], song: 'John Lennon — Imagine', hint: 'Képzeld el...' },
+  { lyric: '"Yesterday, all my ___ seemed so far away"', answer: 'troubles', options: ['troubles', 'dreams', 'friends', 'worries'], song: 'The Beatles — Yesterday', hint: 'Tegnap még minden más volt' },
+  { lyric: '"I will always ___ you"', answer: 'love', options: ['love', 'miss', 'need', 'want'], song: 'Whitney Houston — I Will Always Love You', hint: 'Whitney Houston klasszikusa' },
+  { lyric: '"Don\'t stop me now, I\'m having such a good ___"', answer: 'time', options: ['time', 'day', 'life', 'ride'], song: 'Queen — Don\'t Stop Me Now', hint: 'Freddie nem áll meg' },
 ];
 
 const PLAYLIST = [
@@ -20,7 +21,7 @@ const PLAYLIST = [
 export function renderMinigame(container, room, onSuccess) {
   let currentRound = 0;
   let score = 0;
-  const rounds = shuffle(SONGS).slice(0, 3);
+  const rounds = shuffle(LYRICS_QUIZ).slice(0, 4);
 
   function renderRound() {
     if (currentRound >= rounds.length) {
@@ -28,58 +29,71 @@ export function renderMinigame(container, room, onSuccess) {
       return;
     }
 
-    const song = rounds[currentRound];
-    const options = shuffle([song.title, ...getDecoys(song.title)]);
+    const q = rounds[currentRound];
+    const options = shuffle(q.options);
+    const lyricParts = q.lyric.split('___');
 
     container.innerHTML = `
       <h2 class="minigame-title">🎵 Hangok Terme</h2>
-      <p class="minigame-instructions">${currentRound + 1}/${rounds.length} — Melyik dal ez?</p>
+      <p class="minigame-instructions">${currentRound + 1}/${rounds.length} — Egészítsd ki a dalszöveget!</p>
       <div style="text-align:center; margin-bottom:20px;">
         <div style="
           background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
-          border-radius:12px; padding:20px; max-width:400px; margin:0 auto;
-          font-style:italic; font-size:1.1rem; color:rgba(255,255,255,0.8); line-height:1.6;
+          border-radius:12px; padding:24px; max-width:420px; margin:0 auto;
+          font-style:italic; font-size:1.15rem; color:rgba(255,255,255,0.8); line-height:1.8;
         ">
-          ${song.lyric}
+          ${lyricParts[0]}<span style="
+            display:inline-block; min-width:60px; border-bottom:3px solid ${room.color};
+            color:${room.color}; font-weight:bold; margin:0 4px; padding:0 8px;
+          " id="blank-word">???</span>${lyricParts[1] || ''}
         </div>
-        <p style="font-size:0.7rem; color:rgba(255,255,255,0.3); margin-top:8px;">👆 Ismerd fel a dalszövegből!</p>
+        <p style="font-size:0.65rem; color:rgba(255,255,255,0.25); margin-top:8px;">Mi a hiányzó szó?</p>
       </div>
-      <div id="options" style="display:flex; flex-direction:column; gap:10px; max-width:400px; margin:0 auto;"></div>
+      <div id="options" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:350px; margin:0 auto;"></div>
     `;
 
     const optionsEl = container.querySelector('#options');
+    const blankEl = container.querySelector('#blank-word');
+
     options.forEach(opt => {
       const btn = document.createElement('button');
       btn.className = 'minigame-btn minigame-btn--secondary';
-      btn.style.width = '100%';
       btn.textContent = opt;
       btn.addEventListener('click', () => {
-        if (opt === song.title) {
+        blankEl.textContent = opt;
+        if (opt === q.answer) {
           score++;
           btn.style.background = 'rgba(104, 211, 145, 0.3)';
           btn.style.borderColor = '#68d391';
+          blankEl.style.color = '#68d391';
+          blankEl.style.borderColor = '#68d391';
         } else {
           btn.style.background = 'rgba(252, 129, 129, 0.3)';
           btn.style.borderColor = '#fc8181';
+          blankEl.style.color = '#fc8181';
+          blankEl.style.borderColor = '#fc8181';
+          // Show correct
+          [...optionsEl.children].find(b => b.textContent === q.answer).style.background = 'rgba(104, 211, 145, 0.2)';
           hintSkip.recordAttempt();
         }
-        setTimeout(() => { currentRound++; renderRound(); }, 800);
+        // Show song name
+        setTimeout(() => {
+          blankEl.textContent = q.answer;
+          blankEl.style.color = room.color;
+          blankEl.style.borderColor = room.color;
+        }, 400);
+        setTimeout(() => { currentRound++; renderRound(); }, 1200);
       });
       optionsEl.appendChild(btn);
     });
 
     const hintSkip = createHintSkip(container,
-      [song.hint, `Előadó: ${song.artist}`],
+      [q.hint, `Dal: ${q.song}`],
       () => { showSuccess(container, room, onSuccess, 'Átugrottad — de a szoba a tiéd!'); }
     );
   }
 
   renderRound();
-}
-
-function getDecoys(correctTitle) {
-  const all = SONGS.map(s => s.title).filter(t => t !== correctTitle);
-  return shuffle(all).slice(0, 2);
 }
 
 export function renderContent(container, room) {
