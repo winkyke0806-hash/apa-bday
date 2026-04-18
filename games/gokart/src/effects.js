@@ -99,7 +99,7 @@ export function runFlyover() {
     G.flyoverActive = true;
     G.flyoverIdx = 0;
     const tc = G.track.center;
-    const speed = Math.max(2, Math.floor(tc.length / 120)); // complete in ~2 sec
+    const speed = Math.max(1, Math.floor(tc.length / 300)); // complete in ~5 sec
 
     function tick() {
       G.flyoverIdx += speed;
