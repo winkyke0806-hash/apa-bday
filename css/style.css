@@ -181,7 +181,7 @@ body::before {
 
 .house-header {
   text-align: center;
-  padding: 48px 20px 16px;
+  padding: 12px 20px 4px;
   opacity: 0;
   animation: fadeInDown 1s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
 }
@@ -275,9 +275,9 @@ body::before {
    ══════════════════════════════ */
 
 .blueprint-frame {
-  max-width: 740px;
-  margin: 20px auto 80px;
-  padding: 0 16px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   position: relative;
   opacity: 0;
   animation: blueprintDraw 1.5s cubic-bezier(0.4, 0, 0.2, 1) 0.8s forwards;

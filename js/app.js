@@ -425,14 +425,17 @@ function initHouseCanvas() {
   grid.style.display = 'none';
   hCanvas.style.display = 'block';
 
-  // Fullscreen canvas — kitölti a rendelkezésre álló helyet
-  const containerW = window.innerWidth - 16;
-  const containerH = window.innerHeight - 200; // header + progress hely
-  const canvasSize = Math.min(containerW, containerH);
-  hCanvas.width = canvasSize * 2; // retina
-  hCanvas.height = canvasSize * 2;
-  hCanvas.style.width = canvasSize + 'px';
-  hCanvas.style.height = canvasSize + 'px';
+  // Fullscreen canvas — az egész alsó rész a lakásé
+  const containerW = window.innerWidth;
+  const headerH = document.querySelector('.house-header')?.offsetHeight || 0;
+  const progressH = document.querySelector('.progress-section')?.offsetHeight || 0;
+  const containerH = window.innerHeight - headerH - progressH - 10;
+  hCanvas.width = containerW * 2; // retina
+  hCanvas.height = containerH * 2;
+  hCanvas.style.width = containerW + 'px';
+  hCanvas.style.height = containerH + 'px';
+  hCanvas.style.borderRadius = '0';
+  hCanvas.style.border = 'none';
 
   drawHouse(hCanvas);
 
