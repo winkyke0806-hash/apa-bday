@@ -128,8 +128,8 @@ async function runFinale(stage, container, room) {
   // Show stats with counting animation
   await wait(800);
   stage.querySelector('#szef-stats').style.opacity = '1';
-  countUp(stage.querySelector('#stat-rooms'), 11, '🚪', 1500);
-  countUp(stage.querySelector('#stat-games'), 11, '🎮', 1500);
+  countUp(stage.querySelector('#stat-rooms'), 10, '🚪', 1500);
+  countUp(stage.querySelector('#stat-games'), 10, '🎮', 1500);
 
   // Show room badges
   await wait(500);

@@ -12,7 +12,6 @@ const ROOMS = [
   { id: 'kalandorok',      name: 'Kalandorok Klubja',   icon: '🏎️', color: '#ed8936', module: './rooms/kalandorok.js' },
   { id: 'ajandekraktar',   name: 'Ajándékraktár',       icon: '🎁', color: '#ecc94b', module: './rooms/ajandekraktar.js' },
   { id: 'furcsa-konyha',   name: 'A Furcsa Konyha',     icon: '🍳', color: '#48bb78', module: './rooms/furcsa-konyha.js' },
-  { id: 'kockagyar',       name: 'Kockagyár',           icon: '🧱', color: '#f56565', module: './rooms/kockagyar.js' },
   { id: 'a-szef',          name: 'A Széf',              icon: '🔐', color: '#d69e2e', module: './rooms/a-szef.js', isSecret: true },
 ];
 
@@ -248,7 +247,7 @@ const TUTORIAL_STEPS = [
   { icon: '🔒', title: 'Zárt szobák', text: 'Kattints egy zárt szobára. Egy kis minijátékot kell megnyerned, hogy kinyisd az ajtót.' },
   { icon: '🎮', title: 'Minijátékok', text: 'Kvízek, puzzle-ök, memóriajátékok és mások várnak. Ha elakadsz, a Segítség gomb tippet ad!' },
   { icon: '🎁', title: 'Meglepetések', text: 'Feloldott szobákra újra rákattintva megtekintheted a meglepetést: fotók, videók, üzenetek és még sok más.' },
-  { icon: '🔐', title: 'A Széf', text: 'Ha mind a 11 szobát feloldod, megnyílik A Széf — a végső nagy meglepetés!' },
+  { icon: '🔐', title: 'A Széf', text: 'Ha mind a 10 szobát feloldod, megnyílik A Széf — a végső nagy meglepetés!' },
 ];
 
 let tutorialIndex = 0;
