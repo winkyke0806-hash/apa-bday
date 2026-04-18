@@ -4,7 +4,7 @@ const COUPONS = [
   { title: 'Mosogatás', description: 'Egy teljes nap mosogatást vállalok!', emoji: '🍽️' },
   { title: 'Főzés', description: 'Főzök amit csak kérsz!', emoji: '👨‍🍳' },
   { title: 'Gokart', description: 'Menjünk el 3 körre a Flashcartba - én állom', emoji: '🏎️' },
-  { title: 'Filmnap', description: 'Te választod a filmet, én hozom a popcornt!', emoji: '🍿' },
+  { title: 'Filmnap', description: 'Te választod a filmet, én csinálom a popcornt - nem a mikrósat', emoji: '🍿' },
   { title: 'Autómosás', description: 'Megmosom az autót kívül-belül', emoji: '🚗' },
 ];
 
