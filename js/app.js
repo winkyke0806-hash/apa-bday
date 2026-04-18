@@ -387,6 +387,29 @@ function spawnAnnotations() {
    HOUSE CANVAS — valódi lakás alaprajz
    ══════════════════════════════ */
 
+// House bounding box (auto-calculated from layout)
+const hBounds = { x1: 1, y1: 1, x2: 0, y2: 0 };
+HOUSE_LAYOUT.forEach(el => {
+  if (el.type === 'wall') {
+    hBounds.x1 = Math.min(hBounds.x1, el.x1, el.x2);
+    hBounds.y1 = Math.min(hBounds.y1, el.y1, el.y2);
+    hBounds.x2 = Math.max(hBounds.x2, el.x1, el.x2);
+    hBounds.y2 = Math.max(hBounds.y2, el.y1, el.y2);
+  }
+});
+// Add padding
+const hPad = 0.04;
+hBounds.x1 -= hPad; hBounds.y1 -= hPad; hBounds.x2 += hPad; hBounds.y2 += hPad;
+const hW = hBounds.x2 - hBounds.x1, hH = hBounds.y2 - hBounds.y1;
+
+// Transform normalized coords to canvas coords
+function toCanvas(nx, ny, w, h) {
+  return { x: ((nx - hBounds.x1) / hW) * w, y: ((ny - hBounds.y1) / hH) * h };
+}
+function fromCanvas(cx, cy, w, h) {
+  return { x: (cx / w) * hW + hBounds.x1, y: (cy / h) * hH + hBounds.y1 };
+}
+
 function initHouseCanvas() {
   const hCanvas = document.getElementById('house-canvas');
   if (!hCanvas) return;
@@ -395,21 +418,23 @@ function initHouseCanvas() {
   grid.style.display = 'none';
   hCanvas.style.display = 'block';
 
-  // Size
-  const containerW = Math.min(700, window.innerWidth - 32);
-  const aspectRatio = 0.85;
-  hCanvas.width = containerW * 2; // retina
+  // Make it BIG — full width, taller
+  const containerW = Math.min(900, window.innerWidth - 20);
+  const aspectRatio = hH / hW; // match house proportions
+  hCanvas.width = containerW * 2;
   hCanvas.height = containerW * aspectRatio * 2;
   hCanvas.style.width = containerW + 'px';
   hCanvas.style.height = (containerW * aspectRatio) + 'px';
+  hCanvas.style.maxWidth = '100%';
 
   drawHouse(hCanvas);
 
-  // Click handler
+  // Click handler — transform coords through house bounds
   hCanvas.addEventListener('click', (e) => {
     const rect = hCanvas.getBoundingClientRect();
-    const nx = (e.clientX - rect.left) / rect.width;
-    const ny = (e.clientY - rect.top) / rect.height;
+    const cx = (e.clientX - rect.left) / rect.width * hCanvas.width;
+    const cy = (e.clientY - rect.top) / rect.height * hCanvas.height;
+    const { x: nx, y: ny } = fromCanvas(cx, cy, hCanvas.width, hCanvas.height);
 
     // Check room zones
     for (const [roomName, zone] of Object.entries(ROOM_ZONES)) {
@@ -448,37 +473,33 @@ function drawHouse(hCanvas) {
   // Draw walls
   HOUSE_LAYOUT.forEach(el => {
     if (el.type === 'wall') {
-      ctx.strokeStyle = 'rgba(100,170,255,0.5)';
-      ctx.lineWidth = 6;
-      ctx.beginPath();
-      ctx.moveTo(el.x1 * w, el.y1 * h);
-      ctx.lineTo(el.x2 * w, el.y2 * h);
-      ctx.stroke();
-      // Thicker line for wall body
+      const p1 = toCanvas(el.x1, el.y1, w, h);
+      const p2 = toCanvas(el.x2, el.y2, w, h);
+      // Wall body (thick)
       ctx.strokeStyle = 'rgba(100,170,255,0.2)';
-      ctx.lineWidth = 12;
-      ctx.beginPath();
-      ctx.moveTo(el.x1 * w, el.y1 * h);
-      ctx.lineTo(el.x2 * w, el.y2 * h);
-      ctx.stroke();
+      ctx.lineWidth = 14;
+      ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+      // Wall outline
+      ctx.strokeStyle = 'rgba(100,170,255,0.6)';
+      ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
     }
   });
 
   // Draw doors
   HOUSE_LAYOUT.forEach(el => {
     if (el.type === 'door') {
-      const dx = el.x * w, dy = el.y * h;
+      const p = toCanvas(el.x, el.y, w, h);
+      const doorR = 22;
       // Clear wall behind door
       ctx.fillStyle = '#0a1628';
-      ctx.fillRect(dx - 12, dy - 12, 24, 24);
+      ctx.fillRect(p.x - doorR - 2, p.y - doorR - 2, doorR * 2 + 4, doorR * 2 + 4);
       // Door arc
       ctx.strokeStyle = '#f6ad55';
       ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(dx, dy, 14, -Math.PI / 2, 0);
-      ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(dx + 14, dy); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(dx, dy - 14); ctx.stroke();
+      ctx.beginPath(); ctx.arc(p.x, p.y, doorR, -Math.PI / 2, 0); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + doorR, p.y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x, p.y - doorR); ctx.stroke();
     }
   });
 
@@ -489,8 +510,9 @@ function drawHouse(hCanvas) {
     if (!room) return;
 
     const unlocked = isRoomUnlocked(roomId);
-    const zx = zone.x1 * w, zy = zone.y1 * h;
-    const zw = (zone.x2 - zone.x1) * w, zh = (zone.y2 - zone.y1) * h;
+    const p1 = toCanvas(zone.x1, zone.y1, w, h);
+    const p2 = toCanvas(zone.x2, zone.y2, w, h);
+    const zx = p1.x, zy = p1.y, zw = p2.x - p1.x, zh = p2.y - p1.y;
     const cx = zx + zw / 2, cy = zy + zh / 2;
 
     if (unlocked) {
@@ -504,55 +526,56 @@ function drawHouse(hCanvas) {
     }
 
     // Icon
-    ctx.font = unlocked ? '24px sans-serif' : '18px sans-serif';
+    ctx.font = unlocked ? '36px sans-serif' : '28px sans-serif';
     ctx.textAlign = 'center';
-    ctx.globalAlpha = unlocked ? 1 : 0.3;
-    ctx.fillText(unlocked ? room.icon : '🔒', cx, cy - 4);
+    ctx.globalAlpha = unlocked ? 1 : 0.25;
+    ctx.fillText(unlocked ? room.icon : '🔒', cx, cy);
     ctx.globalAlpha = 1;
 
     // Room name
-    ctx.font = unlocked ? 'bold 11px JetBrains Mono' : '9px JetBrains Mono';
+    ctx.font = unlocked ? 'bold 16px JetBrains Mono' : '12px JetBrains Mono';
     ctx.fillStyle = unlocked ? room.color : 'rgba(255,255,255,0.2)';
-    ctx.fillText(unlocked ? roomName : '???', cx, cy + 16);
+    ctx.fillText(unlocked ? roomName : '???', cx, cy + 26);
 
     // Status
     if (unlocked) {
-      ctx.font = '8px JetBrains Mono';
+      ctx.font = '12px JetBrains Mono';
       ctx.fillStyle = '#68d391';
-      ctx.fillText('✓', cx, cy + 28);
+      ctx.fillText('✓ Felfedezve', cx, cy + 42);
     }
   });
 
   // Entrance door / Széf
-  const ex = ENTRANCE_DOOR.x * w, ey = ENTRANCE_DOOR.y * h;
+  const ep = toCanvas(ENTRANCE_DOOR.x, ENTRANCE_DOOR.y, w, h);
+  const ex = ep.x, ey = ep.y;
   const allDone = areAllRoomsUnlocked(TOTAL_REGULAR);
 
   if (allDone) {
     ctx.fillStyle = 'rgba(214,158,46,0.15)';
-    ctx.beginPath(); ctx.arc(ex, ey - 20, 25, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(ex, ey - 35, 35, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = '#d69e2e';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(ex, ey - 20, 22, 0, Math.PI * 2); ctx.stroke();
-    ctx.font = '20px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('🔓', ex, ey - 14);
-    ctx.font = 'bold 8px JetBrains Mono';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(ex, ey - 35, 32, 0, Math.PI * 2); ctx.stroke();
+    ctx.font = '30px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('🔓', ex, ey - 26);
+    ctx.font = 'bold 12px JetBrains Mono';
     ctx.fillStyle = '#d69e2e';
-    ctx.fillText('A SZÉF', ex, ey - 32);
+    ctx.fillText('A SZÉF', ex, ey - 55);
   } else {
-    ctx.font = '16px sans-serif'; ctx.textAlign = 'center';
+    ctx.font = '24px sans-serif'; ctx.textAlign = 'center';
     ctx.globalAlpha = 0.3;
-    ctx.fillText('🔐', ex, ey - 14);
+    ctx.fillText('🔐', ex, ey - 26);
     ctx.globalAlpha = 1;
-    ctx.font = '7px JetBrains Mono';
+    ctx.font = '10px JetBrains Mono';
     ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    ctx.fillText('A SZÉF', ex, ey - 28);
+    ctx.fillText('A SZÉF', ex, ey - 45);
   }
 
   // Title
-  ctx.font = '8px JetBrains Mono';
-  ctx.fillStyle = 'rgba(100,170,255,0.2)';
+  ctx.font = '14px JetBrains Mono';
+  ctx.fillStyle = 'rgba(100,170,255,0.25)';
   ctx.textAlign = 'left';
-  ctx.fillText('ALAPRAJZ — SZÜLINAPI MEGLEPETÉS HÁZ', 10, 16);
+  ctx.fillText('ALAPRAJZ — SZÜLINAPI MEGLEPETÉS HÁZ', 16, 28);
 }
 
 // Re-draw after unlock
