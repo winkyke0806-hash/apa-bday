@@ -1,62 +1,42 @@
-import { showSuccess, createHintSkip, shuffle } from '../minigame-base.js';
+import { showSuccess } from '../minigame-base.js';
 
-// Placeholder — a user cseréli saját utazásokra
-const TRIPS = [
-  { year: 2019, place: 'Horvátország', lat: 43.5, lng: 16.4, story: 'A legjobb nyaralásunk!' },
-  { year: 2020, place: 'Balaton',      lat: 46.8, lng: 17.7, story: 'Egész nyáron itt voltunk.' },
-  { year: 2021, place: 'Bécs',         lat: 48.2, lng: 16.4, story: 'A Prater óriáskereke!' },
-  { year: 2022, place: 'Olaszország',  lat: 41.9, lng: 12.5, story: 'Pizza és gelato mindenhol.' },
-  { year: 2023, place: 'Prága',        lat: 50.1, lng: 14.4, story: 'Gyönyörű város volt.' },
-];
+// Üres — apukád maga adja hozzá a közös utazásokat a térképen
+const TRIPS = [];
 
 export function renderMinigame(container, room, onSuccess) {
-  const questions = shuffle(TRIPS).slice(0, 3);
-  let currentQ = 0;
-  let score = 0;
+  // Egyszerű "fedezd fel" minigame — 5 random helyre kell kattintani
+  let found = 0;
+  const target = 5;
+  const flags = ['🇭🇺','🇭🇷','🇦🇹','🇮🇹','🇨🇿','🇩🇪','🇬🇷','🇪🇸','🇫🇷','🇬🇧'];
 
-  function renderQuestion() {
-    if (currentQ >= questions.length) {
-      showSuccess(container, room, onSuccess, `${score}/${questions.length} helyes — Szoba feloldva!`);
-      return;
-    }
+  container.innerHTML = `
+    <h2 class="minigame-title">🗺️ A Nagy Világjáró</h2>
+    <p class="minigame-instructions">Találd meg az ${target} rejtett zászlót! Kattints rájuk!</p>
+    <div id="flag-area" style="position:relative; width:100%; max-width:500px; height:350px; margin:0 auto; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:12px; overflow:hidden;"></div>
+    <p style="text-align:center; margin-top:8px; color:rgba(255,255,255,0.4); font-size:0.75rem;"><span id="found-count">0</span> / ${target} megtalálva</p>
+  `;
 
-    const q = questions[currentQ];
-    const options = shuffle([q.place, ...shuffle(TRIPS.map(t => t.place).filter(p => p !== q.place)).slice(0, 2)]);
+  const area = container.querySelector('#flag-area');
 
-    container.innerHTML = `
-      <h2 class="minigame-title">🗺️ A Nagy Világjáró</h2>
-      <p class="minigame-instructions">${currentQ + 1}/${questions.length} — Hol voltunk ${q.year}-ben?</p>
-      <div id="options" style="display:flex; flex-direction:column; gap:10px; max-width:400px; margin:0 auto;"></div>
-    `;
-
-    const optionsEl = container.querySelector('#options');
-    options.forEach(opt => {
-      const btn = document.createElement('button');
-      btn.className = 'minigame-btn minigame-btn--secondary';
-      btn.style.width = '100%';
-      btn.textContent = opt;
-      btn.addEventListener('click', () => {
-        if (opt === q.place) {
-          score++;
-          btn.style.background = 'rgba(104, 211, 145, 0.3)';
-          btn.style.borderColor = '#68d391';
-        } else {
-          btn.style.background = 'rgba(252, 129, 129, 0.3)';
-          btn.style.borderColor = '#fc8181';
-          hintSkip.recordAttempt();
-        }
-        setTimeout(() => { currentQ++; renderQuestion(); }, 800);
-      });
-      optionsEl.appendChild(btn);
+  for (let i = 0; i < target; i++) {
+    const el = document.createElement('div');
+    el.style.cssText = `position:absolute; font-size:1.8rem; cursor:pointer; transition:all 0.3s; user-select:none;`;
+    el.style.left = (10 + Math.random() * 80) + '%';
+    el.style.top = (10 + Math.random() * 75) + '%';
+    el.textContent = flags[Math.floor(Math.random() * flags.length)];
+    el.addEventListener('click', () => {
+      if (el.dataset.found) return;
+      el.dataset.found = 'true';
+      el.style.transform = 'scale(1.5)';
+      el.style.filter = 'brightness(1.5)';
+      found++;
+      container.querySelector('#found-count').textContent = found;
+      if (found >= target) {
+        setTimeout(() => showSuccess(container, room, onSuccess, 'Minden zászlót megtaláltál!'), 500);
+      }
     });
-
-    const hintSkip = createHintSkip(container,
-      ['Gondolkodj... hol jártunk?'],
-      () => showSuccess(container, room, onSuccess, 'Átugrottad — de a szoba a tiéd!')
-    );
+    area.appendChild(el);
   }
-
-  renderQuestion();
 }
 
 export function renderContent(container, room) {
