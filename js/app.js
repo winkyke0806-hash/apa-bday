@@ -497,16 +497,21 @@ function drawHouse(hCanvas) {
   HOUSE_LAYOUT.forEach(el => {
     if (el.type === 'door') {
       const p = toCanvas(el.x, el.y, w, h);
-      const doorR = 22;
+      const doorR = 32;
       // Clear wall behind door
       ctx.fillStyle = '#0a1628';
-      ctx.fillRect(p.x - doorR - 2, p.y - doorR - 2, doorR * 2 + 4, doorR * 2 + 4);
+      ctx.fillRect(p.x - doorR - 4, p.y - doorR - 4, doorR * 2 + 8, doorR * 2 + 8);
       // Door arc
       ctx.strokeStyle = '#f6ad55';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.5;
       ctx.beginPath(); ctx.arc(p.x, p.y, doorR, -Math.PI / 2, 0); ctx.stroke();
+      // Door lines
+      ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + doorR, p.y); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x, p.y - doorR); ctx.stroke();
+      // Door knob
+      ctx.fillStyle = '#f6ad55';
+      ctx.beginPath(); ctx.arc(p.x + doorR * 0.7, p.y - doorR * 0.15, 3, 0, Math.PI * 2); ctx.fill();
     }
   });
 
