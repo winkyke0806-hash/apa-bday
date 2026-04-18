@@ -425,12 +425,10 @@ function initHouseCanvas() {
   grid.style.display = 'none';
   hCanvas.style.display = 'block';
 
-  // Fullscreen canvas — az egész alsó rész a lakásé
+  // Szélesebb, kicsit alacsonyabb — landscape arány
   const containerW = window.innerWidth;
-  const headerH = document.querySelector('.house-header')?.offsetHeight || 0;
-  const progressH = document.querySelector('.progress-section')?.offsetHeight || 0;
-  const containerH = window.innerHeight - headerH - progressH - 10;
-  hCanvas.width = containerW * 2; // retina
+  const containerH = Math.min(window.innerHeight * 0.7, window.innerWidth * 0.55);
+  hCanvas.width = containerW * 2;
   hCanvas.height = containerH * 2;
   hCanvas.style.width = containerW + 'px';
   hCanvas.style.height = containerH + 'px';
