@@ -53,7 +53,7 @@ export function renderRain(ctx, w, h) {
 const COMMENTS = {
   drift: ['🔥 BRUTAL DRIFT!', '💨 SZÁGULDÁS!', '🔥 DRIFTMESTER!', '💫 OLDALAZÁS!'],
   overtake: ['⬆️ ELŐZÉS!', '🏎️ MEGELŐZTE!', '⚡ ELŐ TÖRT!'],
-  collision: ['💥 BUMM!', '🧱 FALLNAK MENT!', '💢 ÜTKÖZÉS!', '🫣 AÚ!'],
+  collision: [], // kiszedve
   boost: ['⚡ TURBO!', '🚀 RAKÉTAINDÍTÁS!', '💨 NITRO BEKAPCSOLVA!'],
   lead: ['👑 VEZET!', '🥇 AZ ÉLEN!', '🏆 ELSŐ HELYEN!'],
   lastLap: ['🏁 UTOLSÓ KÖR!', '🔥 MOST VAGY SOHA!'],
@@ -99,7 +99,7 @@ export function runFlyover() {
     G.flyoverActive = true;
     G.flyoverIdx = 0;
     const tc = G.track.center;
-    const speed = Math.max(1, Math.floor(tc.length / 300)); // complete in ~5 sec
+    const speed = Math.max(1, Math.floor(tc.length / 420)); // complete in ~7 sec
 
     function tick() {
       G.flyoverIdx += speed;
