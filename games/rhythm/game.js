@@ -9,10 +9,10 @@ let audioCtx=null;
 function initAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();}
 function beep(f,d,t='sine',v=0.06){if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+d);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+d);}
 
-const LANES=4;
-const KEYS=['d','f','j','k'];
-const LANE_COLORS=['#e94560','#f6ad55','#22c55e','#3b82f6'];
-const LANE_NAMES=['D','F','J','K'];
+const LANES=2;
+const KEYS=['f','j'];
+const LANE_COLORS=['#e94560','#3b82f6'];
+const LANE_NAMES=['F','J'];
 const HIT_Y_FRAC=0.82;
 const NOTE_SPEED=4;
 const SONG_LENGTH=200; // notes total
