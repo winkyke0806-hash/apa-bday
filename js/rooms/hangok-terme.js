@@ -1,9 +1,12 @@
 import { showSuccess, createHintSkip, shuffle } from '../minigame-base.js';
 
+// Placeholder — a user cseréli saját dalokra
 const SONGS = [
-  { title: 'Dal 1', file: 'assets/audio/song1.mp3', hint: 'Ez a kedvencünk nyáron' },
-  { title: 'Dal 2', file: 'assets/audio/song2.mp3', hint: 'Ezt szoktuk autóban hallgatni' },
-  { title: 'Dal 3', file: 'assets/audio/song3.mp3', hint: 'Karácsonykor mindig ez megy' },
+  { title: 'Bohemian Rhapsody', artist: 'Queen', lyric: '"Is this the real life? Is this just fantasy..."', hint: 'Freddie Mercury klasszikusa' },
+  { title: 'Hotel California', artist: 'Eagles', lyric: '"On a dark desert highway, cool wind in my hair..."', hint: 'Kaliforniai szálloda' },
+  { title: 'Imagine', artist: 'John Lennon', lyric: '"Imagine there\'s no heaven, it\'s easy if you try..."', hint: 'Képzeld el...' },
+  { title: 'Smells Like Teen Spirit', artist: 'Nirvana', lyric: '"Load up on guns, bring your friends..."', hint: '90-es évek grunge himnusza' },
+  { title: 'Yesterday', artist: 'The Beatles', lyric: '"Yesterday, all my troubles seemed so far away..."', hint: 'Tegnap még minden más volt' },
 ];
 
 const PLAYLIST = [
@@ -30,10 +33,16 @@ export function renderMinigame(container, room, onSuccess) {
 
     container.innerHTML = `
       <h2 class="minigame-title">🎵 Hangok Terme</h2>
-      <p class="minigame-instructions">${currentRound + 1}/${rounds.length} — Melyik dal szól?</p>
+      <p class="minigame-instructions">${currentRound + 1}/${rounds.length} — Melyik dal ez?</p>
       <div style="text-align:center; margin-bottom:20px;">
-        <button class="minigame-btn" id="play-btn">▶ Lejátszás</button>
-        <audio id="song-audio" src="${song.file}" preload="auto"></audio>
+        <div style="
+          background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+          border-radius:12px; padding:20px; max-width:400px; margin:0 auto;
+          font-style:italic; font-size:1.1rem; color:rgba(255,255,255,0.8); line-height:1.6;
+        ">
+          ${song.lyric}
+        </div>
+        <p style="font-size:0.7rem; color:rgba(255,255,255,0.3); margin-top:8px;">👆 Ismerd fel a dalszövegből!</p>
       </div>
       <div id="options" style="display:flex; flex-direction:column; gap:10px; max-width:400px; margin:0 auto;"></div>
     `;
@@ -59,15 +68,8 @@ export function renderMinigame(container, room, onSuccess) {
       optionsEl.appendChild(btn);
     });
 
-    container.querySelector('#play-btn').addEventListener('click', () => {
-      const audio = container.querySelector('#song-audio');
-      audio.currentTime = 0;
-      audio.play().catch(() => {});
-      setTimeout(() => audio.pause(), 5000);
-    });
-
     const hintSkip = createHintSkip(container,
-      [song.hint, `A dal "${song.title.charAt(0)}..." betűvel kezdődik`],
+      [song.hint, `Előadó: ${song.artist}`],
       () => { showSuccess(container, room, onSuccess, 'Átugrottad — de a szoba a tiéd!'); }
     );
   }
