@@ -425,9 +425,9 @@ function initHouseCanvas() {
   grid.style.display = 'none';
   hCanvas.style.display = 'block';
 
-  // Szélesebb, kicsit alacsonyabb — landscape arány
+  // Széles landscape — a lakás vékonyabb de kitölti az oldalt
   const containerW = window.innerWidth;
-  const containerH = Math.min(window.innerHeight * 0.7, window.innerWidth * 0.55);
+  const containerH = Math.min(window.innerHeight * 0.65, window.innerWidth * 0.45);
   hCanvas.width = containerW * 2;
   hCanvas.height = containerH * 2;
   hCanvas.style.width = containerW + 'px';

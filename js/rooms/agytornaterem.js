@@ -82,8 +82,8 @@ export function renderContent(container, room) {
       </div>
     </a>
 
-    <h3 style="color:${room.color}; text-align:center; margin:20px 0 16px; font-family:var(--font-display);">🏅 Családi Rekordok</h3>
-    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:12px; max-width:900px; margin:0 auto;">
+    <h3 style="color:${room.color}; text-align:center; margin:28px 0 16px; font-family:var(--font-display);">🏅 Családi Rekordok</h3>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:10px;">
       ${FAMILY_RECORDS.map(r => `
         <div class="content-card" style="text-align:center; padding:14px;">
           <div style="font-size:1.8rem; margin-bottom:6px;">${r.emoji}</div>
