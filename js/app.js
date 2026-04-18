@@ -425,10 +425,10 @@ function initHouseCanvas() {
   grid.style.display = 'none';
   hCanvas.style.display = 'block';
 
-  // Fullscreen — kitölti az összes helyet a header/progress alatt
-  const containerW = window.innerWidth;
-  const usedH = (document.querySelector('.house-header')?.offsetHeight || 0) + (document.querySelector('.progress-section')?.offsetHeight || 0);
-  const containerH = window.innerHeight - usedH;
+  // A canvas a blueprint-frame méretét veszi (flex: 1 kitölti a maradékot)
+  const frame = hCanvas.parentElement;
+  const containerW = frame.offsetWidth;
+  const containerH = frame.offsetHeight;
   hCanvas.width = containerW * 2;
   hCanvas.height = containerH * 2;
   hCanvas.style.width = containerW + 'px';
