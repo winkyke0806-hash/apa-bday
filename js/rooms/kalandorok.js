@@ -1,15 +1,30 @@
 import { showSuccess, createHintSkip, shuffle } from '../minigame-base.js';
 
 const CHALLENGES = [
-  { image: 'assets/photos/adventure1.jpg', answer: 'Gokart pálya', options: ['Gokart pálya', 'Autóverseny', 'Bowling'], hint: 'Kicsi autók, nagy sebesség', blur: 15 },
-  { image: 'assets/photos/adventure2.jpg', answer: 'Szabadulószoba', options: ['Szabadulószoba', 'Múzeum', 'Mozi'], hint: 'Rejtvények és zárak', blur: 15 },
-  { image: 'assets/photos/adventure3.jpg', answer: 'Vidámpark', options: ['Vidámpark', 'Strand', 'Játszótér'], hint: 'Hullámvasút!', blur: 15 },
+  {
+    description: 'Kis autók, nagy sebesség, éles kanyarok és a gumik sikítása. Versenyzés apróban, de teljes gázzal!',
+    answer: 'Gokart pálya',
+    options: ['Gokart pálya', 'Autóverseny', 'Bowling'],
+    hint: 'Kormány a kézben, sisak a fejen 🏎️',
+  },
+  {
+    description: 'Hullámvasút, körhinta, cukorvatta és nevetés. Napnyugtáig bírtuk — még a legijesztőbb játékra is felültünk.',
+    answer: 'Vidámpark',
+    options: ['Vidámpark', 'Strand', 'Játszótér'],
+    hint: 'Forog, pörög, sikít 🎢',
+  },
+  {
+    description: 'Csend, víz, egy bot és a türelem. A legnagyobb fogás az emlék maradt.',
+    answer: 'Horgászás',
+    options: ['Horgászás', 'Kirándulás', 'Kempingezés'],
+    hint: 'Úszó a vízen, halak a mélyben 🎣',
+  },
 ];
 
 const ADVENTURES = [
-  { title: 'Gokartozás', photo: 'assets/photos/adventure1.jpg', story: 'Emlékszel amikor először ültünk gokartba együtt? Te olyan gyorsan mentél!' },
-  { title: 'Szabadulószoba', photo: 'assets/photos/adventure2.jpg', story: 'Az a szabadulószoba ahonnan majdnem nem jutottunk ki időben! Igazi csapatmunka volt.' },
-  { title: 'Vidámpark', photo: 'assets/photos/adventure3.jpg', story: 'Egész napos vidámparki kaland — még a legijesztőbb hullámvasútra is felültünk!' },
+  { title: 'Gokartozás', story: 'Emlékszel amikor először ültünk gokartba együtt? Te olyan gyorsan mentél! Azóta is minden körben jobbak leszünk.' },
+  { title: 'Vidámpark', story: 'Egész napos vidámparki kaland — még a legijesztőbb hullámvasútra is felültünk. Másnap a lábam még remegett, a tiéd nem.' },
+  { title: 'Horgászás', story: 'Csendes reggel a víz partján, bot a kézben, egy kis beszélgetés. Nem a hal volt a lényeg — hanem hogy együtt voltunk.' },
 ];
 
 export function renderMinigame(container, room, onSuccess) {
@@ -25,28 +40,22 @@ export function renderMinigame(container, room, onSuccess) {
 
     const c = challenges[current];
     const options = shuffle(c.options);
-    let blur = c.blur;
 
     container.innerHTML = `
       <h2 class="minigame-title">🏎️ Kalandorok Klubja</h2>
-      <p class="minigame-instructions">${current + 1}/${challenges.length} — Hol voltunk? A kép lassan kitisztul...</p>
-      <div style="text-align:center; margin-bottom:20px;">
-        <div id="blur-image" style="
-          width:300px; height:200px; margin:0 auto; border-radius:12px; overflow:hidden;
-          border:2px solid rgba(255,255,255,0.1);
-          background:url(${c.image}) center/cover;
-          filter:blur(${blur}px); transition:filter 0.4s;
-        "></div>
+      <p class="minigame-instructions">${current + 1}/${challenges.length} — Hol voltunk? Találd ki a leírás alapján!</p>
+      <div style="
+        max-width:420px; margin:0 auto 20px;
+        background:rgba(255,255,255,0.04); border:1px solid ${room.color}44;
+        border-radius:14px; padding:22px 20px; text-align:center;
+        font-family:'Playfair Display',Georgia,serif; font-size:1.05rem; line-height:1.6;
+        color:rgba(255,255,255,0.85);
+      ">
+        <div style="font-size:2.2rem; margin-bottom:10px;">🗺️</div>
+        ${c.description}
       </div>
       <div id="options" style="display:flex; flex-direction:column; gap:10px; max-width:350px; margin:0 auto;"></div>
     `;
-
-    const imgEl = container.querySelector('#blur-image');
-    const interval = setInterval(() => {
-      blur = Math.max(0, blur - 1);
-      imgEl.style.filter = `blur(${blur}px)`;
-      if (blur <= 0) clearInterval(interval);
-    }, 500);
 
     const optionsEl = container.querySelector('#options');
     options.forEach(opt => {
@@ -55,8 +64,6 @@ export function renderMinigame(container, room, onSuccess) {
       btn.style.width = '100%';
       btn.textContent = opt;
       btn.addEventListener('click', () => {
-        clearInterval(interval);
-        imgEl.style.filter = 'blur(0px)';
         if (opt === c.answer) {
           score++;
           btn.style.background = 'rgba(104, 211, 145, 0.3)';
@@ -72,7 +79,7 @@ export function renderMinigame(container, room, onSuccess) {
     });
 
     const hintSkip = createHintSkip(container, [c.hint],
-      () => { clearInterval(interval); showSuccess(container, room, onSuccess, 'Átugrottad — de a szoba a tiéd!'); }
+      () => showSuccess(container, room, onSuccess, 'Átugrottad — de a szoba a tiéd!')
     );
   }
 
