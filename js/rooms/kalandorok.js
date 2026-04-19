@@ -14,17 +14,11 @@ const CHALLENGES = [
     hint: 'Forog, pörög, sikít 🎢',
   },
   {
-    description: 'Csend, víz, egy bot és a türelem. A legnagyobb fogás az emlék maradt.',
-    answer: 'Horgászás',
-    options: ['Horgászás', 'Kirándulás', 'Kempingezés'],
-    hint: 'Úszó a vízen, halak a mélyben 🎣',
+    description: 'Olaj, csavarhúzó, egy makacs csavar és sok türelem. Amit mások kidobtak volna, mi rendbe hoztuk együtt.',
+    answer: 'Szerelés',
+    options: ['Szerelés', 'Barkácsolás', 'Festés'],
+    hint: 'Csavarkulcs a kézben, olajos ujjak 🔧',
   },
-];
-
-const ADVENTURES = [
-  { title: 'Gokartozás', story: 'Emlékszel amikor először ültünk gokartba együtt? Te olyan gyorsan mentél! Azóta is minden körben jobbak leszünk.' },
-  { title: 'Vidámpark', story: 'Egész napos vidámparki kaland — még a legijesztőbb hullámvasútra is felültünk. Másnap a lábam még remegett, a tiéd nem.' },
-  { title: 'Horgászás', story: 'Csendes reggel a víz partján, bot a kézben, egy kis beszélgetés. Nem a hal volt a lényeg — hanem hogy együtt voltunk.' },
 ];
 
 export function renderMinigame(container, room, onSuccess) {
@@ -89,22 +83,29 @@ export function renderMinigame(container, room, onSuccess) {
 export function renderContent(container, room) {
   container.innerHTML = `
     <h2 class="content-title" style="color:${room.color}">🏎️ Kalandorok Klubja</h2>
-    <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:24px;">A legjobb közös kalandjaink</p>
 
-    <!-- Gokart game link -->
-    <a href="games/gokart/index.html" style="display:block; text-decoration:none; margin-bottom:20px;">
-      <div class="content-card" style="border-color:${room.color}; text-align:center; cursor:pointer; transition:all 0.3s;">
-        <div style="font-size:3rem; margin-bottom:8px;">🏎️</div>
-        <h3 style="color:${room.color}; font-family:var(--font-display);">Villám Verseny GP</h3>
-        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:8px;">Száguldj végig a versenypályán! Kattints a játékhoz →</p>
+    <!-- Gokart game link (nagy kártya) -->
+    <a href="games/gokart/index.html" style="display:block; text-decoration:none; max-width:560px; margin:20px auto;">
+      <div class="content-card" style="
+        border:2px solid ${room.color};
+        background:linear-gradient(135deg, ${room.color}18, ${room.color}08);
+        text-align:center; cursor:pointer; transition:all 0.3s;
+        padding:40px 30px; border-radius:20px;
+        box-shadow:0 8px 32px ${room.color}22;
+      "
+      onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 40px ${room.color}44';"
+      onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 8px 32px ${room.color}22';">
+        <div style="font-size:5.5rem; margin-bottom:16px; filter:drop-shadow(0 4px 16px ${room.color}66);">🏎️</div>
+        <h3 style="color:${room.color}; font-family:var(--font-display); font-size:1.8rem; margin:0 0 10px;">Villám Verseny GP</h3>
+        <p style="color:rgba(255,255,255,0.7); font-size:1rem; margin:0 0 16px; line-height:1.5;">
+          Száguldj végig a versenypályán, előzd le az ellenfeleket és dönts körrekordot!
+        </p>
+        <div style="
+          display:inline-block; background:${room.color}; color:#000;
+          padding:12px 32px; border-radius:30px; font-weight:bold;
+          font-size:0.95rem; letter-spacing:1px;
+        ">INDULÁS →</div>
       </div>
     </a>
-
-    ${ADVENTURES.map(a => `
-      <div class="content-card">
-        <h3 style="color:${room.color};">${a.title}</h3>
-        <p style="color:rgba(255,255,255,0.6); margin-top:8px; line-height:1.6;">${a.story}</p>
-      </div>
-    `).join('')}
   `;
 }
