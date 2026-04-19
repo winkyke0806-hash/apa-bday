@@ -4,9 +4,10 @@ const PUZZLE_IMAGE = 'assets/photos/puzzle.jpg';
 const GRID_SIZE = 3;
 
 const MESSAGES = [
-  { from: 'Tőlem', text: 'Boldog szülinapot Apu! Nagyon szeretlek és hálás vagyok mindenért amit értem teszel, és szeretném ha tudnád, hogy nálad jobb apukát nem is kívánhattam volna. ❤️' },
+  { from: 'Dávid', text: 'Boldog szülinapot Apu! Nagyon szeretlek és hálás vagyok mindenért amit értem teszel, és szeretném ha tudnád, hogy nálad jobb apukát nem is kívánhattam volna. ❤️' },
   { from: 'Teri nagyi', text: 'Boldogságos Szülinapot Bogyókám! Minden Jót kívánok, teljesüljön minden kívánságod! Szeretlek, Mami' },
   { from: 'Gyuri Nagyapa', text: 'Drága Zsoltikám! Te vagy a 3 generációnk közepe, az origó, Tőled tanul(t)unk sok mindent, hogy eligazodjunk a világban. Középkorú vagy, de ez felelősséget is jelent öregekért és az utánad jövőkért is. Köszönönöm, hogy büszkék lehetünk Rád, szerethetünk és általad szeretve is vagyunk. Mindig számíthatunk Rád. Érezd jól magad, maradj egészséges és elégedett, sikeres és boldog! Szeretünk és minden jót kívánunk Neked drága Bogyónk, Ági nevében is Apa' },
+  { from: 'Zoli', text: 'Tesó! Nem gondoltam volna, hogy 43 éves koromra lesz egy igazi testvérem, mivel egyke vagyok, és fateromat sem igazán ismerem. Aztán lett egy szomszédom… vagy lehet, hogy én lettem az övé 🤪 De egy biztos: lett valaki az életemben, akire mindenben számíthatok. Még akkor is, ha épp „hullát kell elásni” 🤪🤪🤪 Kemény év van mögöttünk, de az elmúlt fél év valami egészen fantasztikus volt. A félelem és az aggódás helyét átvette a büszkeség, és a nyugalom, a tudat, hogy van kire számítanom ha netán a csaladomra kell vigyázni, vagy a kórházba kell vinni. Köszönöm. (Most én köszöngetek, mint egy buzi 😂) Tudom, néha paraszt vagyok, és túl egyenes. De ez csak azért van, mert őszintén törődöm veled. A magam kicsit „autista”, érzelmeket nehezen kimondó módján csak annyit mondok: itt vagyok. Bármi kell, bármikor, számíthatsz rám. Testvérem. Boldog születésnapot kívánok neked, és legyen még sok ilyen évünk együtt!' },
 ];
 
 export function renderMinigame(container, room, onSuccess) {
